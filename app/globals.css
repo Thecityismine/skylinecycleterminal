@@ -1,26 +1,127 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ── Skyline Cycle Terminal — Custom brand tokens ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --sct-bg:        #090D13;
+  --sct-panel:     #111821;
+  --sct-card:      #151E29;
+  --sct-border:    #263241;
+  --sct-border-soft: rgba(255,255,255,0.08);
+
+  --sct-text:      #F3F6FA;
+  --sct-secondary: #A9B4C0;
+  --sct-muted:     #6F7A86;
+
+  --sct-btc:       #F7931A;
+  --sct-eth:       #7C8CFF;
+  --sct-green:     #35D07F;
+  --sct-red:       #FF5C5C;
+  --sct-amber:     #E6B450;
+  --sct-blue:      #3B82F6;
+
+  /* Score zone colors */
+  --sct-accumulate:   #3B82F6;
+  --sct-hold:         #35D07F;
+  --sct-caution:      #E6B450;
+  --sct-distribution: #FF5C5C;
+
+  /* Always-dark shadcn overrides */
+  --background:              oklch(0.075 0.014 252);
+  --foreground:              oklch(0.968 0.005 240);
+  --card:                    oklch(0.115 0.015 252);
+  --card-foreground:         oklch(0.968 0.005 240);
+  --popover:                 oklch(0.130 0.018 252);
+  --popover-foreground:      oklch(0.968 0.005 240);
+  --primary:                 oklch(0.72 0.18 50);
+  --primary-foreground:      oklch(0.075 0.014 252);
+  --secondary:               oklch(0.145 0.020 252);
+  --secondary-foreground:    oklch(0.968 0.005 240);
+  --muted:                   oklch(0.145 0.020 252);
+  --muted-foreground:        oklch(0.545 0.015 240);
+  --accent:                  oklch(0.145 0.020 252);
+  --accent-foreground:       oklch(0.968 0.005 240);
+  --destructive:             oklch(0.68 0.22 25);
+  --border:                  oklch(0.215 0.025 242);
+  --input:                   oklch(0.215 0.025 242);
+  --ring:                    oklch(0.72 0.18 50);
+  --radius:                  1rem;
+  --sidebar:                 oklch(0.095 0.014 252);
+  --sidebar-foreground:      oklch(0.968 0.005 240);
+  --sidebar-primary:         oklch(0.72 0.18 50);
+  --sidebar-primary-foreground: oklch(0.075 0.014 252);
+  --sidebar-accent:          oklch(0.145 0.020 252);
+  --sidebar-accent-foreground: oklch(0.968 0.005 240);
+  --sidebar-border:          oklch(0.215 0.025 242);
+  --sidebar-ring:            oklch(0.72 0.18 50);
 }
 
+/* Expose brand tokens as Tailwind color utilities */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:   var(--background);
+  --color-foreground:   var(--foreground);
+  --color-card:         var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover:      var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary:      var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary:    var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:        var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent:       var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive:  var(--destructive);
+  --color-border:       var(--border);
+  --color-input:        var(--input);
+  --color-ring:         var(--ring);
+  --color-sidebar:      var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brand utilities — use as bg-btc, text-eth, etc. */
+  --color-btc:          var(--sct-btc);
+  --color-eth:          var(--sct-eth);
+  --color-bull:         var(--sct-green);
+  --color-bear:         var(--sct-red);
+  --color-caution:      var(--sct-amber);
+  --color-cycle-blue:   var(--sct-blue);
+  --color-panel:        var(--sct-panel);
+  --color-sct-card:     var(--sct-card);
+  --color-sct-border:   var(--sct-border);
+  --color-sct-text:     var(--sct-text);
+  --color-sct-secondary: var(--sct-secondary);
+  --color-sct-muted:    var(--sct-muted);
+
+  --font-sans:  var(--font-geist-sans);
+  --font-mono:  var(--font-geist-mono);
+
+  --radius-sm:  calc(var(--radius) * 0.5);
+  --radius-md:  calc(var(--radius) * 0.75);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.5);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--sct-bg); }
+::-webkit-scrollbar-thumb { background: var(--sct-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sct-muted); }

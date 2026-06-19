@@ -1,65 +1,97 @@
-import Image from "next/image";
+import { PageHeader } from "@/components/dashboard/PageHeader";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
+import { ChartSkeleton, StatCardSkeleton } from "@/components/dashboard/LoadingSkeleton";
 
-export default function Home() {
+export default function OverviewPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="max-w-[1400px] mx-auto space-y-8">
+      <PageHeader
+        title="Overview"
+        subtitle="Bitcoin & Ethereum macro cycle dashboard"
+        regime="neutral"
+      />
+
+      {/* Row 1 — Key stats */}
+      <div className="grid grid-cols-4 gap-6">
+        <StatCard
+          label="Bitcoin"
+          value="$—"
+          sub="Loading…"
+          accent="var(--sct-btc)"
+          freshness="cached"
+          source="CoinGecko"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <StatCard
+          label="Ethereum"
+          value="$—"
+          sub="Loading…"
+          accent="var(--sct-eth)"
+          freshness="cached"
+          source="CoinGecko"
+        />
+        <StatCard
+          label="Fear & Greed"
+          value="—"
+          sub="Loading…"
+          freshness="daily"
+          source="Alternative.me"
+        />
+        <StatCard
+          label="BTC Dominance"
+          value="—%"
+          sub="Loading…"
+          freshness="daily"
+          source="CoinGecko"
+        />
+      </div>
+
+      {/* Row 2 — Cycle score + market read */}
+      <div className="grid grid-cols-3 gap-6">
+        <div
+          className="col-span-2 rounded-xl border p-6 flex flex-col items-center justify-center gap-4 min-h-[200px]"
+          style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)", boxShadow: "0 20px 60px rgba(0,0,0,0.35)" }}
+        >
+          <p className="text-xs font-medium tracking-widest uppercase" style={{ color: "var(--sct-muted)" }}>
+            Skyline Cycle Score
+          </p>
+          <div className="text-7xl font-mono font-bold" style={{ color: "var(--sct-text)" }}>
+            —
+          </div>
+          <div className="w-full max-w-sm h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--sct-border)" }}>
+            <div className="h-full w-0 rounded-full transition-all duration-700" style={{ backgroundColor: "var(--sct-blue)" }} />
+          </div>
+          <p className="text-sm text-center" style={{ color: "var(--sct-muted)" }}>
+            Score wires up in Phase 2 — data layer coming next
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <InsightPanel title="Current Market Read">
+          <InsightRow label="Cycle" value="—" />
+          <InsightRow label="Sentiment" value="—" />
+          <InsightRow label="Macro" value="—" />
+          <InsightRow label="BTC Trend" value="—" />
+          <InsightRow label="ETH Trend" value="—" />
+          <p className="mt-4 text-xs leading-relaxed opacity-60">
+            Interpretation loads once data layer is active.
+          </p>
+        </InsightPanel>
+      </div>
+
+      {/* Row 3 — Sub-scores */}
+      <div className="grid grid-cols-4 gap-6">
+        {["On-Chain Score", "Macro Score", "Price Trend", "Sentiment Score"].map((label) => (
+          <StatCardSkeleton key={label} />
+        ))}
+      </div>
+
+      {/* Row 4 — BTC chart placeholder */}
+      <div>
+        <p className="text-xs font-medium tracking-wider uppercase mb-4" style={{ color: "var(--sct-muted)" }}>
+          BTC / USD — 365 Days
+        </p>
+        <ChartSkeleton height="h-80" />
+      </div>
     </div>
   );
 }
