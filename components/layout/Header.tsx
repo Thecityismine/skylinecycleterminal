@@ -1,80 +1,122 @@
+"use client";
+
+import { useApiData } from '@/lib/hooks/useApiData';
+import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
+
+type MarketSnapshot = {
+  btcPrice: number;
+  btcChange24h: number;
+  ethPrice: number;
+  ethChange24h: number;
+  btcDominance: number;
+  fearGreedValue: number;
+  fearGreedLabel: string;
+};
+
+function fmtUSD(n: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+function fmtChange(n: number): string {
+  return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+
 export function Header() {
-  // Placeholder values — wired to live data in the next phase
-  const stats = [
-    { label: "BTC", value: "$—", change: null, color: "var(--sct-btc)" },
-    { label: "ETH", value: "$—", change: null, color: "var(--sct-eth)" },
-    { label: "BTC.D", value: "—%", change: null, color: "var(--sct-secondary)" },
+  const { data: market } = useApiData<MarketSnapshot>('/api/market');
+  const { data: cycle }  = useApiData<CycleScoreResult>('/api/cycle');
+
+  const tickers = [
+    {
+      label: 'BTC',
+      value:  market ? fmtUSD(market.btcPrice) : '—',
+      change: market?.btcChange24h ?? null,
+      color:  'var(--sct-btc)',
+    },
+    {
+      label: 'ETH',
+      value:  market ? fmtUSD(market.ethPrice) : '—',
+      change: market?.ethChange24h ?? null,
+      color:  'var(--sct-eth)',
+    },
+    {
+      label: 'BTC.D',
+      value:  market ? `${market.btcDominance.toFixed(1)}%` : '—',
+      change: null,
+      color:  'var(--sct-secondary)',
+    },
   ];
+
+  const fgValue = market ? `${market.fearGreedValue} · ${market.fearGreedLabel}` : '—';
+
+  const regime = cycle
+    ? { label: cycle.zoneLabel, color: cycle.zoneColor }
+    : { label: 'Loading…', color: 'var(--sct-blue)' };
 
   return (
     <header
       className="h-16 shrink-0 sticky top-0 z-30 flex items-center justify-between px-8 border-b backdrop-blur-sm"
       style={{
-        backgroundColor: "rgba(9,13,19,0.85)",
-        borderColor: "var(--sct-border)",
+        backgroundColor: 'rgba(9,13,19,0.85)',
+        borderColor: 'var(--sct-border)',
       }}
     >
-      {/* Left: price tickers */}
+      {/* Left: live price tickers */}
       <div className="flex items-center gap-6">
-        {stats.map((s) => (
-          <div key={s.label} className="flex items-center gap-2">
-            <span
-              className="text-xs font-medium tracking-wider"
-              style={{ color: "var(--sct-muted)" }}
-            >
-              {s.label}
+        {tickers.map((t) => (
+          <div key={t.label} className="flex items-center gap-2">
+            <span className="text-xs font-medium tracking-wider" style={{ color: 'var(--sct-muted)' }}>
+              {t.label}
             </span>
-            <span
-              className="text-sm font-mono font-medium"
-              style={{ color: s.color }}
-            >
-              {s.value}
+            <span className="text-sm font-mono font-semibold" style={{ color: t.color }}>
+              {t.value}
             </span>
+            {t.change != null && (
+              <span
+                className="text-xs font-mono"
+                style={{ color: t.change >= 0 ? 'var(--sct-green)' : 'var(--sct-red)' }}
+              >
+                {fmtChange(t.change)}
+              </span>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Right: regime badge + status */}
-      <div className="flex items-center gap-4">
-        {/* Fear & Greed placeholder */}
+      {/* Right: F&G + regime badge + status dot */}
+      <div className="flex items-center gap-5">
         <div className="flex items-center gap-2">
-          <span
-            className="text-xs tracking-wider"
-            style={{ color: "var(--sct-muted)" }}
-          >
-            FEAR & GREED
+          <span className="text-xs tracking-wider" style={{ color: 'var(--sct-muted)' }}>
+            F&amp;G
           </span>
-          <span
-            className="text-sm font-mono"
-            style={{ color: "var(--sct-secondary)" }}
-          >
-            —
+          <span className="text-sm font-mono" style={{ color: 'var(--sct-secondary)' }}>
+            {fgValue}
           </span>
         </div>
 
-        {/* Regime badge */}
+        {/* Cycle zone badge */}
         <span
-          className="px-2.5 py-0.5 rounded text-[11px] font-medium tracking-wider uppercase border"
+          className="px-2.5 py-0.5 rounded text-[11px] font-medium tracking-wider uppercase border transition-colors duration-500"
           style={{
-            backgroundColor: "rgba(59,130,246,0.12)",
-            borderColor: "rgba(59,130,246,0.3)",
-            color: "var(--sct-blue)",
+            backgroundColor: `${regime.color}18`,
+            borderColor:     `${regime.color}40`,
+            color:            regime.color,
           }}
         >
-          Initializing
+          {regime.label}
         </span>
 
         {/* Live indicator */}
         <div className="flex items-center gap-1.5">
           <span
             className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: "var(--sct-amber)" }}
+            style={{ backgroundColor: market ? 'var(--sct-green)' : 'var(--sct-amber)' }}
           />
-          <span
-            className="text-[11px] font-mono"
-            style={{ color: "var(--sct-muted)" }}
-          >
-            Skeleton
+          <span className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
+            {market ? 'Live' : 'Connecting…'}
           </span>
         </div>
       </div>
