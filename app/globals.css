@@ -103,7 +103,7 @@
   --color-sct-muted:    var(--sct-muted);
 
   --font-sans:  var(--font-inter);
-  --font-mono:  var(--font-jetbrains-mono);
+  --font-mono:  var(--font-inter);
 
   --radius-sm:  calc(var(--radius) * 0.5);
   --radius-md:  calc(var(--radius) * 0.75);
@@ -117,6 +117,12 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  /* Tabular numbers wherever font-mono is used so columns stay aligned */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
   }
 }
 
