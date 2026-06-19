@@ -90,23 +90,32 @@ function piCycleIndicator(prices: number[]): IndicatorResult {
   };
 }
 
-// ─── Indicator 2: MVRV Proxy ──────────────────────────────────────────────────
-// MVRV Ratio requires CapRealUSD (not in free API).
-// Proxy: price deviation above 200-day MA as a realized-value stand-in.
-// When price >> 200DMA, coins are well above cost basis → higher MVRV proxy.
+// ─── Indicator 2: MVRV Ratio ─────────────────────────────────────────────────
+// Real value from CryptoQuant when available; proxy (price/200DMA) as fallback.
+// Historical MVRV: 0.5 (deep bear) → 5.0 (cycle top)
 
-function mvrvProxyIndicator(prices: number[]): IndicatorResult {
-  const ma200 = simpleMA(prices, 200);
+function mvrvIndicator(prices: number[], realMVRV: number | null): IndicatorResult {
+  if (realMVRV != null && realMVRV > 0) {
+    const score = normalize(realMVRV, 0.5, 5.0);
+    return {
+      name: 'MVRV Ratio', score, rawValue: realMVRV,
+      rawLabel: `${realMVRV.toFixed(2)}×`,
+      signal: signalLabel(score), source: 'CryptoQuant',
+      weight: 12.5, available: true,
+    };
+  }
+
+  // Proxy: price / 200DMA (free-tier fallback — no CapRealUSD in community API)
+  const ma200  = simpleMA(prices, 200);
   const current = prices[prices.length - 1];
-  if (ma200 == null || current == null) return unavailable('MVRV (proxy)', 'CoinMetrics (calc)');
+  if (ma200 == null || current == null) return unavailable('MVRV Ratio', 'CoinMetrics (calc)');
 
   const ratio = current / ma200;
-  // Historical: 0.5 (deep bear) → 4.0 (cycle top)
   const score = normalize(ratio, 0.5, 4.0);
 
   return {
-    name: 'MVRV (proxy)', score, rawValue: ratio,
-    rawLabel: `${ratio.toFixed(2)}× 200DMA ($${Math.round(ma200).toLocaleString()})`,
+    name: 'MVRV Ratio', score, rawValue: ratio,
+    rawLabel: `${ratio.toFixed(2)}× 200DMA (proxy)`,
     signal: signalLabel(score), source: 'CoinMetrics (calc)',
     weight: 12.5, available: true,
   };
@@ -114,10 +123,9 @@ function mvrvProxyIndicator(prices: number[]): IndicatorResult {
 
 // ─── Indicator 3: Puell Multiple ──────────────────────────────────────────────
 // Daily miner revenue / 365d MA of daily miner revenue
-// Using IssTotNtv × price to approximate IssTotUSD
+// Approximated using IssTotNtv × price (free-tier equivalent of IssTotUSD)
 
 function puellIndicator(data: Array<{ price: number | null; issTotNtv: number | null }>): IndicatorResult {
-  // Compute approximate daily issuance in USD
   const issTotUSD = data
     .filter((d): d is { price: number; issTotNtv: number } => d.price != null && d.issTotNtv != null)
     .map((d) => d.issTotNtv * d.price);
@@ -127,7 +135,6 @@ function puellIndicator(data: Array<{ price: number | null; issTotNtv: number | 
   if (ma365 == null || current == null || ma365 === 0) return unavailable('Puell Multiple', 'CoinMetrics');
 
   const puell = current / ma365;
-  // Historical: 0.3 (deep bear) → 4.0 (cycle top)
   const score = normalize(puell, 0.3, 4.0);
 
   return {
@@ -142,7 +149,7 @@ function puellIndicator(data: Array<{ price: number | null; issTotNtv: number | 
 // Price / 730d MA — accumulate below 1×, distribute above 5×
 
 function twoYearMAIndicator(prices: number[]): IndicatorResult {
-  const ma730 = simpleMA(prices, 730);
+  const ma730  = simpleMA(prices, 730);
   const current = prices[prices.length - 1];
   if (ma730 == null || current == null) return unavailable('2Y MA Multiplier', 'CoinMetrics (calc)');
 
@@ -176,7 +183,7 @@ function logRegressionIndicator(currentPrice: number): IndicatorResult {
 }
 
 // ─── Indicator 6: NVT Signal (TxCnt approximation) ───────────────────────────
-// Market Cap / 90d MA of daily transaction count — network value vs. usage
+// Market Cap / 90d MA of daily transaction count
 
 function nvtIndicator(data: Array<{ marketCap: number | null; txCnt: number | null }>): IndicatorResult {
   const valid = data.filter(
@@ -189,8 +196,6 @@ function nvtIndicator(data: Array<{ marketCap: number | null; txCnt: number | nu
   if (ma90 == null || ma90 === 0) return unavailable('NVT Signal', 'CoinMetrics');
 
   const nvt = valid[valid.length - 1].marketCap / ma90;
-  // NVT via TxCnt: ranges differ from volume-based NVT, calibrate empirically
-  // Typical: <3M = undervalued, >30M = overvalued (marketCap / txCnt basis)
   const score = normalize(nvt, 3_000_000, 30_000_000);
 
   return {
@@ -235,15 +240,16 @@ function activeAddressesIndicator(adrActCnt: number[]): IndicatorResult {
 
 export function computeSkylineScore(
   onChain: OnChainPoint[],
-  fearGreedValue: number
+  fearGreedValue: number,
+  mvrvRatio: number | null = null   // from CryptoQuant; null → proxy
 ): CycleScoreResult {
-  const prices    = onChain.filter((d) => d.price    != null).map((d) => d.price!);
-  const adrVals   = onChain.filter((d) => d.adrActCnt != null).map((d) => d.adrActCnt!);
+  const prices     = onChain.filter((d) => d.price     != null).map((d) => d.price!);
+  const adrVals    = onChain.filter((d) => d.adrActCnt != null).map((d) => d.adrActCnt!);
   const currentPrice = prices[prices.length - 1] ?? 0;
 
   const indicators: IndicatorResult[] = [
     piCycleIndicator(prices),
-    mvrvProxyIndicator(prices),
+    mvrvIndicator(prices, mvrvRatio),
     puellIndicator(onChain),
     twoYearMAIndicator(prices),
     logRegressionIndicator(currentPrice),
@@ -252,7 +258,6 @@ export function computeSkylineScore(
     activeAddressesIndicator(adrVals),
   ];
 
-  // Only weight available indicators to keep the composite meaningful
   const available   = indicators.filter((i) => i.available);
   const totalWeight = available.reduce((s, i) => s + i.weight, 0);
   const weighted    = available.reduce((s, i) => s + i.score * i.weight, 0);
