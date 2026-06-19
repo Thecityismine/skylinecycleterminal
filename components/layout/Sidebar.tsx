@@ -22,12 +22,15 @@ import {
   Waves,
   ExternalLink,
   BookOpen,
+  CalendarDays,
+  BarChart3,
 } from "lucide-react";
 
 type NavItem = {
   label: string;
   href: string;
   icon: React.ElementType;
+  exact?: boolean;
 };
 
 type NavSection = {
@@ -36,7 +39,7 @@ type NavSection = {
 };
 
 const nav: (NavItem | NavSection)[] = [
-  { label: "Overview", href: "/", icon: LayoutDashboard },
+  { label: "Overview", href: "/", icon: LayoutDashboard, exact: true },
   {
     section: "CYCLE",
     items: [
@@ -48,9 +51,11 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "PRICE",
     items: [
-      { label: "BTC / USD", href: "/price", icon: Bitcoin },
-      { label: "ETH / USD", href: "/price?asset=eth", icon: Layers },
-      { label: "Moving Averages", href: "/price?view=ma", icon: LineChart },
+      { label: "BTC / USD", href: "/price", icon: Bitcoin, exact: true },
+      { label: "ETH / USD", href: "/price?asset=eth", icon: Layers, exact: true },
+      { label: "4-Year Cycle", href: "/price/four-year-cycle", icon: CalendarDays },
+      { label: "2-Year MA", href: "/price/two-year-ma", icon: BarChart3 },
+      { label: "Moving Averages", href: "/price?view=ma", icon: LineChart, exact: true },
     ],
   },
   {
@@ -94,11 +99,14 @@ function isSection(entry: NavItem | NavSection): entry is NavSection {
 }
 
 function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  const hrefBase = item.href.split("?")[0].split("#")[0];
+
   const active =
-    item.href === "/"
+    hrefBase === "/"
       ? pathname === "/"
-      : pathname.startsWith(item.href.split("?")[0]) &&
-        item.href.split("?")[0] !== "/";
+      : item.exact
+      ? pathname === hrefBase
+      : pathname === hrefBase || pathname.startsWith(hrefBase + "/");
 
   return (
     <Link
@@ -110,7 +118,6 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
           : "text-[var(--sct-muted)] hover:text-[var(--sct-secondary)] hover:bg-[var(--sct-card)]/50"
       )}
     >
-      {/* Active left border */}
       {active && (
         <span className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-btc" />
       )}
@@ -118,7 +125,9 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
         size={14}
         className={cn(
           "shrink-0 transition-colors",
-          active ? "text-btc" : "text-[var(--sct-muted)] group-hover:text-[var(--sct-secondary)]"
+          active
+            ? "text-btc"
+            : "text-[var(--sct-muted)] group-hover:text-[var(--sct-secondary)]"
         )}
       />
       <span className="truncate">{item.label}</span>
