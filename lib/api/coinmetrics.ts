@@ -51,6 +51,50 @@ export async function fetchBTCDailyPrice(startTime = '2012-01-01'): Promise<Pric
   return all;
 }
 
+// Realized Price = CapRealUSD / SplyCur — the average cost basis of all BTC holders
+// CapRealUSD may or may not be in the free Community tier; falls back to price-only if 403.
+export type RealizedPricePoint = {
+  time: string;
+  price: number;
+  realized: number | null;  // null if CapRealUSD not available in free tier
+};
+
+export async function fetchBTCRealizedPrice(startTime = '2012-01-01'): Promise<RealizedPricePoint[]> {
+  const all: RealizedPricePoint[] = [];
+  let nextPageToken: string | null = null;
+
+  try {
+    do {
+      const params: Record<string, string> = {
+        assets: 'btc', metrics: 'PriceUSD,CapRealUSD,SplyCur', frequency: '1d',
+        start_time: startTime, page_size: '10000',
+      };
+      if (nextPageToken) params.next_page_token = nextPageToken;
+
+      const json = await coinmetricsGet(params);
+
+      for (const d of json.data ?? []) {
+        if (d.PriceUSD == null) continue;
+        const capReal = d.CapRealUSD != null ? Number(d.CapRealUSD) : null;
+        const sply    = d.SplyCur    != null ? Number(d.SplyCur)    : null;
+        all.push({
+          time:     d.time.slice(0, 10),
+          price:    Number(d.PriceUSD),
+          realized: capReal != null && sply != null && sply > 0 ? capReal / sply : null,
+        });
+      }
+      nextPageToken = (json as any).next_page_token ?? null;
+    } while (nextPageToken);
+
+    return all;
+  } catch {
+    // CapRealUSD likely paywalled — return price-only data with realized: null
+    if (all.length > 0) return all;
+    const prices = await fetchBTCDailyPrice(startTime);
+    return prices.map((p) => ({ ...p, realized: null }));
+  }
+}
+
 // Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
 export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnChainPoint[]> {
   // Only request metrics known to be in the free Community API

@@ -24,6 +24,7 @@ import {
   BookOpen,
   CalendarDays,
   BarChart3,
+  CircleDollarSign,
 } from "lucide-react";
 
 type NavItem = {
@@ -53,9 +54,10 @@ const nav: (NavItem | NavSection)[] = [
     items: [
       { label: "BTC / USD", href: "/price", icon: Bitcoin, exact: true },
       { label: "ETH / USD", href: "/price?asset=eth", icon: Layers, exact: true },
-      { label: "4-Year Cycle", href: "/price/four-year-cycle", icon: CalendarDays },
-      { label: "2-Year MA", href: "/price/two-year-ma", icon: BarChart3 },
-      { label: "Moving Averages", href: "/price?view=ma", icon: LineChart, exact: true },
+      { label: "4-Year Cycle",    href: "/price/four-year-cycle",  icon: CalendarDays },
+      { label: "2-Year MA",       href: "/price/two-year-ma",      icon: BarChart3 },
+      { label: "Realized Price",  href: "/price/realized-price",   icon: CircleDollarSign },
+      { label: "Moving Averages", href: "/price?view=ma",          icon: LineChart, exact: true },
     ],
   },
   {
@@ -191,8 +193,8 @@ export function Sidebar() {
         className="px-5 py-3 border-t text-[10px] shrink-0"
         style={{ borderColor: "var(--sct-border)", color: "var(--sct-muted)" }}
       >
-        <p>Data: CoinGecko · CoinMetrics · FRED</p>
-        <p className="mt-0.5 opacity-60">v0.1.0 — skeleton</p>
+        <p>CoinGecko · CoinMetrics · FRED · DeFiLlama</p>
+        <p className="mt-0.5 opacity-60">v0.2.0 — live data</p>
       </div>
     </aside>
   );
