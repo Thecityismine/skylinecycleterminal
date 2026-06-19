@@ -4,7 +4,8 @@ import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
-import { ChartSkeleton, StatCardSkeleton } from '@/components/dashboard/LoadingSkeleton';
+import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
+import { BTCMiniChart } from '@/components/charts/BTCMiniChart';
 import type { CycleScoreResult, ScoreZone } from '@/lib/indicators/skylineScore';
 
 type MarketSnapshot = {
@@ -18,6 +19,9 @@ type MarketSnapshot = {
   fearGreedValue: number;
   fearGreedLabel: string;
 };
+
+type MacroData = { macroScore: number };
+type PriceHistory = { prices: Array<{ time: string; price: number }> };
 
 function fmtUSD(n: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -52,6 +56,8 @@ function marketRead(cycle: CycleScoreResult | null, market: MarketSnapshot | nul
 export default function OverviewPage() {
   const { data: market, loading: mktLoading } = useApiData<MarketSnapshot>('/api/market');
   const { data: cycle,  loading: cycLoading  } = useApiData<CycleScoreResult>('/api/cycle');
+  const { data: macro  }                        = useApiData<MacroData>('/api/macro');
+  const { data: priceHistory }                  = useApiData<PriceHistory>('/api/price');
 
   const loading = mktLoading || cycLoading;
   const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
@@ -249,20 +255,26 @@ export default function OverviewPage() {
         />
         <StatCard
           label="Macro Score"
-          value="—"
-          sub="DXY · Fed · CPI · M2 · 10Y"
-          accent="var(--sct-muted)"
-          freshness="cached"
+          value={macro ? String(macro.macroScore) : '—'}
+          sub={
+            macro
+              ? macro.macroScore < 30 ? 'Accommodative — tailwind for BTC'
+              : macro.macroScore < 55 ? 'Neutral macro'
+              : macro.macroScore < 75 ? 'Tightening — headwind for BTC'
+              : 'Restrictive — bearish macro'
+              : 'DXY · Fed · CPI · M2 · 10Y'
+          }
+          accent={subScoreColor(macro?.macroScore ?? null)}
+          freshness={macro ? 'daily' : 'cached'}
+          source="FRED"
         />
       </div>
 
-      {/* Row 4 — BTC price chart placeholder */}
-      <div>
-        <p className="text-xs font-medium tracking-wider uppercase mb-4" style={{ color: 'var(--sct-muted)' }}>
-          BTC / USD — 365 Days
-        </p>
-        <ChartSkeleton height="h-80" />
-      </div>
+      {/* Row 4 — BTC price chart */}
+      {priceHistory
+        ? <BTCMiniChart data={priceHistory.prices} />
+        : <ChartSkeleton height="h-[380px]" />
+      }
     </div>
   );
 }
