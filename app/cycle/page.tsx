@@ -1,5 +1,10 @@
 "use client";
 
+import { useMemo } from 'react';
+import {
+  ComposedChart, Area, Line, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid, ReferenceLine,
+} from 'recharts';
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { InsightPanel } from '@/components/dashboard/InsightPanel';
@@ -27,8 +32,42 @@ function scoreColor(score: number): string {
   return '#FF5C5C';
 }
 
+type PricePoint = { time: string; price: number };
+type OnChainPt  = { time: string; mvrvProxy: number | null };
+
+function fmtX(d: string) {
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+}
+function fmtY(v: number) {
+  return v >= 1_000_000 ? `$${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `$${(v/1_000).toFixed(0)}K` : `$${v}`;
+}
+
+// Map MVRV proxy to zone color
+function mvrvColor(v: number | null): string {
+  if (v == null) return '#3B82F6';
+  if (v < 1.0)  return '#3B82F6';
+  if (v < 1.5)  return '#35D07F';
+  if (v < 2.5)  return '#E6B450';
+  if (v < 3.5)  return '#F97316';
+  return '#FF5C5C';
+}
+
 export default function CyclePage() {
   const { data: cycle, loading, error } = useApiData<CycleScoreResult>('/api/cycle');
+  const { data: onchain }               = useApiData<{ points: OnChainPt[] }>('/api/onchain');
+  const { data: priceData }             = useApiData<{ prices: PricePoint[] }>('/api/price?asset=btc&start=2020-01-01');
+
+  // Merge price + MVRV for the cycle context chart
+  const chartData = useMemo(() => {
+    if (!priceData?.prices) return [];
+    const mvrvMap = new Map((onchain?.points ?? []).map(p => [p.time, p.mvrvProxy]));
+    return priceData.prices.map(p => ({
+      time:  p.time,
+      price: p.price,
+      mvrv:  mvrvMap.get(p.time) ?? null,
+      color: mvrvColor(mvrvMap.get(p.time) ?? null),
+    }));
+  }, [priceData, onchain]);
 
   const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
 
@@ -163,16 +202,57 @@ export default function CyclePage() {
         {/* Historical chart + methodology */}
         <div className="col-span-3 flex flex-col gap-4">
           <div>
-            <p
-              className="text-xs font-medium tracking-wider uppercase mb-3"
-              style={{ color: 'var(--sct-muted)' }}
-            >
-              Historical Score — 4 Year
+            <p className="text-xs font-medium tracking-wider uppercase mb-3" style={{ color: 'var(--sct-muted)' }}>
+              BTC Price — Cycle Context (4Y)
             </p>
-            <ChartSkeleton height="h-64" />
-            <p className="text-xs mt-2" style={{ color: 'var(--sct-muted)' }}>
-              Historical score chart — coming in the next update
-            </p>
+            {chartData.length === 0
+              ? <ChartSkeleton height="h-64" />
+              : (
+                <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--sct-border)' }}>
+                  <ResponsiveContainer width="100%" height={256}>
+                    <ComposedChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
+                      <XAxis dataKey="time" tickFormatter={fmtX}
+                        tick={{ fill: '#4B5563', fontSize: 9 }} tickLine={false} axisLine={false}
+                        minTickGap={60} interval="preserveStartEnd" />
+                      <YAxis tickFormatter={fmtY} tick={{ fill: '#4B5563', fontSize: 9 }}
+                        tickLine={false} axisLine={false} width={54} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#0C1117', border: '1px solid #1E293B', borderRadius: '6px', padding: '6px 10px' }}
+                        labelStyle={{ color: '#64748B', fontSize: '10px' }}
+                        formatter={(v, name) => [
+                          name === 'price' ? `$${Number(v).toLocaleString()}` : `${Number(v).toFixed(2)}×`,
+                          name === 'price' ? 'BTC Price' : 'MVRV Proxy',
+                        ]}
+                        labelFormatter={(d) => new Date(String(d) + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        cursor={{ stroke: '#1E293B', strokeWidth: 1 }}
+                      />
+                      {/* Cycle zone bands */}
+                      <ReferenceLine y={0} stroke="transparent" />
+                      <Area type="monotone" dataKey="price" stroke="#F7931A"
+                        strokeWidth={1.5} fill="#F7931A" fillOpacity={0.08}
+                        dot={false} isAnimationActive={false} />
+                      <Line type="monotone" dataKey="mvrv" stroke="#A855F7"
+                        strokeWidth={0} dot={false} isAnimationActive={false}
+                        yAxisId="right" hide />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            }
+            <div className="flex gap-4 mt-2">
+              {[
+                { color: '#3B82F6', label: '< 1.0× Accumulate' },
+                { color: '#35D07F', label: '1.0–1.5× Hold' },
+                { color: '#E6B450', label: '1.5–2.5× Caution' },
+                { color: '#FF5C5C', label: '> 2.5× Distribute' },
+              ].map(b => (
+                <div key={b.label} className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
+                  <span className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           <InsightPanel title="Score Methodology">
