@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// Skyline Cycle Terminal — Firestore Security Rules
+//
+// Architecture: No user auth. Firestore is used purely as a read-through
+// cache for public market data (prices, on-chain metrics, macro data).
+// Vercel API routes write to the cache once per day using the client SDK.
+// The browser reads from the cache to avoid hitting external API rate limits.
+//
+// Data classification: entirely public market data — no PII, no user data.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Cache collection ─────────────────────────────────────────────────────
+    // Stores daily snapshots of external API responses.
+    // Documents: price_btc, price_eth, metrics_btc, feargreed, macro, cycle_score
+    match /cache/{document=**} {
+      allow read: if true;   // Browser reads cached market data
+      allow write: if true;  // Vercel API routes (client SDK) write daily snapshots
+    }
+
+    // ── Block all other paths ────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
