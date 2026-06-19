@@ -39,11 +39,13 @@ function fmtFull(d: string): string {
 
 // ─── Custom tooltip ───────────────────────────────────────────────────────────
 
-function ChartTooltip({ active, payload, label, realizedAvailable }: {
+function ChartTooltip({ active, payload, label, realizedAvailable, secondaryLabel, secondaryColor }: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
   realizedAvailable: boolean;
+  secondaryLabel: string;
+  secondaryColor: string;
 }) {
   if (!active || !payload || !payload.length || !label) return null;
 
@@ -64,12 +66,12 @@ function ChartTooltip({ active, payload, label, realizedAvailable }: {
       )}
       {realizedAvailable && realized != null && (
         <>
-          <p style={{ color: '#E879F9' }}>
-            Realized Price: <span className="font-bold">${Math.round(realized).toLocaleString()}</span>
+          <p style={{ color: secondaryColor }}>
+            {secondaryLabel}: <span className="font-bold">${Math.round(realized).toLocaleString()}</span>
           </p>
           {mvrv && (
             <p style={{ color: '#64748B' }}>
-              MVRV: <span style={{ color: '#94A3B8' }}>{mvrv}×</span>
+              Ratio: <span style={{ color: '#94A3B8' }}>{mvrv}×</span>
             </p>
           )}
         </>
@@ -83,9 +85,13 @@ function ChartTooltip({ active, payload, label, realizedAvailable }: {
 export function RealizedPriceChart({
   data,
   realizedAvailable,
+  secondaryLabel = 'Avg Buy Price (Realized)',
+  secondaryColor = '#E879F9',
 }: {
   data: RealizedPricePoint[];
   realizedAvailable: boolean;
+  secondaryLabel?: string;
+  secondaryColor?: string;
 }) {
   const [period, setPeriod] = useState<string>('3Y');
 
@@ -117,8 +123,8 @@ export function RealizedPriceChart({
           </div>
           {realizedAvailable && (
             <div className="flex items-center gap-2">
-              <span className="w-5 h-0.5 rounded" style={{ backgroundColor: '#E879F9' }} />
-              <span className="text-xs font-mono" style={{ color: '#E879F9' }}>Avg Buy Price (Realized)</span>
+              <span className="w-5 h-0.5 rounded" style={{ backgroundColor: secondaryColor }} />
+              <span className="text-xs font-mono" style={{ color: secondaryColor }}>{secondaryLabel}</span>
             </div>
           )}
         </div>
@@ -165,16 +171,16 @@ export function RealizedPriceChart({
           />
 
           <Tooltip
-            content={<ChartTooltip realizedAvailable={realizedAvailable} />}
+            content={<ChartTooltip realizedAvailable={realizedAvailable} secondaryLabel={secondaryLabel} secondaryColor={secondaryColor} />}
             cursor={{ stroke: '#1E293B', strokeWidth: 1 }}
           />
 
-          {/* Realized price line (drawn first so BTC price sits on top) */}
+          {/* Secondary line (200W MA or Realized Price) — drawn first so BTC sits on top */}
           {realizedAvailable && (
             <Line
               type="monotone"
               dataKey="realized"
-              stroke="#E879F9"
+              stroke={secondaryColor}
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
@@ -192,11 +198,11 @@ export function RealizedPriceChart({
             isAnimationActive={false}
           />
 
-          {/* Horizontal reference line at current realized price (if available) */}
+          {/* Horizontal reference line at current secondary value */}
           {realizedAvailable && sampled.at(-1)?.realized != null && (
             <ReferenceLine
               y={sampled.at(-1)!.realized!}
-              stroke="#E879F9"
+              stroke={secondaryColor}
               strokeDasharray="4 4"
               strokeOpacity={0.4}
             />
