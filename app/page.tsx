@@ -56,21 +56,17 @@ export default function OverviewPage() {
   const loading = mktLoading || cycLoading;
   const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
 
-  // Derived sub-scores from indicator groups
-  const onChainScore = cycle
-    ? Math.round(
-        cycle.indicators
-          .filter((i) => ['MVRV Ratio', 'Puell Multiple', 'NVT Signal', 'Active Addresses'].includes(i.name))
-          .reduce((s, i) => s + i.score, 0) / 4
-      )
+  // Derived sub-scores — average only available indicators in each group
+  const onChainGroup = ['MVRV Ratio', 'Puell Multiple', 'NVT Signal', 'Active Addresses', 'Stablecoin Supply', 'Hash Rate Ribbon'];
+  const onChainInds  = cycle?.indicators.filter((i) => onChainGroup.includes(i.name) && i.available) ?? [];
+  const onChainScore = onChainInds.length > 0
+    ? Math.round(onChainInds.reduce((s, i) => s + i.score, 0) / onChainInds.length)
     : null;
 
-  const priceTrendScore = cycle
-    ? Math.round(
-        cycle.indicators
-          .filter((i) => ['Pi Cycle Top', '2Y MA Multiplier', 'Log Regression'].includes(i.name))
-          .reduce((s, i) => s + i.score, 0) / 3
-      )
+  const priceTrendGroup = ['Pi Cycle Top', '2Y MA Multiplier', 'Log Regression'];
+  const priceTrendInds  = cycle?.indicators.filter((i) => priceTrendGroup.includes(i.name) && i.available) ?? [];
+  const priceTrendScore = priceTrendInds.length > 0
+    ? Math.round(priceTrendInds.reduce((s, i) => s + i.score, 0) / priceTrendInds.length)
     : null;
 
   const sentimentScore = cycle?.indicators.find((i) => i.name === 'Fear & Greed')?.score ?? null;
@@ -233,7 +229,7 @@ export default function OverviewPage() {
         <StatCard
           label="On-Chain Score"
           value={onChainScore != null ? `${onChainScore}` : '—'}
-          sub="MVRV · Puell · NVT · Addresses"
+          sub="MVRV · Puell · NVT · Addresses · Stables · Hash"
           accent={subScoreColor(onChainScore)}
           freshness={cycle ? 'daily' : 'cached'}
         />
