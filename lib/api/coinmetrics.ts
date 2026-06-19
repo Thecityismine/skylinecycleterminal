@@ -28,14 +28,14 @@ async function coinmetricsGet(params: Record<string, string>): Promise<{ data: R
   return res.json();
 }
 
-// Light price-only fetch — used by chart pages (4-Year Cycle, 2-Year MA)
-export async function fetchBTCDailyPrice(startTime = '2012-01-01'): Promise<PricePoint[]> {
+// Generic daily price fetch — asset can be 'btc' or 'eth'
+export async function fetchDailyPrice(asset: string = 'btc', startTime = '2012-01-01'): Promise<PricePoint[]> {
   const all: PricePoint[] = [];
   let nextPageToken: string | null = null;
 
   do {
     const params: Record<string, string> = {
-      assets: 'btc', metrics: 'PriceUSD', frequency: '1d',
+      assets: asset, metrics: 'PriceUSD', frequency: '1d',
       start_time: startTime, page_size: '10000',
     };
     if (nextPageToken) params.next_page_token = nextPageToken;
@@ -49,6 +49,11 @@ export async function fetchBTCDailyPrice(startTime = '2012-01-01'): Promise<Pric
   } while (nextPageToken);
 
   return all;
+}
+
+// BTC-specific alias kept for existing callers (realized price page, etc.)
+export async function fetchBTCDailyPrice(startTime = '2012-01-01'): Promise<PricePoint[]> {
+  return fetchDailyPrice('btc', startTime);
 }
 
 // Realized Price = CapRealUSD / SplyCur — the average cost basis of all BTC holders

@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
-import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+import { fetchDailyPrice } from '@/lib/api/coinmetrics';
 
-export const revalidate = 300; // 5-minute cache — same as /api/market
+// Dynamic because it reads query params (?asset=, ?start=)
+// Underlying CoinMetrics fetch is cached at 24hr via Next.js fetch cache
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const start = new Date();
-    start.setFullYear(start.getFullYear() - 1);
-    const startTime = start.toISOString().slice(0, 10);
+    const { searchParams } = new URL(req.url);
+    const asset = searchParams.get('asset') === 'eth' ? 'eth' : 'btc';
+    const start = searchParams.get('start') ?? '2010-01-01';
 
-    const prices = await fetchBTCDailyPrice(startTime);
+    const prices = await fetchDailyPrice(asset, start);
     return NextResponse.json({ prices });
   } catch (err) {
     console.error('[/api/price]', err);
