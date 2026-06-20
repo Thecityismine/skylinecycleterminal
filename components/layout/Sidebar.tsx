@@ -70,6 +70,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Ratio Charts",    href: "/price/ratios",             icon: BarChart2 },
       { label: "Weekly SMA",        href: "/price/weekly-sma",         icon: TrendingUp },
       { label: "Heikin-Ashi",      href: "/price/heikin-ashi",        icon: BarChart2 },
+      { label: "Pi Cycle Bottom",  href: "/price/pi-cycle-bottom",    icon: TrendingDown },
     ],
   },
   {
