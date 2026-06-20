@@ -7,7 +7,9 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { EquityChart } from '@/components/charts/EquityChart';
 import type { EquityData } from '@/lib/indicators/equityScore';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
+
+type EquityResponse = EquityData & { fundamentalsAvailable?: boolean };
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -157,7 +159,8 @@ export default function EquityDetailPage() {
   const [rangeIdx, setRangeIdx] = useState(2);
   const [log, setLog] = useState(false);
 
-  const { data, loading, error } = useApiData<EquityData>(`/api/equities/${ticker}`);
+  const { data, loading, error } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
+  const fundamentalsAvailable = data?.fundamentalsAvailable ?? true;
 
   const startTs = useMemo(() => {
     const r = RANGES[rangeIdx];
@@ -280,11 +283,14 @@ export default function EquityDetailPage() {
         <div style={{ height: 420 }}>
           {loading ? (
             <div className="h-full flex items-center justify-center" style={{ color: 'var(--sct-muted)' }}>
-              <p className="text-sm">Loading {ticker} data…</p>
+              <p className="text-sm">Loading {ticker}…</p>
             </div>
           ) : error ? (
-            <div className="h-full flex items-center justify-center" style={{ color: '#FF5C5C' }}>
-              <p className="text-sm">Failed to load data. Yahoo Finance may be rate-limiting.</p>
+            <div className="h-full flex items-center justify-center flex-col gap-2" style={{ color: '#FF5C5C' }}>
+              <p className="text-sm font-semibold">Price data unavailable</p>
+              <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
+                Yahoo Finance may be temporarily unavailable. Try again in a moment.
+              </p>
             </div>
           ) : data ? (
             <EquityChart
@@ -298,6 +304,18 @@ export default function EquityDetailPage() {
           ) : null}
         </div>
       </div>
+
+      {/* Fundamentals unavailable banner */}
+      {data && !fundamentalsAvailable && (
+        <div className="rounded-xl border px-4 py-3 flex items-center gap-3"
+          style={{ backgroundColor: '#E6B45012', borderColor: '#E6B45060' }}>
+          <AlertTriangle size={14} className="shrink-0" style={{ color: '#E6B450' }} />
+          <p className="text-xs" style={{ color: '#E6B450' }}>
+            Fundamental data (P/E, margins, FCF) could not be retrieved from Yahoo Finance right now.
+            The chart and trend metrics are still fully functional. Valuation and quality panels show estimated scores only.
+          </p>
+        </div>
+      )}
 
       {/* Scores + detailed panels */}
       <div className="grid lg:grid-cols-3 gap-5">

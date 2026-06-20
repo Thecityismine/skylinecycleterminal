@@ -7,6 +7,8 @@ import { WATCHLIST, GROUP_LABELS } from '@/lib/data/watchlist';
 import { useApiData } from '@/lib/hooks/useApiData';
 import type { EquityData } from '@/lib/indicators/equityScore';
 
+type EquityResponse = EquityData & { fundamentalsAvailable?: boolean };
+
 function fmtPrice(v: number | null, currency?: string | null) {
   if (v == null) return '—';
   const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
@@ -32,7 +34,7 @@ function ScorePill({ score, label, color }: { score: number; label: string; colo
 }
 
 function StockCard({ ticker, color }: { ticker: string; color: string }) {
-  const { data, loading } = useApiData<EquityData>(`/api/equities/${ticker}`);
+  const { data, loading } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
 
   const price    = data?.fundamentals.price ?? null;
   const change1d = data?.fundamentals.change1d ?? null;
