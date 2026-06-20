@@ -117,7 +117,7 @@ export default function CyclePage() {
               }}
             />
           </div>
-          <div className="flex justify-between mt-2 text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
+          <div className="hidden sm:flex justify-between mt-2 text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
             <span style={{ color: '#3B82F6' }}>0 — Accumulate</span>
             <span style={{ color: '#35D07F' }}>25 — Build</span>
             <span style={{ color: '#E6B450' }}>50 — Caution</span>
@@ -127,10 +127,10 @@ export default function CyclePage() {
         </div>
 
         {/* Band legend */}
-        <div className="flex gap-6 mt-1">
+        <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-6 mt-1">
           {BANDS.map((b) => (
             <div key={b.range} className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
               <span className="text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>
                 {b.range} {b.label}
               </span>
@@ -146,10 +146,10 @@ export default function CyclePage() {
       </div>
 
       {/* Indicator breakdown + historical chart */}
-      <div className="grid grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
         {/* Breakdown panel */}
         <div
-          className="col-span-2 rounded-xl border p-5"
+          className="lg:col-span-2 rounded-xl border p-5"
           style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
         >
           <p
@@ -200,7 +200,7 @@ export default function CyclePage() {
         </div>
 
         {/* Historical chart + methodology */}
-        <div className="col-span-3 flex flex-col gap-4">
+        <div className="lg:col-span-3 flex flex-col gap-4">
           <div>
             <p className="text-xs font-medium tracking-wider uppercase mb-3" style={{ color: 'var(--sct-muted)' }}>
               BTC Price — Cycle Context (4Y)
@@ -240,7 +240,7 @@ export default function CyclePage() {
                 </div>
               )
             }
-            <div className="flex gap-4 mt-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4 mt-2">
               {[
                 { color: '#3B82F6', label: '< 1.0× Accumulate' },
                 { color: '#35D07F', label: '1.0–1.5× Hold' },
@@ -248,7 +248,7 @@ export default function CyclePage() {
                 { color: '#FF5C5C', label: '> 2.5× Distribute' },
               ].map(b => (
                 <div key={b.label} className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: b.color }} />
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
                   <span className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>{b.label}</span>
                 </div>
               ))}
