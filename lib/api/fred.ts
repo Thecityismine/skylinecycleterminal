@@ -23,7 +23,7 @@ export type MacroResponse = {
 };
 
 async function fredGet(seriesId: string, limit: number): Promise<MacroDataPoint[]> {
-  const key = process.env.FRED_API_KEY;
+  const key = process.env.FRED_API_KEY?.trim();
   if (!key) throw new Error('FRED_API_KEY not set');
 
   const url =
@@ -33,9 +33,13 @@ async function fredGet(seriesId: string, limit: number): Promise<MacroDataPoint[
 
   const res = await fetch(url, {
     next: { revalidate: 86400 },
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(15000),
   });
-  if (!res.ok) throw new Error(`FRED HTTP ${res.status} (${seriesId})`);
+  if (!res.ok) {
+    let detail = '';
+    try { const b = await res.json(); detail = b?.error_message ?? JSON.stringify(b); } catch {}
+    throw new Error(`FRED HTTP ${res.status} (${seriesId})${detail ? ': ' + detail : ''}`);
+  }
 
   const json = await res.json();
   return (json.observations as Array<{ date: string; value: string }>)
