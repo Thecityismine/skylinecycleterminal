@@ -15,7 +15,7 @@ type PricePoint = { time: string; price: number };
 
 const TIMEFRAMES  = ['1Y', '2Y', '4Y', 'All'] as const;
 type Timeframe = typeof TIMEFRAMES[number];
-const TF_DAYS: Record<Timeframe, number> = { '1Y': 365, '2Y': 730, '4Y': 1460, 'All': Infinity };
+const TF_DAYS: Record<Timeframe, number> = { '1Y': 365, '2Y': 800, '4Y': 1460, 'All': Infinity };
 
 const OVERLAY_COLORS: Record<string, string> = {
   '200 DMA':        '#3B82F6',
@@ -99,7 +99,7 @@ function downsample<T>(arr: T[], max = 800): T[] {
 
 export default function PricePage() {
   const [asset,     setAsset]     = useState<'btc' | 'eth'>('btc');
-  const [timeframe, setTimeframe] = useState<Timeframe>('1Y');
+  const [timeframe, setTimeframe] = useState<Timeframe>('2Y');
   const [overlays,  setOverlays]  = useState<Set<string>>(new Set(['200 DMA', 'Halvings']));
   const [logScale,  setLogScale]  = useState(false);
 
@@ -146,9 +146,18 @@ export default function PricePage() {
     return downsample(sliced, 800);
   }, [enriched, timeframe]);
 
-  const halvingsInRange = HALVINGS.filter(h =>
-    displayed.length > 0 && h >= displayed[0].time && h <= displayed[displayed.length - 1].time
-  );
+  // Snap each halving to the nearest data point that exists in `displayed`
+  // (ReferenceLine x= must match an exact dataKey value after downsampling)
+  const halvingsInRange = HALVINGS.flatMap(h => {
+    if (!displayed.length) return [];
+    if (h < displayed[0].time || h > displayed[displayed.length - 1].time) return [];
+    const hMs = new Date(h + 'T00:00:00').getTime();
+    const nearest = displayed.reduce((best, d) =>
+      Math.abs(new Date(d.time + 'T00:00:00').getTime() - hMs) <
+      Math.abs(new Date(best.time + 'T00:00:00').getTime() - hMs) ? d : best
+    );
+    return [nearest.time];
+  });
 
   const latest      = displayed[displayed.length - 1];
   const first       = displayed[0];
