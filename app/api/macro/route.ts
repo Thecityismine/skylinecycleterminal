@@ -10,6 +10,8 @@ export async function GET() {
     return NextResponse.json(data);
   } catch (err) {
     console.error('[/api/macro]', err);
-    return NextResponse.json({ error: 'Failed to fetch macro data' }, { status: 500 });
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[/api/macro]', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

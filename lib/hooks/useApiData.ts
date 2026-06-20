@@ -19,8 +19,12 @@ export function useApiData<T>(url: string): ApiState<T> {
     let cancelled = false;
 
     fetch(url)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      .then(async (r) => {
+        if (!r.ok) {
+          let msg = `HTTP ${r.status}`;
+          try { const b = await r.json(); if (b?.error) msg = b.error; } catch {}
+          throw new Error(msg);
+        }
         return r.json() as Promise<T>;
       })
       .then((data) => {
