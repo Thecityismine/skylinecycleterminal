@@ -42,7 +42,7 @@ function Tip({ active, payload, label }: {
 export function BTCMiniChart({ data }: { data: PricePoint[] }) {
   if (!data.length) return null;
 
-  // Strip zero/null prices and restrict to last 365 days for 52W stats
+  // Strip zero/null prices and restrict to last 365 days for 52W stats and chart display
   const cutoff = Date.now() - 365 * 86_400_000;
   const clean = data.filter((d) => d.price > 0 && new Date(d.time + 'T00:00:00').getTime() >= cutoff);
   if (!clean.length) return null;
@@ -51,8 +51,13 @@ export function BTCMiniChart({ data }: { data: PricePoint[] }) {
   const high  = Math.max(...prices);
   const low   = Math.min(...prices);
   const last  = clean[clean.length - 1].price;
-  const first = clean[0].price;
-  const isUp  = last >= first;
+
+  // True YTD: find Jan 1 of the current year in the full dataset
+  const yearStartStr = `${new Date().getFullYear()}-01-01`;
+  const allClean = data.filter((d) => d.price > 0);
+  const ytdPoint = allClean.find((d) => d.time >= yearStartStr) ?? clean[0];
+  const ytdBase  = ytdPoint.price;
+  const isUp     = last >= ytdBase;
 
   const yMin = Math.floor(low  * 0.97 / 1000) * 1000;
   const yMax = Math.ceil (high * 1.02 / 1000) * 1000;
@@ -76,7 +81,7 @@ export function BTCMiniChart({ data }: { data: PricePoint[] }) {
           <p style={{ color: 'var(--sct-muted)' }}>52W High <span style={{ color: '#35D07F' }}>${Math.round(high).toLocaleString()}</span></p>
           <p style={{ color: 'var(--sct-muted)' }}>52W Low  <span style={{ color: '#FF5C5C' }}>${Math.round(low).toLocaleString()}</span></p>
           <p style={{ color: isUp ? '#35D07F' : '#FF5C5C' }}>
-            {isUp ? '▲' : '▼'} {Math.abs(((last - first) / first) * 100).toFixed(1)}% YTD
+            {isUp ? '▲' : '▼'} {Math.abs(((last - ytdBase) / ytdBase) * 100).toFixed(1)}% YTD
           </p>
         </div>
       </div>
