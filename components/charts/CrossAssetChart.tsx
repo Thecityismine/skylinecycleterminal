@@ -95,9 +95,7 @@ type Props = {
 export function CrossAssetChart({ data, zones, activeAssets, logScale, showZones }: Props) {
   if (!data.length) return null;
 
-  const yDomain = logScale
-    ? [50, 'auto' as const]
-    : ['auto' as const, 'auto' as const];
+  const yDomain: [number | string, number | string] = logScale ? [50, 'auto'] : ['auto', 'auto'];
 
   const yTicks = logScale ? LOG_TICKS_NORM : undefined;
 
