@@ -42,8 +42,9 @@ function Tip({ active, payload, label }: {
 export function BTCMiniChart({ data }: { data: PricePoint[] }) {
   if (!data.length) return null;
 
-  // Strip zero/null prices before computing stats — CoinMetrics can return 0 as a placeholder
-  const clean = data.filter((d) => d.price > 0);
+  // Strip zero/null prices and restrict to last 365 days for 52W stats
+  const cutoff = Date.now() - 365 * 86_400_000;
+  const clean = data.filter((d) => d.price > 0 && new Date(d.time + 'T00:00:00').getTime() >= cutoff);
   if (!clean.length) return null;
 
   const prices = clean.map((d) => d.price);
