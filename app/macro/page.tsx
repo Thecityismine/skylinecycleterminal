@@ -64,7 +64,7 @@ type ChartDef = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MacroPage() {
-  const { data: macro, loading } = useApiData<MacroResponse>('/api/macro');
+  const { data: macro, loading, error } = useApiData<MacroResponse>('/api/macro');
 
   const yieldCurveSpread = macro
     ? macro.tenYear.current - macro.twoYear
@@ -155,6 +155,17 @@ export default function MacroPage() {
           : 'distribution'
         }
       />
+
+      {/* ── Error banner ───────────────────────────────────────────────────── */}
+      {error && (
+        <div
+          className="rounded-xl border px-5 py-4 text-sm"
+          style={{ backgroundColor: '#FF5C5C18', borderColor: '#FF5C5C40', color: '#FF5C5C' }}
+        >
+          <span className="font-semibold">API error:</span> {error} — Check that{' '}
+          <code className="font-mono text-xs">FRED_API_KEY</code> is set in Vercel environment variables.
+        </div>
+      )}
 
       {/* ── Stat cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-4 gap-6">
