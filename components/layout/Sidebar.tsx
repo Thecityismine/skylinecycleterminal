@@ -27,6 +27,7 @@ import {
   BarChart3,
   CircleDollarSign,
   ShieldCheck,
+  Radar,
 } from "lucide-react";
 
 type NavItem = {
@@ -56,6 +57,7 @@ const nav: (NavItem | NavSection)[] = [
     items: [
       { label: "BTC / USD",        href: "/price",                    icon: Bitcoin,          exact: true },
       { label: "ETH / USD",        href: "/price?asset=eth",          icon: Layers,           exact: true },
+      { label: "Market Regime",    href: "/price/market-regime",      icon: Radar },
       { label: "4-Year Cycle",     href: "/price/four-year-cycle",    icon: CalendarDays },
       { label: "2-Year MA",        href: "/price/two-year-ma",        icon: BarChart3 },
       { label: "Realized Price",   href: "/price/realized-price",     icon: CircleDollarSign },
