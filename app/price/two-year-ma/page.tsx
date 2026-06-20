@@ -33,6 +33,45 @@ export default async function TwoYearMAPage() {
 
   const multiplier = latestMA ? latestPrice / latestMA : null;
 
+  // Signal widget data based on price/2YMA multiple
+  const maWidget = (() => {
+    const m = multiplier;
+    if (m == null) return null;
+    let zoneLabel = '', color = '', body = '', ctx = '';
+    if (m >= 5.0) {
+      zoneLabel = 'Distribution Zone';
+      color = '#FF5C5C';
+      body = `At ${m.toFixed(2)}× the 2-Year MA, BTC is above the historical distribution band (2YMA×5). Every time price has reached this zone it has marked a major cycle top. Aggressive, systematic profit-taking is historically warranted.`;
+      ctx = 'Price above 2YMA×5 has coincided with every major BTC cycle top: 2011, 2013, 2017, and 2021 — each followed by a 70–85% drawdown.';
+    } else if (m >= 3.5) {
+      zoneLabel = 'High Risk — Approaching Top Band';
+      color = '#F97316';
+      body = `At ${m.toFixed(2)}× the 2-Year MA, BTC is significantly extended. The distribution band (5×) is within reach. Risk/reward is shifting decisively — begin taking profits in tranches on strength.`;
+      ctx = 'The final 20–30% of prior bull runs occurred in this zone. Each time it resolved with 70–80%+ corrections when the 5× band was eventually reached.';
+    } else if (m >= 2.0) {
+      zoneLabel = 'Bull Market — Elevated Premium';
+      color = '#E6B450';
+      body = `BTC is ${m.toFixed(2)}× its 2-Year MA — in a healthy bull market with a growing premium above trend. Long-term holders have significant unrealized gains. Consider partial profit-taking at key resistance levels.`;
+      ctx = 'The 2020–2021 bull run spent most of its time between 2×–5× the 2YMA. Holding through this range has historically been rewarded, but position sizing matters.';
+    } else if (m >= 1.0) {
+      zoneLabel = 'Neutral / Expansion';
+      color = '#35D07F';
+      body = `BTC is ${m.toFixed(2)}× its 2-Year MA — in the healthy expansion zone. Price is above trend but without excessive premium. This is the most comfortable zone for holding and accumulating on dips.`;
+      ctx = 'The 1×–2× range is where BTC spends the most time during bull markets and where the bulk of mid-cycle gains typically accumulate.';
+    } else {
+      zoneLabel = 'Accumulation Zone';
+      color = '#3B82F6';
+      body = `BTC is below its 2-Year MA at ${m.toFixed(2)}× — historically the strongest long-term entry zone in BTC\'s history. This level has only been reached during deep bear market bottoms.`;
+      ctx = 'Price below 2YMA has occurred near the 2015 ($150), 2019 ($3.4K), and 2022 ($16K) cycle lows — each preceded a 5–20× move.';
+    }
+    const barPos = Math.min(m / 6.0, 1) * 100;
+    return {
+      zoneLabel, color,
+      headline: `${m.toFixed(2)}× the 2-Year Moving Average`,
+      body, ctx, barPos,
+    };
+  })();
+
   const zone =
     latestMA5 != null && latestPrice > latestMA5
       ? { label: 'Distribution Zone', color: 'var(--sct-red)', desc: 'Price above 2YMA×5 — historically a cycle top signal' }
@@ -144,6 +183,74 @@ export default async function TwoYearMAPage() {
         ) : (
           <div className="h-[480px]">
             <TwoYearMAChart data={chartData} />
+          </div>
+        )}
+
+        {/* Signal interpretation widget */}
+        {maWidget && (
+          <div className="mt-5 pt-5 border-t" style={{ borderColor: 'var(--sct-border)' }}>
+            {/* Zone badge + headline */}
+            <div className="flex items-center gap-2 mb-2.5">
+              <span
+                className="text-[11px] font-semibold px-2 py-0.5 rounded"
+                style={{ backgroundColor: maWidget.color + '25', color: maWidget.color }}
+              >
+                {maWidget.zoneLabel}
+              </span>
+              <span className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
+                {maWidget.headline}
+              </span>
+            </div>
+
+            {/* Interpretation body */}
+            <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--sct-muted)' }}>
+              {maWidget.body}
+            </p>
+
+            {/* Zone bar */}
+            <div className="relative mb-1.5">
+              <div className="flex h-1.5 rounded-full overflow-hidden">
+                {/* 0–1× Accumulation */}
+                <div style={{ width: '16.7%', backgroundColor: '#3B82F6' }} />
+                {/* 1–2× Neutral */}
+                <div style={{ width: '16.7%', backgroundColor: '#35D07F' }} />
+                {/* 2–3.5× Elevated */}
+                <div style={{ width: '25.0%', backgroundColor: '#E6B450' }} />
+                {/* 3.5–5× High Risk */}
+                <div style={{ width: '25.0%', backgroundColor: '#F97316' }} />
+                {/* 5×+ Distribution */}
+                <div style={{ width: '16.6%', backgroundColor: '#FF5C5C' }} />
+              </div>
+              {/* Position marker */}
+              <div
+                className="absolute rounded-sm"
+                style={{
+                  top: '-3px', width: '3px', height: '12px',
+                  left: `${Math.min(Math.max(maWidget.barPos, 1), 99)}%`,
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#fff',
+                  boxShadow: `0 0 6px ${maWidget.color}`,
+                }}
+              />
+            </div>
+            <div
+              className="flex justify-between text-[9px] font-mono mb-4"
+              style={{ color: 'var(--sct-muted)' }}
+            >
+              <span>0×</span>
+              <span>1× 2YMA</span>
+              <span>3.5×</span>
+              <span>5× Top</span>
+              <span>6×+</span>
+            </div>
+
+            {/* Historical context note */}
+            <p
+              className="text-[11px] leading-relaxed px-2.5 py-1.5 rounded"
+              style={{ backgroundColor: maWidget.color + '12', color: maWidget.color }}
+            >
+              {maWidget.ctx}
+            </p>
           </div>
         )}
       </div>
