@@ -139,10 +139,10 @@ export default function OverviewPage() {
       </div>
 
       {/* Row 2 — Cycle score + market read */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Score gauge */}
         <div
-          className="col-span-2 rounded-xl border p-8 flex flex-col items-center justify-center gap-5 min-h-[220px]"
+          className="lg:col-span-2 rounded-xl border p-6 lg:p-8 flex flex-col items-center justify-center gap-5 min-h-[220px]"
           style={{
             backgroundColor: 'var(--sct-card)',
             borderColor: cycle ? cycle.zoneColor + '40' : 'var(--sct-border)',
