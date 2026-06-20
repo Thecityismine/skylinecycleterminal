@@ -99,9 +99,9 @@ function downsample<T>(arr: T[], max = 800): T[] {
 
 export default function PricePage() {
   const [asset,     setAsset]     = useState<'btc' | 'eth'>('btc');
-  const [timeframe, setTimeframe] = useState<Timeframe>('2Y');
+  const [timeframe, setTimeframe] = useState<Timeframe>('All');
   const [overlays,  setOverlays]  = useState<Set<string>>(new Set(['200 DMA', 'Halvings']));
-  const [logScale,  setLogScale]  = useState(false);
+  const [logScale,  setLogScale]  = useState(true);
 
   const { data: priceData, loading } = useApiData<{ prices: PricePoint[] }>(
     `/api/price?asset=${asset}&start=2010-01-01`

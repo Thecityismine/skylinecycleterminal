@@ -143,9 +143,9 @@ function buildInterpretation(
 }
 
 export default function CrossAssetPage() {
-  const [range, setRange]           = useState<Range>('2Y');
+  const [range, setRange]           = useState<Range>('All');
   const [activeAssets, setAssets]   = useState<Set<AssetKey>>(new Set(ALL_ASSETS));
-  const [logScale, setLogScale]     = useState(false);
+  const [logScale, setLogScale]     = useState(true);
   const [showZones, setShowZones]   = useState(true);
 
   const { data, loading } = useApiData<CrossAssetResponse>('/api/markets/cross-asset');

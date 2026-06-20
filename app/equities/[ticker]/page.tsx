@@ -156,8 +156,8 @@ const RANGES = [
 export default function EquityDetailPage() {
   const params   = useParams<{ ticker: string }>();
   const ticker   = (params.ticker ?? '').toUpperCase();
-  const [rangeIdx, setRangeIdx] = useState(2);
-  const [log, setLog] = useState(false);
+  const [rangeIdx, setRangeIdx] = useState(4);
+  const [log, setLog] = useState(true);
 
   const { data, loading, error } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
   const fundamentalsAvailable = data?.fundamentalsAvailable ?? true;
