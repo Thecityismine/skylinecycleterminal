@@ -205,7 +205,7 @@ export default function CrossAssetPage() {
       {/* Stat cards — one per asset */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {ALL_ASSETS.map((key) => {
-          const norm  = returns[key];
+          const norm  = returns[key] ?? null;
           const trend = trends[key] ?? 'neutral';
           const cfg   = ASSET_CONFIG[key];
           const ret   = fmtReturn(norm);
