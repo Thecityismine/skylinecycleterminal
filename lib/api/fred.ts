@@ -5,17 +5,21 @@
 export type MacroDataPoint = { date: string; value: number };
 
 export type MacroResponse = {
-  dxy:       { current: number; change1M: number; series: MacroDataPoint[] };
-  fedRate:   { current: number; series: MacroDataPoint[] };
-  cpiYoY:    number;
-  cpiSeries: MacroDataPoint[];
-  m2YoY:     number;
-  m2Series:  MacroDataPoint[];
-  tenYear:   { current: number; series: MacroDataPoint[] };
-  twoYear:   number;
-  realRate:  number;   // tenYear.current − cpiYoY
-  macroScore: number;  // 0 (bullish for BTC) → 100 (bearish for BTC)
-  fetchedAt: string;
+  dxy:              { current: number; change1M: number; series: MacroDataPoint[] };
+  fedRate:          { current: number; series: MacroDataPoint[] };
+  cpiYoY:           number;
+  cpiSeries:        MacroDataPoint[];
+  cpiYoYSeries:     MacroDataPoint[];   // historical YoY inflation rate
+  m2YoY:            number;
+  m2Series:         MacroDataPoint[];
+  tenYear:          { current: number; series: MacroDataPoint[] };
+  twoYear:          number;
+  twoYearSeries:    MacroDataPoint[];
+  yieldCurveSeries: MacroDataPoint[];   // 10Y − 2Y spread
+  realRate:         number;             // tenYear.current − cpiYoY
+  realRateSeries:   MacroDataPoint[];   // daily 10Y yield − nearest monthly CPI YoY
+  macroScore:       number;             // 0 (bullish for BTC) → 100 (bearish for BTC)
+  fetchedAt:        string;
 };
 
 async function fredGet(seriesId: string, limit: number): Promise<MacroDataPoint[]> {
@@ -83,7 +87,39 @@ export async function fetchMacroData(): Promise<MacroResponse> {
   const m2Score      = clamp(((5 - m2YoY) / 20) * 100, 0, 100);
   const macroScore   = Math.round((dxyScore + fedScore + realRateScore + m2Score) / 4);
 
-  // Downsample series to 52 points for charts (~weekly for daily series)
+  // ── Yield curve: 10Y − 2Y spread ──────────────────────────────────────────
+  const t2Map = new Map(t2Raw.map(d => [d.date, d.value]));
+  const yieldCurveRaw = t10Raw
+    .filter(d => t2Map.has(d.date))
+    .map(d => ({ date: d.date, value: +(d.value - t2Map.get(d.date)!).toFixed(3) }));
+
+  // ── Historical CPI YoY series (monthly) ────────────────────────────────────
+  const cpiYoYSeriesRaw: MacroDataPoint[] = cpiRaw.slice(12).map((d, i) => ({
+    date:  d.date,
+    value: cpiRaw[i].value !== 0
+      ? +((d.value - cpiRaw[i].value) / cpiRaw[i].value * 100).toFixed(2)
+      : 0,
+  }));
+  const cpiYoYByMonth = new Map(cpiYoYSeriesRaw.map(d => [d.date.slice(0, 7), d.value]));
+
+  // ── Real rate: 10Y yield − nearest monthly CPI YoY (historical) ───────────
+  function nearestCpiYoY(dateStr: string): number | null {
+    for (let offset = 0; offset < 6; offset++) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setMonth(d.getMonth() - offset);
+      const key = d.toISOString().slice(0, 7);
+      if (cpiYoYByMonth.has(key)) return cpiYoYByMonth.get(key)!;
+    }
+    return null;
+  }
+  const realRateRaw = t10Raw
+    .map(d => {
+      const c = nearestCpiYoY(d.date);
+      return c != null ? { date: d.date, value: +(d.value - c).toFixed(3) } : null;
+    })
+    .filter((d): d is MacroDataPoint => d != null);
+
+  // ── Downsample daily series to ~52 weekly points for chart performance ─────
   function downsample(arr: MacroDataPoint[], target = 52): MacroDataPoint[] {
     if (arr.length <= target) return arr;
     const step = Math.floor(arr.length / target);
@@ -91,16 +127,20 @@ export async function fetchMacroData(): Promise<MacroResponse> {
   }
 
   return {
-    dxy:       { current: dxyCurrent, change1M: dxyChange1M, series: downsample(dxyRaw) },
-    fedRate:   { current: fedCurrent, series: fedRaw },          // monthly, already small
+    dxy:              { current: dxyCurrent, change1M: dxyChange1M, series: downsample(dxyRaw) },
+    fedRate:          { current: fedCurrent, series: fedRaw },
     cpiYoY,
-    cpiSeries: cpiRaw,
+    cpiSeries:        cpiRaw,
+    cpiYoYSeries:     cpiYoYSeriesRaw,
     m2YoY,
-    m2Series:  m2Raw,
-    tenYear:   { current: tenYearCurrent, series: downsample(t10Raw) },
-    twoYear:   twoYearCurrent,
+    m2Series:         m2Raw,
+    tenYear:          { current: tenYearCurrent, series: downsample(t10Raw) },
+    twoYear:          twoYearCurrent,
+    twoYearSeries:    downsample(t2Raw),
+    yieldCurveSeries: downsample(yieldCurveRaw),
     realRate,
+    realRateSeries:   downsample(realRateRaw),
     macroScore,
-    fetchedAt: new Date().toISOString(),
+    fetchedAt:        new Date().toISOString(),
   };
 }
