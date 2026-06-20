@@ -42,11 +42,16 @@ function Tip({ active, payload, label }: {
 export function BTCMiniChart({ data }: { data: PricePoint[] }) {
   if (!data.length) return null;
 
-  const high = Math.max(...data.map((d) => d.price));
-  const low  = Math.min(...data.map((d) => d.price));
-  const last = data[data.length - 1].price;
-  const first = data[0].price;
-  const isUp = last >= first;
+  // Strip zero/null prices before computing stats — CoinMetrics can return 0 as a placeholder
+  const clean = data.filter((d) => d.price > 0);
+  if (!clean.length) return null;
+
+  const prices = clean.map((d) => d.price);
+  const high  = Math.max(...prices);
+  const low   = Math.min(...prices);
+  const last  = clean[clean.length - 1].price;
+  const first = clean[0].price;
+  const isUp  = last >= first;
 
   const yMin = Math.floor(low  * 0.97 / 1000) * 1000;
   const yMax = Math.ceil (high * 1.02 / 1000) * 1000;
@@ -76,7 +81,7 @@ export function BTCMiniChart({ data }: { data: PricePoint[] }) {
       </div>
 
       <ResponsiveContainer width="100%" height={280}>
-        <AreaChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <AreaChart data={clean} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="btc-grad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%"   stopColor="#F7931A" stopOpacity={0.25} />
