@@ -29,6 +29,8 @@ import {
   ShieldCheck,
   Radar,
   Scale,
+  TrendingDown,
+  Briefcase,
 } from "lucide-react";
 
 type NavItem = {
@@ -95,6 +97,16 @@ const nav: (NavItem | NavSection)[] = [
       { label: "CPI / Inflation",  href: "/macro?chart=cpi",    icon: TrendingUp },
       { label: "M2 Liquidity",     href: "/macro?chart=m2",     icon: Waves },
       { label: "10Y Yield",        href: "/macro?chart=yield",  icon: LineChart },
+    ],
+  },
+  {
+    section: "EQUITIES",
+    items: [
+      { label: "Watchlist",     href: "/equities",          icon: Briefcase,    exact: true },
+      { label: "NVDA",          href: "/equities/NVDA",     icon: TrendingDown },
+      { label: "COIN",          href: "/equities/COIN",     icon: TrendingDown },
+      { label: "MSTR",          href: "/equities/MSTR",     icon: TrendingDown },
+      { label: "SPY",           href: "/equities/SPY",      icon: TrendingDown },
     ],
   },
   {
