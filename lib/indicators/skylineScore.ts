@@ -28,6 +28,8 @@ export type ExtraData = {
   mvrvRatio?:       number | null;
   stablecoinSupply?: number | null;   // USD total from DeFiLlama
   hashratePoints?:  Array<{ timestamp: number; avgHashrate: number }> | null;
+  splyCur?:         number | null;    // current BTC supply (for Reserve Risk)
+  splyAct1yr?:      number | null;    // BTC active in last 1yr (for Reserve Risk)
 };
 
 // ─── Zone config ─────────────────────────────────────────────────────────────
@@ -292,6 +294,50 @@ function hashRateRibbonIndicator(
   };
 }
 
+// ─── Indicator 11: Reserve Risk ───────────────────────────────────────────────
+// Proxy: (active supply ratio × price vs 200d MA)
+// Low active ratio (everyone HODLing) + low price = low risk (accumulate)
+// High active ratio (people selling) + elevated price = high risk (distribute)
+
+function reserveRiskIndicator(
+  prices:     number[],
+  splyCur:    number | null,
+  splyAct1yr: number | null,
+): IndicatorResult {
+  if (splyCur == null || splyAct1yr == null || splyCur === 0) {
+    return unavailable('Reserve Risk', 'CoinMetrics');
+  }
+
+  const ma200       = simpleMA(prices, 200);
+  const currentPrice = prices[prices.length - 1];
+  if (ma200 == null || currentPrice == null || ma200 === 0) {
+    return unavailable('Reserve Risk', 'CoinMetrics');
+  }
+
+  const dormantRatio = (splyCur - splyAct1yr) / splyCur; // fraction HODLing >1yr
+  const activeRatio  = 1 - dormantRatio;                  // fraction recently transacted
+  const priceMult    = currentPrice / ma200;              // how elevated price is vs avg
+
+  // rrProxy is high when price is elevated AND fewer people are HODLing
+  const rrProxy = activeRatio * priceMult;
+
+  // Calibrated range:
+  // ~0.30 = deep accumulation (lots HODLing, price below avg)
+  // ~1.80 = late-cycle distribution (people selling into elevated price)
+  const score = normalize(rrProxy, 0.30, 1.80);
+
+  return {
+    name:      'Reserve Risk',
+    score,
+    rawValue:  dormantRatio,
+    rawLabel:  `${(dormantRatio * 100).toFixed(1)}% supply dormant >1yr`,
+    signal:    signalLabel(score),
+    source:    'CoinMetrics',
+    weight:    10,
+    available: true,
+  };
+}
+
 // ─── Composite score ──────────────────────────────────────────────────────────
 
 export function computeSkylineScore(
@@ -315,6 +361,7 @@ export function computeSkylineScore(
     activeAddressesIndicator(adrVals),
     stablecoinIndicator(extra.stablecoinSupply ?? null, btcMC),
     hashRateRibbonIndicator(extra.hashratePoints ?? null),
+    reserveRiskIndicator(prices, extra.splyCur ?? null, extra.splyAct1yr ?? null),
   ];
 
   // Equal-weight average over only available indicators

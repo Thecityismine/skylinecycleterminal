@@ -100,6 +100,65 @@ export async function fetchBTCRealizedPrice(startTime = '2012-01-01'): Promise<R
   }
 }
 
+// Reserve Risk data — PriceUSD + SplyCur + SplyAct1yr (active supply last 1yr)
+// SplyAct1yr may be paywalled; falls back to price-only with null supply fields
+export type ReserveRiskRaw = {
+  time: string;
+  price: number | null;
+  splyCur: number | null;
+  splyAct1yr: number | null;
+};
+
+export async function fetchReserveRiskData(startTime = '2012-01-01'): Promise<ReserveRiskRaw[]> {
+  const all: ReserveRiskRaw[] = [];
+  let nextPageToken: string | null = null;
+
+  try {
+    do {
+      const params: Record<string, string> = {
+        assets: 'btc', metrics: 'PriceUSD,SplyCur,SplyAct1yr', frequency: '1d',
+        start_time: startTime, page_size: '10000',
+      };
+      if (nextPageToken) params.next_page_token = nextPageToken;
+      const json = await coinmetricsGet(params);
+      for (const d of json.data ?? []) {
+        all.push({
+          time:       d.time.slice(0, 10),
+          price:      d.PriceUSD    != null ? Number(d.PriceUSD)    : null,
+          splyCur:    d.SplyCur     != null ? Number(d.SplyCur)     : null,
+          splyAct1yr: d.SplyAct1yr  != null ? Number(d.SplyAct1yr)  : null,
+        });
+      }
+      nextPageToken = (json as any).next_page_token ?? null;
+    } while (nextPageToken);
+
+    return all;
+  } catch {
+    // SplyAct1yr likely paywalled — return price-only rows
+    if (all.length > 0) return all;
+    const prices = await fetchBTCDailyPrice(startTime);
+    return prices.map((p) => ({ time: p.time, price: p.price, splyCur: null, splyAct1yr: null }));
+  }
+}
+
+// Lightweight fetch of just the latest SplyCur + SplyAct1yr for the Skyline Score
+// Returns null if unavailable (paywalled or network error)
+export async function fetchCurrentLTHData(): Promise<{ splyCur: number; splyAct1yr: number } | null> {
+  try {
+    const startDate = new Date(Date.now() - 5 * 86_400_000).toISOString().slice(0, 10);
+    const json = await coinmetricsGet({
+      assets: 'btc', metrics: 'SplyCur,SplyAct1yr', frequency: '1d',
+      start_time: startDate, page_size: '5',
+    });
+    const rows = (json.data ?? []).reverse();
+    const row  = rows.find((d) => d.SplyCur != null && d.SplyAct1yr != null);
+    if (!row) return null;
+    return { splyCur: Number(row.SplyCur), splyAct1yr: Number(row.SplyAct1yr) };
+  } catch {
+    return null;
+  }
+}
+
 // Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
 export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnChainPoint[]> {
   // Only request metrics known to be in the free Community API

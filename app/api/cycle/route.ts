@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchOnChainMetrics } from '@/lib/api/coinmetrics';
+import { fetchOnChainMetrics, fetchCurrentLTHData } from '@/lib/api/coinmetrics';
 import { fetchFearGreed } from '@/lib/api/feargreed';
 import { fetchMVRV } from '@/lib/api/cryptoquant';
 import { fetchStablecoinSupply } from '@/lib/api/defillama';
@@ -11,18 +11,21 @@ export const revalidate = 86400;
 
 export async function GET() {
   try {
-    const [onChain, fg, mvrvData, stablecoin, hashrate] = await Promise.all([
+    const [onChain, fg, mvrvData, stablecoin, hashrate, lthData] = await Promise.all([
       fetchOnChainMetrics('2022-01-01'),
       fetchFearGreed(),
       fetchMVRV(),             // null → proxy fallback in score engine
       fetchStablecoinSupply(), // null → indicator marked unavailable
       fetchHashrate(),         // null → indicator marked unavailable
+      fetchCurrentLTHData(),   // null → Reserve Risk marked unavailable
     ]);
 
     const result = computeSkylineScore(onChain, fg.value, {
       mvrvRatio:        mvrvData?.mvrv ?? null,
       stablecoinSupply: stablecoin?.totalCirculating ?? null,
       hashratePoints:   hashrate?.points ?? null,
+      splyCur:          lthData?.splyCur    ?? null,
+      splyAct1yr:       lthData?.splyAct1yr ?? null,
     });
 
     return NextResponse.json(result);
