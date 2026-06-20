@@ -64,6 +64,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Realized Price",   href: "/price/realized-price",     icon: CircleDollarSign },
       { label: "Moving Averages",  href: "/price?view=ma",            icon: LineChart,         exact: true },
       { label: "Ratio Charts",    href: "/price/ratios",             icon: BarChart2 },
+      { label: "Weekly SMA",     href: "/price/weekly-sma",         icon: TrendingUp },
     ],
   },
   {
