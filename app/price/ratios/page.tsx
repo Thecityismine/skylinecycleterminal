@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import useSWR from 'swr';
+import { useApiData } from '@/lib/hooks/useApiData';
 import type { RatioKey, RatioData, RatioSeries } from '@/lib/api/ratios';
 import { RatioChart } from '@/components/charts/RatioChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -42,9 +42,7 @@ export default function RatiosPage() {
   const [range, setRange]     = useState<Range>('All');
   const [logScale, setLog]    = useState(true);
 
-  const { data, isLoading } = useSWR<RatioData>('/api/markets/ratios', fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data, loading: isLoading } = useApiData<RatioData>('/api/markets/ratios');
 
   const cfg = RATIOS.find((r) => r.key === active)!;
   const series: RatioSeries | null = data ? data[active] : null;
