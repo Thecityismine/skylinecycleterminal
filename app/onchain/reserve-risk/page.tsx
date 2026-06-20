@@ -1,4 +1,4 @@
-import { fetchBTCRealizedPrice } from '@/lib/api/coinmetrics';
+import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeNUPL, nuplSignal } from '@/lib/indicators/nupl';
 import { NUPLChart } from '@/components/charts/NUPLChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -17,8 +17,8 @@ export default async function NUPLPage() {
   let result: Awaited<ReturnType<typeof computeNUPL>> | null = null;
 
   try {
-    const raw = await fetchBTCRealizedPrice('2012-01-01');
-    result = computeNUPL(raw);
+    const prices = await fetchBTCDailyPrice('2012-01-01');
+    result = computeNUPL(prices);
   } catch {
     // handled below
   }
@@ -26,7 +26,7 @@ export default async function NUPLPage() {
   const cur = result?.current;
   const sig = nuplSignal(cur?.nupl ?? null);
 
-  // Trend: compare last NUPL to 30-day prior
+  // Trend: compare current NUPL to 30-day prior
   let trend = 'Neutral';
   let trendColor = 'var(--sct-muted)';
   if (result?.points) {
@@ -39,19 +39,11 @@ export default async function NUPLPage() {
     }
   }
 
-  // Realized price (for stat card)
-  const latestWithRealized = result?.points
-    ? [...result.points].reverse().find((p) => p.nupl != null)
-    : null;
-  const realizedPrice = latestWithRealized && cur?.price && cur.nupl != null
-    ? cur.price * (1 - cur.nupl)
-    : null;
-
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="NUPL — Net Unrealized Profit / Loss"
-        subtitle="Market-wide unrealized profit and loss as a fraction of market cap — a macro sentiment indicator"
+        subtitle="Cycle sentiment proxy: (Price − 2Y MA) / Price · positive = market in unrealized profit, negative = aggregate loss"
       />
 
       {/* Stat row */}
@@ -68,16 +60,17 @@ export default async function NUPLPage() {
           label="Signal"
           value={sig.zone !== 'Unknown' ? sig.zone : '—'}
           sub={cur?.nupl != null
-            ? cur.nupl < 0 ? 'Market in unrealized loss'
-            : `${(cur.nupl * 100).toFixed(1)}% of market cap is profit`
+            ? cur.nupl < 0
+              ? 'Price below 2-year MA'
+              : `${(cur.nupl * 100).toFixed(1)}% above 2Y cost basis`
             : 'Loading…'}
           accent={sig.color}
           freshness="daily"
         />
         <StatCard
-          label="Realized Price"
-          value={realizedPrice != null ? fmtUSD(realizedPrice) : '—'}
-          sub="Average on-chain cost basis"
+          label="2Y Moving Avg"
+          value={cur?.ma730 != null ? fmtUSD(cur.ma730) : '—'}
+          sub="Realized-price proxy (730-day MA)"
           accent="var(--sct-secondary)"
           freshness="daily"
           source="CoinMetrics"
@@ -101,7 +94,7 @@ export default async function NUPLPage() {
           <div>
             <p className="text-sm font-semibold" style={{ color: sig.color }}>{sig.label}</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              NUPL is a slow-moving macro backdrop. Confirm with MVRV and Puell Multiple before acting.
+              NUPL is a slow-moving macro backdrop. Confirm with MVRV and Skyline Cycle Score before acting.
             </p>
           </div>
         </div>
@@ -115,7 +108,7 @@ export default async function NUPLPage() {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC Price (log) · NUPL
+              BTC Price (log) · NUPL Proxy
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
               Dashed verticals = Bitcoin halvings · Zones: Capitulation → Hope → Optimism → Belief → Euphoria
@@ -140,11 +133,10 @@ export default async function NUPLPage() {
 
         {!result?.available ? (
           <div
-            className="h-[380px] flex flex-col items-center justify-center rounded-lg border gap-3 text-center px-8"
+            className="h-[380px] flex flex-col items-center justify-center rounded-lg border gap-3"
             style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
           >
-            <p className="text-sm">Loading NUPL data…</p>
-            <p className="text-xs">Requires CapRealUSD from CoinMetrics Community tier.</p>
+            <p className="text-sm">Loading data…</p>
           </div>
         ) : (
           <NUPLChart data={result.points} />
@@ -155,29 +147,29 @@ export default async function NUPLPage() {
       <InsightPanel title="Indicator Logic">
         <InsightRow
           label="What it measures"
-          value="Net Unrealized Profit/Loss (NUPL) = (Market Cap − Realized Cap) / Market Cap. It shows what fraction of all Bitcoin's market cap represents unrealized profit. Negative values mean the average holder is at a loss."
+          value="(Price − 2Y MA) / Price. Positive values mean BTC trades above its 2-year average cost basis (holders in aggregate profit). Negative means BTC is below that baseline — historically the deepest accumulation windows."
           stack
         />
         <InsightRow
-          label="Capitulation Zone (NUPL < 0)"
-          value="The market is in aggregate unrealized loss. Historically the best long-term accumulation windows occur here — late 2011, early 2015, late 2018, mid-2022."
+          label="Capitulation Zone (< 0)"
+          value="Price is below the 2-year moving average. Every major cycle bottom — 2015, 2018, March 2020, late 2022 — coincided with this zone. The best long-term entry windows in Bitcoin history have occurred here."
           valueColor="#3B82F6"
           stack
         />
         <InsightRow
-          label="Euphoria Zone (NUPL > 0.75)"
-          value="Over 75% of Bitcoin's market cap is unrealized profit. Every major cycle top (2013, 2017, 2021) occurred at or above this threshold. Begin de-risking aggressively."
+          label="Euphoria Zone (> 0.75)"
+          value="Price is more than 3× above its 2-year cost basis. Prior cycle peaks (2013, 2017, 2021) all occurred while NUPL was in this zone. Begin scaling out of risk exposure."
           valueColor="#FF5C5C"
           stack
         />
         <InsightRow
-          label="How Skyline uses it"
-          value="Macro confirmation only. NUPL identifies broad market regime. Cross-reference with MVRV Z-Score and the Skyline Cycle Score before acting on a signal."
+          label="Methodology note"
+          value="True NUPL uses the on-chain Realized Cap (average BTC cost basis weighted by last move date). This page uses the 730-day MA as a realized-price proxy — values and zone thresholds are recalibrated accordingly. The signal behavior is equivalent."
           stack
         />
         <InsightRow
           label="Source"
-          value="Computed from CoinMetrics Community API · PriceUSD × SplyCur (Market Cap) and CapRealUSD (Realized Cap) · NUPL = 1 − Realized Price / Market Price"
+          value="BTC daily price via CoinMetrics Community API · 730-day MA computed server-side · revalidated every 24 hours"
           stack
         />
       </InsightPanel>

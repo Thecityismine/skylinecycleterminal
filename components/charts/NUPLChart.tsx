@@ -7,6 +7,9 @@ import {
 import type { NUPLPoint } from '@/lib/indicators/nupl';
 import { nuplSignal } from '@/lib/indicators/nupl';
 
+// NUPLPoint includes price but NOT ma730 (computed server-side, not passed individually)
+// We render price in top panel, nupl in bottom panel
+
 type Props = { data: NUPLPoint[] };
 
 const YEAR_TICKS = Array.from({ length: 15 }, (_, i) =>
@@ -20,13 +23,12 @@ const HALVINGS = [
   { ts: new Date('2024-04-19').getTime() },
 ];
 
-// Colored zone bands for the NUPL panel
 const NUPL_BANDS = [
-  { y1: -1,   y2: 0,    fill: 'rgba(59,130,246,0.18)',  label: 'Capitulation' },
-  { y1: 0,    y2: 0.25, fill: 'rgba(53,208,127,0.12)',  label: 'Hope'         },
-  { y1: 0.25, y2: 0.50, fill: 'rgba(163,230,53,0.10)',  label: 'Optimism'     },
-  { y1: 0.50, y2: 0.75, fill: 'rgba(230,180,80,0.12)',  label: 'Belief'       },
-  { y1: 0.75, y2: 1.1,  fill: 'rgba(255,92,92,0.18)',   label: 'Euphoria'     },
+  { y1: -1,   y2: 0,    fill: 'rgba(59,130,246,0.18)'  },
+  { y1: 0,    y2: 0.35, fill: 'rgba(53,208,127,0.12)'  },
+  { y1: 0.35, y2: 0.60, fill: 'rgba(163,230,53,0.10)'  },
+  { y1: 0.60, y2: 0.75, fill: 'rgba(230,180,80,0.12)'  },
+  { y1: 0.75, y2: 1.1,  fill: 'rgba(255,92,92,0.18)'   },
 ];
 
 function fmtPrice(v: number): string {
@@ -109,15 +111,12 @@ export function NUPLChart({ data }: Props) {
           <ComposedChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
 
-            {/* Zone fills */}
             {NUPL_BANDS.map((b) => (
               <ReferenceArea key={b.y1} y1={b.y1} y2={b.y2} fill={b.fill} stroke="none" />
             ))}
 
-            {/* Zero line */}
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.25)" strokeDasharray="4 4" />
 
-            {/* Halving markers */}
             {HALVINGS.map((h) => (
               <ReferenceLine key={h.ts} x={h.ts} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 5" />
             ))}
@@ -128,7 +127,7 @@ export function NUPLChart({ data }: Props) {
               tick={{ fill: 'var(--sct-muted)', fontSize: 11 }}
               axisLine={{ stroke: 'var(--sct-border)' }} tickLine={false} />
             <YAxis domain={[-0.5, 1.0]}
-              ticks={[-0.25, 0, 0.25, 0.50, 0.75]}
+              ticks={[-0.25, 0, 0.35, 0.60, 0.75]}
               tickFormatter={(v) => v.toFixed(2)}
               tick={{ fill: 'var(--sct-muted)', fontSize: 10 }}
               axisLine={{ stroke: 'var(--sct-border)' }} tickLine={false} width={52} />
