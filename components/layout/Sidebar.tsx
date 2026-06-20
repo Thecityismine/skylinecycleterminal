@@ -54,6 +54,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Cycle Model",      href: "/cycle#model",    icon: TrendingUp },
       { label: "Historical Peaks",   href: "/cycle#history",         icon: History },
       { label: "Halving Cycles",    href: "/price/halving-cycles",  icon: CalendarDays },
+      { label: "Benner Cycle",      href: "/price/benner-cycle",    icon: History },
     ],
   },
   {
