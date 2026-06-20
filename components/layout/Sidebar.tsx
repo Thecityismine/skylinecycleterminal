@@ -50,7 +50,8 @@ const nav: (NavItem | NavSection)[] = [
     items: [
       { label: "Skyline Score",    href: "/cycle",          icon: Activity },
       { label: "Cycle Model",      href: "/cycle#model",    icon: TrendingUp },
-      { label: "Historical Peaks", href: "/cycle#history",  icon: History },
+      { label: "Historical Peaks",   href: "/cycle#history",         icon: History },
+      { label: "Halving Cycles",    href: "/price/halving-cycles",  icon: CalendarDays },
     ],
   },
   {
