@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from 'react';
 import { useApiData } from '@/lib/hooks/useApiData';
@@ -264,12 +264,12 @@ export default function PricePage() {
       {/* RSI + MACD sub-panels */}
       {loading || !displayed.length
         ? (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
             <ChartSkeleton height="h-[170px]" />
             <ChartSkeleton height="h-[170px]" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
             <RSIPanel  data={displayed} />
             <MACDPanel data={displayed} />
           </div>
@@ -278,3 +278,4 @@ export default function PricePage() {
     </div>
   );
 }
+

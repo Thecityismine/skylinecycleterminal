@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -58,7 +58,7 @@ export default function DominancePage() {
       />
 
       {/* Stat row */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="BTC Dominance"
           value={cur ? `${cur.btcDominance.toFixed(1)}%` : '—'}
@@ -102,7 +102,7 @@ export default function DominancePage() {
       </div>
 
       {/* Charts — 3 col */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {[
           {
             title:   'BTC Share (vs BTC + ETH)',
@@ -154,7 +154,7 @@ export default function DominancePage() {
       </div>
 
       {/* Insight panels */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <InsightPanel title="Structure Read">
           <InsightRow label="BTC Dominance"     value={cur ? `${cur.btcDominance.toFixed(1)}%` : '—'} valueColor="#F7931A" />
           <InsightRow label="ETH Dominance"     value={cur ? `${cur.ethDominance.toFixed(1)}%` : '—'} valueColor="#627EEA" />
@@ -177,3 +177,4 @@ export default function DominancePage() {
     </div>
   );
 }
+

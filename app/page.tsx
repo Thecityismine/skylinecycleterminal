@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -94,7 +94,7 @@ export default function OverviewPage() {
       />
 
       {/* Row 1 — Key stats */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="Bitcoin"
           value={market ? fmtUSD(market.btcPrice) : '$—'}
@@ -139,7 +139,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Row 2 — Cycle score + market read */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Score gauge */}
         <div
           className="col-span-2 rounded-xl border p-8 flex flex-col items-center justify-center gap-5 min-h-[220px]"
@@ -231,7 +231,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Row 3 — Sub-scores */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="On-Chain Score"
           value={onChainScore != null ? `${onChainScore}` : '—'}
@@ -278,3 +278,4 @@ export default function OverviewPage() {
     </div>
   );
 }
+

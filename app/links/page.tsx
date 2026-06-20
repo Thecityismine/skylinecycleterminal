@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/dashboard/PageHeader";
+﻿import { PageHeader } from "@/components/dashboard/PageHeader";
 import { ExternalLink } from "lucide-react";
 
 const toolGroups = [
@@ -61,7 +61,7 @@ export default function LinksPage() {
           <p className="text-xs font-medium tracking-widest uppercase mb-4" style={{ color: "var(--sct-muted)" }}>
             {group.group}
           </p>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {group.tools.map((tool) => (
               <a
                 key={tool.name}
@@ -96,3 +96,4 @@ export default function LinksPage() {
     </div>
   );
 }
+

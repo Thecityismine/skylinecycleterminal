@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -168,7 +168,7 @@ export default function MacroPage() {
       )}
 
       {/* ── Stat cards ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="DXY Index"
           value={macro ? fmt(macro.dxy.current, 1) : '—'}
@@ -215,7 +215,7 @@ export default function MacroPage() {
       </div>
 
       {/* ── Second stat row ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="CPI YoY"
           value={macro ? `${fmt(macro.cpiYoY)}%` : '—'}
@@ -256,7 +256,7 @@ export default function MacroPage() {
       </div>
 
       {/* ── Macro score gauge + regime panel ───────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <div
           className="col-span-2 rounded-xl border p-8 flex flex-col items-center justify-center gap-4"
           style={{
@@ -327,7 +327,7 @@ export default function MacroPage() {
       </div>
 
       {/* ── Chart grid — 3 × 2 ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {CHARTS.map(c => (
           <div
             key={c.id}
@@ -358,3 +358,4 @@ export default function MacroPage() {
     </div>
   );
 }
+

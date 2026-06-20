@@ -1,5 +1,7 @@
 "use client";
 
+import { Menu } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useApiData } from '@/lib/hooks/useApiData';
 import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
 
@@ -25,7 +27,7 @@ function fmtChange(n: number): string {
   return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
 }
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { data: market } = useApiData<MarketSnapshot>('/api/market');
   const { data: cycle }  = useApiData<CycleScoreResult>('/api/cycle');
 
@@ -64,10 +66,25 @@ export function Header() {
         borderColor: 'var(--sct-border)',
       }}
     >
-      {/* Left: live price tickers */}
-      <div className="flex items-center gap-6">
-        {tickers.map((t) => (
-          <div key={t.label} className="flex items-center gap-2">
+      {/* Left: hamburger (mobile) + live price tickers */}
+      <div className="flex items-center gap-3 md:gap-6">
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 -ml-2 rounded-md transition-colors"
+          style={{ color: 'var(--sct-muted)' }}
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+        {tickers.map((t, i) => (
+          <div
+            key={t.label}
+            className={cn(
+              "flex items-center gap-2",
+              // BTC always visible; ETH + BTC.D hidden on small screens
+              i > 0 ? "hidden sm:flex" : "flex"
+            )}
+          >
             <span className="text-xs font-medium tracking-wider" style={{ color: 'var(--sct-muted)' }}>
               {t.label}
             </span>
@@ -88,7 +105,7 @@ export function Header() {
 
       {/* Right: F&G + regime badge + status dot */}
       <div className="flex items-center gap-5">
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <span className="text-xs tracking-wider" style={{ color: 'var(--sct-muted)' }}>
             F&amp;G
           </span>

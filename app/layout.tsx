@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
+import { LayoutShell } from "@/components/layout/LayoutShell";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,16 +27,7 @@ export default function RootLayout({
         className="h-screen overflow-hidden"
         style={{ backgroundColor: "var(--sct-bg)" }}
       >
-        {/* Fixed sidebar */}
-        <Sidebar />
-
-        {/* Main column — offset by sidebar width */}
-        <div className="flex flex-col h-screen ml-[260px]">
-          <Header />
-          <main className="flex-1 overflow-y-auto p-8">
-            {children}
-          </main>
-        </div>
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   );

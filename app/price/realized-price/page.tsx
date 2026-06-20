@@ -1,4 +1,4 @@
-import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
 import { RealizedPriceChart } from '@/components/charts/RealizedPriceChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -82,7 +82,7 @@ export default async function RealizedPricePage() {
       />
 
       {/* Stat row */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="BTC Price"
           value={fmtUSD(currentPrice)}
@@ -138,7 +138,7 @@ export default async function RealizedPricePage() {
       />
 
       {/* Insight panels */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <InsightPanel title="Current Signal">
           <InsightRow label="BTC Price"     value={fmtUSD(currentPrice)}                valueColor="var(--sct-btc)" />
           <InsightRow label="200-Week MA"   value={ma200w ? fmtUSD(ma200w) : '—'}        valueColor="#E879F9" />
@@ -173,3 +173,4 @@ export default async function RealizedPricePage() {
     </div>
   );
 }
+

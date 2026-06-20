@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import {
   LayoutDashboard,
   Activity,
@@ -44,54 +45,54 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "CYCLE",
     items: [
-      { label: "Skyline Score", href: "/cycle", icon: Activity },
-      { label: "Cycle Model", href: "/cycle#model", icon: TrendingUp },
-      { label: "Historical Peaks", href: "/cycle#history", icon: History },
+      { label: "Skyline Score",    href: "/cycle",          icon: Activity },
+      { label: "Cycle Model",      href: "/cycle#model",    icon: TrendingUp },
+      { label: "Historical Peaks", href: "/cycle#history",  icon: History },
     ],
   },
   {
     section: "PRICE",
     items: [
-      { label: "BTC / USD", href: "/price", icon: Bitcoin, exact: true },
-      { label: "ETH / USD", href: "/price?asset=eth", icon: Layers, exact: true },
-      { label: "4-Year Cycle",    href: "/price/four-year-cycle",  icon: CalendarDays },
-      { label: "2-Year MA",       href: "/price/two-year-ma",      icon: BarChart3 },
-      { label: "Realized Price",  href: "/price/realized-price",   icon: CircleDollarSign },
-      { label: "Moving Averages", href: "/price?view=ma",          icon: LineChart, exact: true },
+      { label: "BTC / USD",        href: "/price",                    icon: Bitcoin,          exact: true },
+      { label: "ETH / USD",        href: "/price?asset=eth",          icon: Layers,           exact: true },
+      { label: "4-Year Cycle",     href: "/price/four-year-cycle",    icon: CalendarDays },
+      { label: "2-Year MA",        href: "/price/two-year-ma",        icon: BarChart3 },
+      { label: "Realized Price",   href: "/price/realized-price",     icon: CircleDollarSign },
+      { label: "Moving Averages",  href: "/price?view=ma",            icon: LineChart,         exact: true },
     ],
   },
   {
     section: "ON-CHAIN",
     items: [
-      { label: "MVRV Z-Score", href: "/onchain", icon: Zap },
-      { label: "Puell Multiple", href: "/onchain?metric=puell", icon: Cpu },
-      { label: "NVT Signal", href: "/onchain?metric=nvt", icon: Network },
-      { label: "Active Addresses", href: "/onchain?metric=addresses", icon: Users },
+      { label: "MVRV Z-Score",      href: "/onchain",                icon: Zap },
+      { label: "Puell Multiple",    href: "/onchain?metric=puell",   icon: Cpu },
+      { label: "NVT Signal",        href: "/onchain?metric=nvt",     icon: Network },
+      { label: "Active Addresses",  href: "/onchain?metric=addresses", icon: Users },
     ],
   },
   {
     section: "MARKET STRUCTURE",
     items: [
-      { label: "BTC Dominance", href: "/dominance", icon: PieChart },
-      { label: "ETH Dominance", href: "/dominance?asset=eth", icon: PieChart },
-      { label: "Total Market Cap", href: "/dominance?view=total", icon: BarChart2 },
+      { label: "BTC Dominance",    href: "/dominance",              icon: PieChart },
+      { label: "ETH Dominance",    href: "/dominance?asset=eth",    icon: PieChart },
+      { label: "Total Market Cap", href: "/dominance?view=total",   icon: BarChart2 },
     ],
   },
   {
     section: "MACRO",
     items: [
-      { label: "DXY", href: "/macro", icon: DollarSign },
-      { label: "Fed Funds Rate", href: "/macro?chart=fed", icon: Landmark },
-      { label: "CPI / Inflation", href: "/macro?chart=cpi", icon: TrendingUp },
-      { label: "M2 Liquidity", href: "/macro?chart=m2", icon: Waves },
-      { label: "10Y Yield", href: "/macro?chart=yield", icon: LineChart },
+      { label: "DXY",              href: "/macro",              icon: DollarSign },
+      { label: "Fed Funds Rate",   href: "/macro?chart=fed",    icon: Landmark },
+      { label: "CPI / Inflation",  href: "/macro?chart=cpi",    icon: TrendingUp },
+      { label: "M2 Liquidity",     href: "/macro?chart=m2",     icon: Waves },
+      { label: "10Y Yield",        href: "/macro?chart=yield",  icon: LineChart },
     ],
   },
   {
     section: "TOOLS",
     items: [
-      { label: "External Links", href: "/links", icon: ExternalLink },
-      { label: "Methodology", href: "/methodology", icon: BookOpen },
+      { label: "External Links", href: "/links",       icon: ExternalLink },
+      { label: "Methodology",    href: "/methodology", icon: BookOpen },
     ],
   },
 ];
@@ -100,9 +101,16 @@ function isSection(entry: NavItem | NavSection): entry is NavSection {
   return "section" in entry;
 }
 
-function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+function NavLink({
+  item,
+  pathname,
+  onClick,
+}: {
+  item: NavItem;
+  pathname: string;
+  onClick?: () => void;
+}) {
   const hrefBase = item.href.split("?")[0].split("#")[0];
-
   const active =
     hrefBase === "/"
       ? pathname === "/"
@@ -113,6 +121,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
   return (
     <Link
       href={item.href}
+      onClick={onClick}
       className={cn(
         "flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all duration-150 group relative",
         active
@@ -137,20 +146,33 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
   );
 }
 
-export function Sidebar() {
+type SidebarProps = {
+  isOpen:  boolean;
+  onClose: () => void;
+};
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen w-[260px] z-40 flex flex-col border-r overflow-hidden"
+      className={cn(
+        // Base: fixed, full height, slide via transform
+        "fixed left-0 top-0 h-screen w-[260px] z-40 flex flex-col border-r overflow-hidden",
+        "transition-transform duration-300 ease-in-out",
+        // Mobile: hidden by default, slide in when open
+        isOpen ? "translate-x-0" : "-translate-x-full",
+        // Desktop: always visible, ignore isOpen
+        "lg:translate-x-0",
+      )}
       style={{
         backgroundColor: "var(--sct-panel)",
         borderColor: "var(--sct-border)",
       }}
     >
-      {/* Brand */}
+      {/* Brand + mobile close */}
       <div
-        className="h-16 flex items-center px-5 border-b shrink-0"
+        className="h-16 flex items-center justify-between px-5 border-b shrink-0"
         style={{ borderColor: "var(--sct-border)" }}
       >
         <div>
@@ -161,6 +183,15 @@ export function Sidebar() {
             CYCLE TERMINAL
           </p>
         </div>
+        {/* X close — only visible on mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-md transition-colors"
+          style={{ color: "var(--sct-muted)" }}
+          aria-label="Close menu"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -177,17 +208,27 @@ export function Sidebar() {
                 </p>
                 <div className="space-y-0.5">
                   {entry.items.map((item) => (
-                    <NavLink key={item.href} item={item} pathname={pathname} />
+                    <NavLink
+                      key={item.href}
+                      item={item}
+                      pathname={pathname}
+                      onClick={onClose}
+                    />
                   ))}
                 </div>
               </div>
             );
           }
-
-          return <NavLink key={entry.href} item={entry} pathname={pathname} />;
+          return (
+            <NavLink
+              key={entry.href}
+              item={entry}
+              pathname={pathname}
+              onClick={onClose}
+            />
+          );
         })}
       </nav>
-
     </aside>
   );
 }

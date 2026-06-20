@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from 'react';
 import { useApiData } from '@/lib/hooks/useApiData';
@@ -146,7 +146,7 @@ export default function OnChainPage() {
       />
 
       {/* Stat row */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           label="MVRV Ratio"
           value={cur?.mvrvProxy != null ? `${cur.mvrvProxy.toFixed(2)}×` : '—'}
@@ -182,7 +182,7 @@ export default function OnChainPage() {
       </div>
 
       {/* 2×2 chart grid */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         {CHARTS.map(c => (
           <div
             key={c.id}
@@ -226,3 +226,4 @@ export default function OnChainPage() {
     </div>
   );
 }
+
