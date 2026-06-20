@@ -93,15 +93,6 @@ export function StatCard({
         </div>
       )}
 
-      {/* Source */}
-      {source && (
-        <span
-          className="text-[10px] mt-auto"
-          style={{ color: "var(--sct-muted)" }}
-        >
-          {source}
-        </span>
-      )}
     </div>
   );
 }
