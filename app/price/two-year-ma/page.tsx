@@ -151,27 +151,27 @@ export default async function TwoYearMAPage() {
       {/* Insight panel */}
       <InsightPanel title="Indicator Logic">
         <InsightRow
-          label="Creator"
-          value="Phillip Swift (LookIntoBitcoin) — one of the most reliable macro valuation tools"
-        />
-        <InsightRow
           label="Accumulation Signal"
           value="Price < 2YMA — occurred briefly in every bear market bottom (2011, 2015, 2019, 2022)"
           valueColor="var(--sct-blue)"
+          stack
         />
         <InsightRow
           label="Distribution Signal"
           value="Price > 2YMA×5 — has marked every cycle top in BTC's history"
           valueColor="var(--sct-red)"
+          stack
         />
         <InsightRow
           label="Current Multiple"
           value={multiplier != null ? `${multiplier.toFixed(2)}× the 2-Year Moving Average` : '—'}
           valueColor={zone.color}
+          stack
         />
         <InsightRow
           label="Source"
           value="Daily price: CoinMetrics Community API · Calculation: 730-day simple moving average"
+          stack
         />
       </InsightPanel>
     </div>

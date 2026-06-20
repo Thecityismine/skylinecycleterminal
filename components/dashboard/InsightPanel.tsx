@@ -36,13 +36,25 @@ interface InsightRowProps {
   label: string;
   value: string;
   valueColor?: string;
+  stack?: boolean;
 }
 
-export function InsightRow({ label, value, valueColor }: InsightRowProps) {
+export function InsightRow({ label, value, valueColor, stack }: InsightRowProps) {
   return (
-    <div className="flex justify-between items-baseline py-1.5 border-b last:border-0" style={{ borderColor: "var(--sct-border)" }}>
+    <div
+      className={cn(
+        "py-1.5 border-b last:border-0",
+        stack
+          ? "flex flex-col gap-0.5"
+          : "flex justify-between items-baseline"
+      )}
+      style={{ borderColor: "var(--sct-border)" }}
+    >
       <span className="text-xs" style={{ color: "var(--sct-muted)" }}>{label}</span>
-      <span className="text-xs font-mono font-medium" style={{ color: valueColor ?? "var(--sct-text)" }}>
+      <span
+        className="text-xs font-mono font-medium"
+        style={{ color: valueColor ?? "var(--sct-text)" }}
+      >
         {value}
       </span>
     </div>
