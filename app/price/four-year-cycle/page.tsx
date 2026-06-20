@@ -112,24 +112,29 @@ export default async function FourYearCyclePage() {
         <InsightRow
           label="Mechanism"
           value="Bitcoin's supply issuance halves every ~210,000 blocks (~4 years). Supply shocks historically precede major price expansion 12–18 months post-halving."
+          stack
         />
         <InsightRow
           label="Current Position"
           value={`Cycle ${info.currentCycleNum} — ${info.daysSince} days since the Apr 20, 2024 halving`}
           valueColor={cycleColor}
+          stack
         />
         <InsightRow
           label="Cycle Progress"
           value={`${info.cycleProgress}% through the ~1,460-day epoch`}
           valueColor={progressColor}
+          stack
         />
         <InsightRow
           label="Signal Use"
           value="Structural context only. Confirm with MVRV Z-Score, Puell Multiple, and the Skyline Cycle Score before acting."
+          stack
         />
         <InsightRow
           label="Past Cycle Peaks"
           value="C1: Nov 2013 ($1,177) · C2: Dec 2017 ($19.8K) · C3: Nov 2021 ($69K)"
+          stack
         />
       </InsightPanel>
     </div>
