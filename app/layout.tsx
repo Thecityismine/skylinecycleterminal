@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { LayoutShell } from "@/components/layout/LayoutShell";
@@ -12,6 +12,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Skyline Cycle Terminal",
   description: "Bitcoin & Ethereum Macro Cycle Intelligence",
+};
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
