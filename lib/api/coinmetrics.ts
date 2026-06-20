@@ -159,6 +159,54 @@ export async function fetchCurrentLTHData(): Promise<{ splyCur: number; splyAct1
   }
 }
 
+// Hash rate ribbon data — tries HashRate first, falls back to DiffLast (difficulty)
+// Both produce equivalent 30d/60d MA relationships for capitulation detection.
+export type HashRibbonRaw = {
+  time:     string;
+  hashRate: number | null;  // H/s if HashRate available, raw difficulty if DiffLast fallback
+  price:    number | null;
+  source:   'HashRate' | 'DiffLast' | 'none';
+};
+
+async function tryHashMetric(metric: string, startTime: string): Promise<HashRibbonRaw[]> {
+  const all: HashRibbonRaw[] = [];
+  let nextPageToken: string | null = null;
+  do {
+    const params: Record<string, string> = {
+      assets: 'btc', metrics: `${metric},PriceUSD`, frequency: '1d',
+      start_time: startTime, page_size: '10000',
+    };
+    if (nextPageToken) params.next_page_token = nextPageToken;
+    const json = await coinmetricsGet(params);
+    for (const d of json.data ?? []) {
+      const hr = d[metric] != null ? Number(d[metric]) : null;
+      all.push({
+        time:     d.time.slice(0, 10),
+        hashRate: hr,
+        price:    d.PriceUSD != null ? Number(d.PriceUSD) : null,
+        source:   metric as 'HashRate' | 'DiffLast',
+      });
+    }
+    nextPageToken = (json as any).next_page_token ?? null;
+  } while (nextPageToken);
+  return all;
+}
+
+export async function fetchBTCHashRibbon(startTime = '2010-01-01'): Promise<HashRibbonRaw[]> {
+  try {
+    const data = await tryHashMetric('HashRate', startTime);
+    if (data.some(d => d.hashRate != null && d.hashRate > 0)) return data;
+    throw new Error('HashRate unavailable');
+  } catch {
+    try {
+      return await tryHashMetric('DiffLast', startTime);
+    } catch {
+      const prices = await fetchBTCDailyPrice(startTime);
+      return prices.map(p => ({ time: p.time, hashRate: null, price: p.price, source: 'none' as const }));
+    }
+  }
+}
+
 // Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
 export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnChainPoint[]> {
   // Only request metrics known to be in the free Community API
