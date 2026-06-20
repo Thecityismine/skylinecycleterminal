@@ -188,14 +188,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div
-        className="px-5 py-3 border-t text-[10px] shrink-0"
-        style={{ borderColor: "var(--sct-border)", color: "var(--sct-muted)" }}
-      >
-        <p>CoinGecko · CoinMetrics · FRED · DeFiLlama</p>
-        <p className="mt-0.5 opacity-60">v0.2.0 — live data</p>
-      </div>
     </aside>
   );
 }
