@@ -102,11 +102,13 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "EQUITIES",
     items: [
-      { label: "Watchlist",     href: "/equities",          icon: Briefcase,    exact: true },
-      { label: "NVDA",          href: "/equities/NVDA",     icon: TrendingDown },
-      { label: "COIN",          href: "/equities/COIN",     icon: TrendingDown },
-      { label: "MSTR",          href: "/equities/MSTR",     icon: TrendingDown },
-      { label: "SPY",           href: "/equities/SPY",      icon: TrendingDown },
+      { label: "Watchlist",  href: "/equities",        icon: Briefcase,    exact: true },
+      { label: "NVDA",       href: "/equities/NVDA",   icon: TrendingDown },
+      { label: "PLTR",       href: "/equities/PLTR",   icon: TrendingDown },
+      { label: "ARM",        href: "/equities/ARM",    icon: TrendingDown },
+      { label: "RKLB",       href: "/equities/RKLB",   icon: TrendingDown },
+      { label: "COIN",       href: "/equities/COIN",   icon: TrendingDown },
+      { label: "MSTR",       href: "/equities/MSTR",   icon: TrendingDown },
     ],
   },
   {

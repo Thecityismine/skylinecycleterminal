@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { PageHeader } from '@/components/dashboard/PageHeader';
-import { WATCHLIST, GROUP_LABELS } from '@/lib/data/watchlist';
+import { WATCHLIST, GROUP_LABELS, GROUP_ORDER } from '@/lib/data/watchlist';
 import { useApiData } from '@/lib/hooks/useApiData';
 import type { EquityData } from '@/lib/indicators/equityScore';
 
@@ -139,7 +139,7 @@ function StockCard({ ticker, color }: { ticker: string; color: string }) {
 
 export default function EquitiesPage() {
   const [filter, setFilter] = useState<string>('all');
-  const groups = ['all', 'btc', 'ai', 'tech', 'macro'];
+  const groups = ['all', ...GROUP_ORDER];
   const filtered = filter === 'all' ? WATCHLIST : WATCHLIST.filter((s) => s.group === filter);
 
   return (
@@ -159,7 +159,7 @@ export default function EquitiesPage() {
               borderColor:     filter === g ? 'var(--sct-secondary)' : 'var(--sct-border)',
               color:           filter === g ? '#000' : 'var(--sct-muted)',
             }}>
-            {g === 'all' ? 'All' : GROUP_LABELS[g]}
+            {g === 'all' ? 'All' : GROUP_LABELS[g as keyof typeof GROUP_LABELS]}
           </button>
         ))}
       </div>
