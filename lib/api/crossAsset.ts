@@ -1,8 +1,8 @@
 import { fetchBTCDailyPrice, type PricePoint } from '@/lib/api/coinmetrics';
 
-type FredPt = { time: string; value: number };
+type SimplePt = { time: string; value: number };
 
-async function fredSeries(seriesId: string): Promise<FredPt[]> {
+async function fredSeries(seriesId: string): Promise<SimplePt[]> {
   const key = process.env.FRED_API_KEY?.trim();
   if (!key) return [];
   const url =
@@ -23,6 +23,47 @@ async function fredSeries(seriesId: string): Promise<FredPt[]> {
   } catch {
     return [];
   }
+}
+
+// Yahoo Finance chart API — no key required, used as primary source for Gold
+// which is unreliable on FRED (GOLDAMGBD228NLBM returns empty intermittently)
+async function yahooSeries(symbol: string): Promise<SimplePt[]> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1wk&range=max`;
+  try {
+    const res = await fetch(url, {
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(20000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SkylineTerminal/1.0)' },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const result = json?.chart?.result?.[0];
+    if (!result) return [];
+
+    const timestamps: number[]          = result.timestamp ?? [];
+    const closes: (number | null)[]     = result.indicators?.quote?.[0]?.close ?? [];
+
+    const out: SimplePt[] = [];
+    for (let i = 0; i < timestamps.length; i++) {
+      const close = closes[i];
+      if (close == null || close <= 0) continue;
+      out.push({
+        time:  new Date(timestamps[i] * 1000).toISOString().slice(0, 10),
+        value: close,
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+async function goldSeries(): Promise<SimplePt[]> {
+  // Primary: Yahoo Finance gold futures (GC=F) — reliable, no key needed
+  const yahoo = await yahooSeries('GC=F');
+  if (yahoo.length > 50) return yahoo;
+  // Fallback: FRED London PM gold fixing
+  return fredSeries('GOLDPMGBD228NLBM');
 }
 
 export type CrossAssetPoint = {
@@ -50,7 +91,7 @@ export async function fetchCrossAssetData(): Promise<{
 }> {
   const [btcRaw, goldRaw, sp500Raw, nasdaqRaw, dxyRaw] = await Promise.all([
     fetchBTCDailyPrice('2012-01-01'),
-    fredSeries('GOLDAMGBD228NLBM'),  // Gold daily London AM fixing
+    goldSeries(),                     // Yahoo Finance GC=F (gold futures) w/ FRED fallback
     fredSeries('SP500'),              // S&P 500 daily close
     fredSeries('NASDAQCOM'),          // Nasdaq Composite daily
     fredSeries('DTWEXBGS'),           // Trade Weighted USD Index (broad)
