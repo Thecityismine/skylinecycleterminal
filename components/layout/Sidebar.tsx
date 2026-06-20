@@ -28,6 +28,7 @@ import {
   CircleDollarSign,
   ShieldCheck,
   Radar,
+  Scale,
 } from "lucide-react";
 
 type NavItem = {
@@ -80,6 +81,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "BTC Dominance",    href: "/dominance",              icon: PieChart },
       { label: "ETH Dominance",    href: "/dominance?asset=eth",    icon: PieChart },
       { label: "Total Market Cap", href: "/dominance?view=total",   icon: BarChart2 },
+      { label: "Cross-Asset Map",  href: "/cross-asset",            icon: Scale },
     ],
   },
   {
