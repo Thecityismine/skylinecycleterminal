@@ -61,9 +61,15 @@ export type WeeklyClose = {
 };
 
 export async function fetchWeeklyHistory(ticker: string): Promise<WeeklyClose[]> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&range=max`;
+  // Use crumb+cookie auth — Yahoo blocks unauthenticated chart requests from data-center IPs
+  const { crumb, cookie } = await getCredentials();
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&range=max&crumb=${encodeURIComponent(crumb)}`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json' },
+    headers: {
+      'User-Agent': BROWSER_UA,
+      'Accept': 'application/json',
+      'Cookie': cookie,
+    },
     next: { revalidate: 3600 },
     signal: AbortSignal.timeout(25_000),
   });

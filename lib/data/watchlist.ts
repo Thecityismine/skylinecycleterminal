@@ -14,12 +14,10 @@ export const WATCHLIST: WatchlistItem[] = [
   // ── BTC-Adjacent (treasuries, exchanges, fintech) ──────────────────────────
   { ticker: 'MSTR',  name: 'MicroStrategy',     sector: 'BTC Treasury',           group: 'btc',     type: 'btc_proxy', color: '#F7931A' },
   { ticker: 'COIN',  name: 'Coinbase',           sector: 'Crypto Exchange',        group: 'btc',     type: 'equity',    color: '#0052FF' },
-  { ticker: 'HOOD',  name: 'Robinhood',          sector: 'Crypto / Brokerage',     group: 'btc',     type: 'equity',    color: '#00C805' },
-  { ticker: 'BLSH',  name: 'Bullish',            sector: 'Crypto Exchange',        group: 'btc',     type: 'equity',    color: '#1D4ED8' },
-  { ticker: 'BTGO',  name: 'BitGo',              sector: 'Crypto Custody',         group: 'btc',     type: 'equity',    color: '#7C3AED' },
-  { ticker: 'SQ',    name: 'Block',              sector: 'BTC Treasury / Fintech', group: 'btc',     type: 'equity',    color: '#00D64F' },
-  { ticker: 'PYPL',  name: 'PayPal',             sector: 'Crypto Payments',        group: 'btc',     type: 'equity',    color: '#003087' },
-  { ticker: 'GLXY',  name: 'Galaxy Digital',     sector: 'Crypto Finance',         group: 'btc',     type: 'equity',    color: '#9333EA' },
+  { ticker: 'HOOD',    name: 'Robinhood',          sector: 'Crypto / Brokerage',     group: 'btc',     type: 'equity',    color: '#00C805' },
+  { ticker: 'SQ',     name: 'Block',              sector: 'BTC Treasury / Fintech', group: 'btc',     type: 'equity',    color: '#00D64F' },
+  { ticker: 'PYPL',   name: 'PayPal',             sector: 'Crypto Payments',        group: 'btc',     type: 'equity',    color: '#003087' },
+  { ticker: 'GLXY.TO', name: 'Galaxy Digital',    sector: 'Crypto Finance',         group: 'btc',     type: 'equity',    color: '#9333EA' },
 
   // ── Bitcoin Mining ──────────────────────────────────────────────────────────
   { ticker: 'MARA',  name: 'MARA Holdings',      sector: 'Bitcoin Mining',         group: 'mining',  type: 'equity',    color: '#E6B450' },
