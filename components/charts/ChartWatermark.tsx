@@ -15,49 +15,25 @@ const BLEND  = 'screen' as const;
 
 export function ChartWatermark() {
   return (
-    <>
-      {/* ── Center icon — large, very subtle ── */}
-      <div
-        aria-hidden
-        style={{
-          position:      'absolute',
-          top:           '50%',
-          left:          '50%',
-          transform:     'translate(-50%, -50%)',
-          pointerEvents: 'none',
-          userSelect:    'none',
-          opacity:       0.07,
-          mixBlendMode:  BLEND,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/skyline-icon.png"
-          alt=""
-          style={{ display: 'block', width: 96, height: 'auto', filter: FILTER }}
-        />
-      </div>
-
-      {/* ── Full logo — bottom-right, above x-axis dates ── */}
-      <div
-        aria-hidden
-        style={{
-          position:      'absolute',
-          bottom:        '2.6rem',   // above the x-axis tick labels (~20px) + breathing room
-          right:         '4.5rem',   // clear the recharts Y-axis
-          pointerEvents: 'none',
-          userSelect:    'none',
-          opacity:       0.18,
-          mixBlendMode:  BLEND,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/skyline-full.png"
-          alt=""
-          style={{ display: 'block', width: 148, height: 'auto', filter: FILTER }}
-        />
-      </div>
-    </>
+    <div
+      aria-hidden
+      style={{
+        position:      'absolute',
+        top:           '50%',
+        left:          '50%',
+        transform:     'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        userSelect:    'none',
+        opacity:       0.07,
+        mixBlendMode:  BLEND,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/skyline-full.png"
+        alt=""
+        style={{ display: 'block', width: 220, height: 'auto', filter: FILTER }}
+      />
+    </div>
   );
 }
