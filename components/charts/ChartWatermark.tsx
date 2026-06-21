@@ -24,7 +24,7 @@ export function ChartWatermark() {
         transform:     'translate(-50%, -50%)',
         pointerEvents: 'none',
         userSelect:    'none',
-        opacity:       0.07,
+        opacity:       0.15,
         mixBlendMode:  BLEND,
       }}
     >
