@@ -98,6 +98,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "MACRO",
     items: [
+      { label: "SPX & Recession",  href: "/macro/spx-recession", icon: BarChart2 },
       { label: "DXY",              href: "/macro",              icon: DollarSign },
       { label: "Fed Funds Rate",   href: "/macro?chart=fed",    icon: Landmark },
       { label: "CPI / Inflation",  href: "/macro?chart=cpi",    icon: TrendingUp },
