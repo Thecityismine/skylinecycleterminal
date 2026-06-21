@@ -207,6 +207,88 @@ export async function fetchBTCHashRibbon(startTime = '2010-01-01'): Promise<Hash
   }
 }
 
+// ─── Cycle Master data ────────────────────────────────────────────────────────
+
+export type CycleMasterRaw = {
+  time: string;
+  price: number;
+  splyCur: number | null;
+  capRealUSD: number | null;
+  cdd: number | null;
+};
+
+export async function fetchCycleMasterData(startTime = '2010-07-01'): Promise<CycleMasterRaw[]> {
+  const all: CycleMasterRaw[] = [];
+  let nextPageToken: string | null = null;
+
+  // Attempt full fetch including CapRealUSD and CDD
+  try {
+    do {
+      const params: Record<string, string> = {
+        assets: 'btc',
+        metrics: 'PriceUSD,SplyCur,CapRealUSD,CDD',
+        frequency: '1d',
+        start_time: startTime,
+        page_size: '10000',
+      };
+      if (nextPageToken) params.next_page_token = nextPageToken;
+
+      const json = await coinmetricsGet(params);
+
+      for (const d of json.data ?? []) {
+        if (d.PriceUSD == null) continue;
+        all.push({
+          time:       d.time.slice(0, 10),
+          price:      Number(d.PriceUSD),
+          splyCur:    d.SplyCur    != null ? Number(d.SplyCur)    : null,
+          capRealUSD: d.CapRealUSD != null ? Number(d.CapRealUSD) : null,
+          cdd:        d.CDD        != null ? Number(d.CDD)        : null,
+        });
+      }
+      nextPageToken = (json as any).next_page_token ?? null;
+    } while (nextPageToken);
+
+    return all;
+  } catch {
+    // CapRealUSD or CDD likely paywalled — fall back to PriceUSD + SplyCur only
+    const fallback: CycleMasterRaw[] = [];
+    let fallbackToken: string | null = null;
+
+    try {
+      do {
+        const params: Record<string, string> = {
+          assets: 'btc',
+          metrics: 'PriceUSD,SplyCur',
+          frequency: '1d',
+          start_time: startTime,
+          page_size: '10000',
+        };
+        if (fallbackToken) params.next_page_token = fallbackToken;
+
+        const json = await coinmetricsGet(params);
+
+        for (const d of json.data ?? []) {
+          if (d.PriceUSD == null) continue;
+          fallback.push({
+            time:       d.time.slice(0, 10),
+            price:      Number(d.PriceUSD),
+            splyCur:    d.SplyCur != null ? Number(d.SplyCur) : null,
+            capRealUSD: null,
+            cdd:        null,
+          });
+        }
+        fallbackToken = (json as any).next_page_token ?? null;
+      } while (fallbackToken);
+
+      return fallback;
+    } catch {
+      // Ultimate fallback: return whatever we have from the first attempt
+      if (all.length > 0) return all;
+      return [];
+    }
+  }
+}
+
 // Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
 export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnChainPoint[]> {
   // Only request metrics known to be in the free Community API

@@ -81,6 +81,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "ON-CHAIN",
     items: [
+      { label: "Cycle Master",       href: "/onchain/cycle-master",       icon: Layers },
       { label: "MVRV Z-Score",      href: "/onchain",                    icon: Zap },
       { label: "NUPL",               href: "/onchain/reserve-risk",       icon: ShieldCheck },
       { label: "Puell Multiple",    href: "/onchain?metric=puell",       icon: Cpu },
