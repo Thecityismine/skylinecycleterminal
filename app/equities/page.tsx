@@ -9,6 +9,16 @@ import type { EquityData } from '@/lib/indicators/equityScore';
 
 type EquityResponse = EquityData & { fundamentalsAvailable?: boolean };
 
+type SignalFilter = 'all' | 'opportunity' | 'value_trap' | 'expensive_quality' | 'avoid';
+
+const SIGNAL_FILTERS: { key: SignalFilter; label: string; color: string }[] = [
+  { key: 'all',               label: 'All Signals',          color: 'var(--sct-muted)' },
+  { key: 'opportunity',       label: 'Opportunity',          color: '#35D07F' },
+  { key: 'value_trap',        label: 'Value Trap Risk',      color: '#E6B450' },
+  { key: 'expensive_quality', label: 'Great Business · Wait', color: '#3B82F6' },
+  { key: 'avoid',             label: 'Avoid',                color: '#FF5C5C' },
+];
+
 function fmtPrice(v: number | null, currency?: string | null) {
   if (v == null) return '—';
   const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
@@ -33,8 +43,13 @@ function ScorePill({ score, label, color }: { score: number; label: string; colo
   );
 }
 
-function StockCard({ ticker, color }: { ticker: string; color: string }) {
+function StockCard({ ticker, color, signalFilter }: { ticker: string; color: string; signalFilter: SignalFilter }) {
   const { data, loading } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
+
+  if (!loading && signalFilter !== 'all') {
+    const quadrant = data?.scores?.quadrant;
+    if (!quadrant || quadrant === 'neutral' || quadrant !== signalFilter) return null;
+  }
 
   const price    = data?.fundamentals.price ?? null;
   const change1d = data?.fundamentals.change1d ?? null;
@@ -139,6 +154,7 @@ function StockCard({ ticker, color }: { ticker: string; color: string }) {
 
 export default function EquitiesPage() {
   const [filter, setFilter] = useState<string>('all');
+  const [signalFilter, setSignalFilter] = useState<SignalFilter>('all');
   const groups = ['all', ...GROUP_ORDER];
   const filtered = filter === 'all' ? WATCHLIST : WATCHLIST.filter((s) => s.group === filter);
 
@@ -164,6 +180,27 @@ export default function EquitiesPage() {
         ))}
       </div>
 
+      {/* Signal filter */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
+          Signal:
+        </span>
+        {SIGNAL_FILTERS.map(({ key, label, color }) => {
+          const active = signalFilter === key;
+          return (
+            <button key={key} onClick={() => setSignalFilter(key)}
+              className="px-3 py-1 rounded-lg text-xs font-medium border transition-all"
+              style={{
+                backgroundColor: active ? color + '20' : 'transparent',
+                borderColor:     active ? color : 'var(--sct-border)',
+                color:           active ? color : 'var(--sct-muted)',
+              }}>
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Zone legend */}
       <div className="flex flex-wrap gap-x-6 gap-y-1">
         {[
@@ -181,7 +218,7 @@ export default function EquitiesPage() {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filtered.map((s) => (
-          <StockCard key={s.ticker} ticker={s.ticker} color={s.color} />
+          <StockCard key={s.ticker} ticker={s.ticker} color={s.color} signalFilter={signalFilter} />
         ))}
       </div>
 
