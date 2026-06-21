@@ -77,7 +77,7 @@ export function BTCDrawdownChart({ data, showHalvings, showCycles }: Props) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 0, right: 12, bottom: 0, left: 4 }}>
+      <ComposedChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
 
         {/* Zone bands — background color by depth */}
@@ -143,7 +143,7 @@ export function BTCDrawdownChart({ data, showHalvings, showCycles }: Props) {
         />
 
         <YAxis
-          domain={[-100, 0]}
+          domain={[-100, 5]}
           ticks={[0, -20, -40, -60, -80, -100]}
           tickFormatter={fmtPct}
           tick={{ fill: 'var(--sct-muted)', fontSize: 11, fontFamily: 'var(--font-geist-mono)' }}
