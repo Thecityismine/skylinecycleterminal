@@ -1,46 +1,63 @@
 "use client";
 
 /**
- * Absolute-positioned Skyline watermark for chart containers.
- * Parent div must have position: relative (or className="relative").
+ * Chart watermark — renders two overlays:
+ *   1. Large icon centered in the chart area (subtle, like TradingView)
+ *   2. Full horizontal logo at bottom-right, above the x-axis date labels
  *
- * The logo PNGs have a white background, so we use:
- *   filter: invert(1) brightness(1.8)  →  gray icon becomes bright, white bg → black
- *   mix-blend-mode: screen             →  black bg disappears, leaving light icon on dark chart
+ * PNG files have white backgrounds so we use:
+ *   filter: invert(1) brightness(1.8)  → gray icon becomes bright, white bg → black
+ *   mix-blend-mode: screen             → black disappears, light mark remains on dark chart
  */
 
-type Props = {
-  /** 'icon' = just the building mark; 'full' = full horizontal logo */
-  variant?: 'icon' | 'full';
-  opacity?: number;
-};
+const FILTER = 'invert(1) brightness(1.8)';
+const BLEND  = 'screen' as const;
 
-export function ChartWatermark({ variant = 'icon', opacity = 0.14 }: Props) {
-  const isIcon = variant === 'icon';
+export function ChartWatermark() {
   return (
-    <div
-      aria-hidden
-      style={{
-        position:      'absolute',
-        bottom:        '1.25rem',
-        right:         '4.25rem',   // leave room for recharts Y-axis
-        pointerEvents: 'none',
-        userSelect:    'none',
-        opacity,
-        mixBlendMode:  'screen',
-      }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={isIcon ? '/skyline-icon.png' : '/skyline-full.png'}
-        alt=""
+    <>
+      {/* ── Center icon — large, very subtle ── */}
+      <div
+        aria-hidden
         style={{
-          display:  'block',
-          width:    isIcon ? 34 : 120,
-          height:   'auto',
-          filter:   'invert(1) brightness(1.8)',
+          position:      'absolute',
+          top:           '50%',
+          left:          '50%',
+          transform:     'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          userSelect:    'none',
+          opacity:       0.07,
+          mixBlendMode:  BLEND,
         }}
-      />
-    </div>
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/skyline-icon.png"
+          alt=""
+          style={{ display: 'block', width: 96, height: 'auto', filter: FILTER }}
+        />
+      </div>
+
+      {/* ── Full logo — bottom-right, above x-axis dates ── */}
+      <div
+        aria-hidden
+        style={{
+          position:      'absolute',
+          bottom:        '2.6rem',   // above the x-axis tick labels (~20px) + breathing room
+          right:         '4.5rem',   // clear the recharts Y-axis
+          pointerEvents: 'none',
+          userSelect:    'none',
+          opacity:       0.18,
+          mixBlendMode:  BLEND,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/skyline-full.png"
+          alt=""
+          style={{ display: 'block', width: 148, height: 'auto', filter: FILTER }}
+        />
+      </div>
+    </>
   );
 }

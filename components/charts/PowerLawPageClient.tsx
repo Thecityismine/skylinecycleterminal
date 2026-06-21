@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import { PowerLawChart }    from '@/components/charts/PowerLawChart';
-import { ChartWatermark }  from '@/components/charts/ChartWatermark';
 import type { PowerLawPoint } from '@/lib/indicators/powerLaw';
 
 type Range = '2Y' | '4Y' | 'All';
@@ -78,7 +77,6 @@ export function PowerLawPageClient({ data }: Props) {
       {/* Chart */}
       <div className="relative h-[480px]">
         <PowerLawChart data={filtered} />
-        <ChartWatermark />
       </div>
     </div>
   );
