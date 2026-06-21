@@ -73,6 +73,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Pi Cycle Bottom",  href: "/price/pi-cycle-bottom",    icon: TrendingDown },
       { label: "Hash Ribbons",     href: "/price/hash-ribbons",       icon: Waves },
       { label: "BTC / M2",        href: "/price/btc-m2",             icon: DollarSign },
+      { label: "Power Law",       href: "/price/power-law",          icon: TrendingUp },
     ],
   },
   {
