@@ -1,6 +1,6 @@
 import { fetchDailyPrice, type PricePoint } from '@/lib/api/coinmetrics';
 
-export type RatioKey = 'btc_ixic' | 'btc_spx' | 'eth_ixic' | 'btc_eth';
+export type RatioKey = 'btc_ixic' | 'btc_spx' | 'eth_ixic' | 'btc_eth' | 'eth_btc';
 
 export type RatioPoint = {
   time:  string;
@@ -89,6 +89,32 @@ function buildRatio(
   const pctFromAth = ath && cur ? ((cur - ath) / ath) * 100 : null;
 
   return { key, label, points: weekly, current: cur, ath, pctFromAth };
+}
+
+function buildEthBtcRatio(btc: PricePoint[], eth: PricePoint[]): RatioSeries {
+  const btcMap = new Map(btc.map((d) => [d.time, d.price]));
+  const ethMap = new Map(eth.map((d) => [d.time, d.price]));
+  const dates  = [...new Set([...btc.map((d) => d.time), ...eth.map((d) => d.time)])].sort();
+
+  let lb: number | null = null;
+  let le: number | null = null;
+  const points: RatioPoint[] = [];
+
+  for (const t of dates) {
+    lb = btcMap.get(t) ?? lb;
+    le = ethMap.get(t) ?? le;
+    if (lb && le && lb > 0 && le > 0) {
+      points.push({ time: t, ts: new Date(t + 'T00:00:00').getTime(), value: le / lb });
+    }
+  }
+
+  const weekly     = points.filter((_, idx) => idx % 7 === 0 || idx === points.length - 1);
+  const vals       = weekly.map((p) => p.value);
+  const ath        = vals.length ? Math.max(...vals) : null;
+  const cur        = weekly.at(-1)?.value ?? null;
+  const pctFromAth = ath && cur ? ((cur - ath) / ath) * 100 : null;
+
+  return { key: 'eth_btc', label: 'ETH / BTC', points: weekly, current: cur, ath, pctFromAth };
 }
 
 function buildBtcEthRatio(btc: PricePoint[], eth: PricePoint[]): RatioSeries {
@@ -188,6 +214,7 @@ export type RatioData = {
   btc_spx:        RatioSeries;
   eth_ixic:       RatioSeries;
   btc_eth:        RatioSeries;
+  eth_btc:        RatioSeries;
   rotationSignal: RotationSignal;
 };
 
@@ -204,6 +231,7 @@ export async function fetchRatioData(): Promise<RatioData> {
     btc_spx:        buildRatio(btc, sp500,  'btc_spx',  'BTC / SPX'),
     eth_ixic:       buildRatio(eth, nasdaq, 'eth_ixic', 'ETH / IXIC'),
     btc_eth:        buildBtcEthRatio(btc, eth),
+    eth_btc:        buildEthBtcRatio(btc, eth),
     rotationSignal: computeRotationSignal(btc, eth),
   };
 }

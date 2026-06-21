@@ -43,6 +43,7 @@ const RATIOS: {
   { key: 'btc_spx',  label: 'BTC / SPX',  color: '#53A7FF', crypto: 'Bitcoin',  index: 'S&P 500', desc: 'S&P 500 index points per 1 BTC' },
   { key: 'eth_ixic', label: 'ETH / IXIC', color: '#9B8CFF', crypto: 'Ethereum', index: 'Nasdaq',  desc: 'Nasdaq index points per 1 ETH' },
   { key: 'btc_eth',  label: 'BTC / ETH',  color: '#35D07F', crypto: 'Bitcoin',  index: 'ETH',     desc: 'ETH required to buy 1 BTC' },
+  { key: 'eth_btc',  label: 'ETH / BTC',  color: '#A78BFA', crypto: 'Ethereum', index: 'BTC',     desc: 'BTC required to buy 1 ETH' },
 ];
 
 // ─── Rotation widget ───────────────────────────────────────────────────────────

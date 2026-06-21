@@ -18,6 +18,7 @@ const COLORS: Record<RatioKey, { stroke: string; fill: string }> = {
   btc_spx:  { stroke: '#53A7FF', fill: 'rgba(83,167,255,0.12)' },
   eth_ixic: { stroke: '#9B8CFF', fill: 'rgba(155,140,255,0.12)' },
   btc_eth:  { stroke: '#35D07F', fill: 'rgba(53,208,127,0.10)' },
+  eth_btc:  { stroke: '#A78BFA', fill: 'rgba(167,139,250,0.10)' },
 };
 
 const HALVINGS = [
@@ -46,6 +47,7 @@ function CustomTooltip({ active, payload, ratioKey }: any) {
     btc_spx:  ['Bitcoin', 'S&P 500'],
     eth_ixic: ['Ethereum', 'Nasdaq'],
     btc_eth:  ['Bitcoin', 'ETH'],
+    eth_btc:  ['Ethereum', 'BTC'],
   };
   const [top, btm] = labels[ratioKey as RatioKey];
   return (
