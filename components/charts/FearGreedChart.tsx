@@ -80,8 +80,8 @@ export function FearGreedChart({ data }: Props) {
     <div className="flex flex-col">
       {/* ── BTC price panel ─────────────────────────────────────────────── */}
       <div style={{ height: 300 }}>
-        <ResponsiveContainer width="100%" height="100%" syncId="fg-chart">
-          <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} syncId="fg-chart" margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
 
             <XAxis
@@ -120,8 +120,8 @@ export function FearGreedChart({ data }: Props) {
 
       {/* ── F&G oscillator panel ─────────────────────────────────────────── */}
       <div style={{ height: 200 }}>
-        <ResponsiveContainer width="100%" height="100%" syncId="fg-chart">
-          <ComposedChart data={data} margin={{ top: 0, right: 12, bottom: 0, left: 4 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} syncId="fg-chart" margin={{ top: 0, right: 12, bottom: 0, left: 4 }}>
             {/* Zone color bands — from bottom to top */}
             <ReferenceArea y1={0}  y2={25}  fill="rgba(153,27,27,0.55)"  stroke="none" ifOverflow="hidden" />
             <ReferenceArea y1={25} y2={50}  fill="rgba(161,98,7,0.38)"   stroke="none" ifOverflow="hidden" />
