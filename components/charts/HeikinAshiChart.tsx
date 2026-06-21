@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 export type HACandle = {
   month:            string;
@@ -76,6 +77,7 @@ export function HeikinAshiChart({ candles }: { candles: HACandle[] }) {
   const hov = hovIdx !== null ? candles[hovIdx] : null;
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <div className="w-full overflow-x-auto">
       <svg width={svgW} height={svgH} style={{ display: 'block' }}>
 
@@ -194,6 +196,8 @@ export function HeikinAshiChart({ candles }: { candles: HACandle[] }) {
         })()}
 
       </svg>
+    </div>
+    <ChartWatermark />
     </div>
   );
 }

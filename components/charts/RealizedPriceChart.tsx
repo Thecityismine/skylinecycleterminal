@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from 'recharts';
 import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,7 +150,8 @@ export function RealizedPriceChart({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={420}>
+      <div style={{ position: 'relative', width: '100%', height: 420 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={sampled} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.6} />
 
@@ -209,6 +211,8 @@ export function RealizedPriceChart({
           )}
         </ComposedChart>
       </ResponsiveContainer>
+      <ChartWatermark />
+      </div>
 
       {!realizedAvailable && (
         <p className="mt-3 text-xs text-center" style={{ color: 'var(--sct-muted)' }}>

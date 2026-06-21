@@ -17,6 +17,7 @@ import {
   CYCLE_STROKE,
 } from "@/lib/indicators/cycleHelpers";
 import type { CyclePoint } from "@/lib/indicators/cycleHelpers";
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = { data: CyclePoint[] };
 
@@ -65,6 +66,7 @@ export function FourYearCycleChart({ data }: Props) {
   }));
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={data} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -148,5 +150,7 @@ export function FourYearCycleChart({ data }: Props) {
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

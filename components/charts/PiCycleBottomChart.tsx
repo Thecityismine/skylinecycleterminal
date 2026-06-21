@@ -5,6 +5,7 @@ import {
   ComposedChart, Area, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea,
 } from 'recharts';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 export type PiBottomPoint = {
   date:      string;
@@ -102,7 +103,8 @@ export function PiCycleBottomChart({ data }: { data: PiBottomPoint[] }) {
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={440}>
+      <div style={{ position: 'relative', width: '100%', height: 440 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={displayed} margin={{ top: 8, right: 16, bottom: 0, left: 4 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
 
@@ -177,6 +179,8 @@ export function PiCycleBottomChart({ data }: { data: PiBottomPoint[] }) {
           />
         </ComposedChart>
       </ResponsiveContainer>
+      <ChartWatermark />
+      </div>
     </div>
   );
 }

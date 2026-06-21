@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { BtcM2Chart } from '@/components/charts/BtcM2Chart';
+import { BtcM2Chart }      from '@/components/charts/BtcM2Chart';
+import { ChartWatermark }  from '@/components/charts/ChartWatermark';
 import type { BtcM2Point } from '@/lib/indicators/btcM2';
 
 type Props = { points: BtcM2Point[] };
@@ -64,8 +65,9 @@ export function BtcM2PageClient({ points }: Props) {
         ))}
       </div>
 
-      <div className="h-[480px]">
+      <div className="relative h-[480px]">
         <BtcM2Chart data={points} logScale={logScale} />
+        <ChartWatermark />
       </div>
     </div>
   );

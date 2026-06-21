@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import type { NUPLPoint } from '@/lib/indicators/nupl';
 import { nuplSignal } from '@/lib/indicators/nupl';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 // NUPLPoint includes price but NOT ma730 (computed server-side, not passed individually)
 // We render price in top panel, nupl in bottom panel
@@ -85,7 +86,7 @@ export function NUPLChart({ data }: Props) {
   return (
     <div className="flex flex-col gap-1">
       {/* Top panel — BTC price log scale */}
-      <div style={{ height: 160 }}>
+      <div style={{ position: 'relative', height: 160 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
@@ -103,10 +104,11 @@ export function NUPLChart({ data }: Props) {
               dot={false} isAnimationActive={false} connectNulls />
           </ComposedChart>
         </ResponsiveContainer>
+        <ChartWatermark />
       </div>
 
       {/* Bottom panel — NUPL */}
-      <div style={{ height: 220 }}>
+      <div style={{ position: 'relative', height: 220 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
@@ -138,6 +140,7 @@ export function NUPLChart({ data }: Props) {
               strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />
           </ComposedChart>
         </ResponsiveContainer>
+        <ChartWatermark />
       </div>
     </div>
   );

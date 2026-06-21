@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import type { WeeklyPoint, ZoneSegment, Zone } from '@/lib/api/weeklySMA';
 import { ZONE_FILL, ZONE_COLOR, ZONE_LABEL } from '@/lib/api/weeklySMA';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
   points:   WeeklyPoint[];
@@ -92,6 +93,7 @@ export function WeeklySMAChart({ points, segments, logScale }: Props) {
     : ['auto', 'auto'];
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={points} margin={{ top: 12, right: 16, bottom: 4, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
@@ -166,5 +168,7 @@ export function WeeklySMAChart({ points, segments, logScale }: Props) {
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

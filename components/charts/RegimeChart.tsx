@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import type { RegimePoint, RegimeZone } from '@/lib/indicators/regimeHelpers';
 import { REGIME_FILL, REGIME_COLOR, REGIME_LABEL } from '@/lib/indicators/regimeHelpers';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
   points: RegimePoint[];
@@ -95,6 +96,7 @@ export function RegimeChart({ points, zones, showMA }: Props) {
   if (!points.length) return null;
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={points} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -174,5 +176,7 @@ export function RegimeChart({ points, zones, showMA }: Props) {
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   ReferenceLine, ReferenceArea, CartesianGrid,
 } from 'recharts';
 import type { EquityPoint, ZoneSegment, EquityZone } from '@/lib/indicators/equityScore';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 const ZONE_FILL: Record<EquityZone, string> = {
   green: 'rgba(53,208,127,0.07)',
@@ -92,6 +93,7 @@ export function EquityChart({ points, segments, ath, logScale, color, startTs }:
   const athInRange = ath > 0 && ath <= maxP * 1.2;
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={filtered} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
         <defs>
@@ -182,5 +184,7 @@ export function EquityChart({ points, segments, ath, logScale, color, startTs }:
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

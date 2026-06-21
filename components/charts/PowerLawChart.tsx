@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from "recharts";
 import type { PowerLawPoint } from "@/lib/indicators/powerLaw";
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = { data: PowerLawPoint[] };
 
@@ -69,6 +70,7 @@ export function PowerLawChart({ data }: Props) {
   const halvingTs = HALVINGS.map(h => new Date(h.date + 'T00:00:00Z').getTime());
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={data} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -161,5 +163,7 @@ export function PowerLawChart({ data }: Props) {
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

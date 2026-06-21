@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { HALVINGS, PHASES } from '@/lib/indicators/halvingCycles';
 import type { ZoneSegment } from '@/lib/indicators/halvingCycles';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type PricePoint = { time: string; ts: number; price: number };
 
@@ -73,6 +74,7 @@ export function HalvingCycleChart({ points, segments, logScale, startTs }: Props
   const now = Date.now();
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={visible} margin={{ top: 12, right: 16, bottom: 4, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
@@ -154,5 +156,7 @@ export function HalvingCycleChart({ points, segments, logScale, startTs }: Props
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

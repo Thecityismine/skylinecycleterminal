@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { FearGreedChart }     from '@/components/charts/FearGreedChart';
+import { FearGreedChart }   from '@/components/charts/FearGreedChart';
+import { ChartWatermark }  from '@/components/charts/ChartWatermark';
 import type { FGCombinedPoint } from '@/components/charts/FearGreedChart';
 
 type Timeframe = 'All' | '2Y' | '1Y' | '90D';
@@ -69,7 +70,10 @@ export function FearGreedPageClient({ data }: Props) {
       </div>
 
       {/* Dual-panel chart */}
-      <FearGreedChart data={displayed} />
+      <div className="relative">
+        <FearGreedChart data={displayed} />
+        <ChartWatermark />
+      </div>
     </div>
   );
 }

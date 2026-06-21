@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { SPXRecessionChart }  from '@/components/charts/SPXRecessionChart';
+import { SPXRecessionChart } from '@/components/charts/SPXRecessionChart';
+import { ChartWatermark }   from '@/components/charts/ChartWatermark';
 import type { SPXPoint }      from '@/lib/indicators/recessionRisk';
 
 type Timeframe = '10Y' | '20Y' | 'All';
@@ -96,7 +97,7 @@ export function SPXPageClient({ data, ath }: Props) {
       </div>
 
       {/* Chart */}
-      <div className="h-[460px]">
+      <div className="relative h-[460px]">
         <SPXRecessionChart
           data={displayed}
           show50w={show50w}
@@ -105,6 +106,7 @@ export function SPXPageClient({ data, ath }: Props) {
           logScale={logScale}
           ath={ath}
         />
+        <ChartWatermark />
       </div>
     </div>
   );

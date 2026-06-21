@@ -6,6 +6,7 @@ import {
 } from "recharts";
 import { NBER_RECESSIONS } from "@/lib/indicators/recessionRisk";
 import type { SPXPoint } from "@/lib/indicators/recessionRisk";
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
   data:          SPXPoint[];
@@ -73,6 +74,7 @@ export function SPXRecessionChart({ data, show50w, show200w, showRecessions, log
   const athTs = data.find(d => d.price === ath)?.ts;
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={data} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -149,5 +151,7 @@ export function SPXRecessionChart({ data, show50w, show200w, showRecessions, log
           dot={false} isAnimationActive={false} />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

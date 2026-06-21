@@ -1,5 +1,7 @@
 "use client";
 
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
+
 // ─── Layout constants ──────────────────────────────────────────────────────
 const START = 1920;
 const END   = 2062;
@@ -65,6 +67,7 @@ export function BennerCycleChart() {
   const nowX = xp(NOW);
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <div className="w-full overflow-x-auto">
       <svg viewBox={`0 0 ${VW} ${VH}`} className="w-full min-w-[900px]" style={{ display: 'block' }}>
 
@@ -166,6 +169,8 @@ export function BennerCycleChart() {
         })}
 
       </svg>
+    </div>
+    <ChartWatermark />
     </div>
   );
 }

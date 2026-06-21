@@ -5,6 +5,7 @@ import {
   ComposedChart, Area, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
 } from 'recharts';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 export type HRPoint = {
   date:    string;
@@ -104,7 +105,8 @@ export function HashRibbonChart({ data }: { data: HRPoint[] }) {
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={460}>
+      <div style={{ position: 'relative', width: '100%', height: 460 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={displayed} margin={{ top: 8, right: 68, bottom: 0, left: 4 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.45} />
 
@@ -193,6 +195,8 @@ export function HashRibbonChart({ data }: { data: HRPoint[] }) {
           />
         </ComposedChart>
       </ResponsiveContainer>
+      <ChartWatermark />
+      </div>
     </div>
   );
 }

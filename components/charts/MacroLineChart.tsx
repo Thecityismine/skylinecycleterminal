@@ -3,6 +3,7 @@
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 export type MacroDataPoint = { date: string; value: number };
 
@@ -53,7 +54,8 @@ export function MacroLineChart({
   const fmt = (v: number) => `${v.toFixed(decimals)}${unit}`;
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <div style={{ position: 'relative', width: '100%', height }}>
+    <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -118,5 +120,7 @@ export function MacroLineChart({
         />
       </AreaChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

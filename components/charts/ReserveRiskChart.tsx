@@ -12,6 +12,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { RRPoint, RRZones } from '@/lib/indicators/reserveRisk';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
   data:  RRPoint[];
@@ -93,7 +94,7 @@ export function ReserveRiskChart({ data, zones }: Props) {
   return (
     <div className="flex flex-col gap-0">
       {/* ── Top panel: BTC price log scale ── */}
-      <div style={{ height: 160 }}>
+      <div style={{ position: 'relative', height: 160 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -143,10 +144,11 @@ export function ReserveRiskChart({ data, zones }: Props) {
             />
           </ComposedChart>
         </ResponsiveContainer>
+        <ChartWatermark />
       </div>
 
       {/* ── Bottom panel: Reserve Risk with zone bands ── */}
-      <div style={{ height: 220 }}>
+      <div style={{ position: 'relative', height: 220 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={rrData} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -219,6 +221,7 @@ export function ReserveRiskChart({ data, zones }: Props) {
             />
           </ComposedChart>
         </ResponsiveContainer>
+        <ChartWatermark />
       </div>
     </div>
   );

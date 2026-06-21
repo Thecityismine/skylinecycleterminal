@@ -207,14 +207,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         className="h-16 flex items-center justify-between px-5 border-b shrink-0"
         style={{ borderColor: "var(--sct-border)" }}
       >
-        <div>
-          <p className="text-sm font-semibold tracking-widest text-[var(--sct-text)] font-mono uppercase">
-            SKYLINE
-          </p>
-          <p className="text-[10px] tracking-wider" style={{ color: "var(--sct-muted)" }}>
-            CYCLE TERMINAL
-          </p>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/skyline-full.png"
+          alt="Skyline Cycle Terminal"
+          style={{
+            width:        148,
+            height:       'auto',
+            filter:       'invert(1) brightness(1.8)',
+            mixBlendMode: 'screen',
+            opacity:      0.92,
+          }}
+        />
         {/* X close — only visible on mobile */}
         <button
           onClick={onClose}

@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from 'recharts';
 import type { RatioPoint, RatioKey } from '@/lib/api/ratios';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
   data:     RatioPoint[];
@@ -77,6 +78,7 @@ export function RatioChart({ data, ratioKey, logScale }: Props) {
     : ['auto', 'auto'];
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -117,5 +119,7 @@ export function RatioChart({ data, ratioKey, logScale }: Props) {
         />
       </AreaChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

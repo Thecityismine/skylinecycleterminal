@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
 import { ZONE_CONFIG } from '@/lib/indicators/skylineScore';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = { points: HistoricalScorePoint[] };
 
@@ -86,6 +87,7 @@ export function ScoreHistoryChart({ points }: Props) {
   if (!points.length) return null;
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={points} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
@@ -172,5 +174,7 @@ export function ScoreHistoryChart({ points }: Props) {
         />
       </ComposedChart>
     </ResponsiveContainer>
+    <ChartWatermark />
+    </div>
   );
 }

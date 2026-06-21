@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { BTCDrawdownChart }  from '@/components/charts/BTCDrawdownChart';
+import { ChartWatermark }    from '@/components/charts/ChartWatermark';
 import type { DrawdownPoint } from '@/lib/indicators/drawdownFromATH';
 
 type Timeframe = 'All' | '4Y' | '2Y';
@@ -90,12 +91,13 @@ export function BTCDrawdownPageClient({ data }: Props) {
       </div>
 
       {/* Chart */}
-      <div className="h-[440px]">
+      <div className="relative h-[440px]">
         <BTCDrawdownChart
           data={displayed}
           showHalvings={showHalvings}
           showCycles={showCycles}
         />
+        <ChartWatermark />
       </div>
     </div>
   );

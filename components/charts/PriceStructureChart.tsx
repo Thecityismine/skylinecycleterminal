@@ -5,6 +5,7 @@ import {
   ComposedChart, Area, Line, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from 'recharts';
+import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type DataPoint = {
   time: string;
@@ -204,7 +205,8 @@ export function PriceStructureChart({
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={380}>
+      <div style={{ position: 'relative', width: '100%', height: 380 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="price-grad" x1="0" y1="0" x2="0" y2="1">
@@ -241,6 +243,8 @@ export function PriceStructureChart({
             fill="url(#price-grad)" dot={false} isAnimationActive={false} />
         </ComposedChart>
       </ResponsiveContainer>
+      <ChartWatermark />
+      </div>
     </div>
   );
 }
@@ -286,7 +290,8 @@ export function RSIPanel({ data }: { data: DataPoint[] }) {
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={130}>
+      <div style={{ position: 'relative', width: '100%', height: 130 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.4} />
           <XAxis dataKey="time" tickFormatter={fmtX} tick={{ fill: '#4B5563', fontSize: 9 }}
@@ -301,6 +306,8 @@ export function RSIPanel({ data }: { data: DataPoint[] }) {
             dot={false} isAnimationActive={false} connectNulls />
         </ComposedChart>
       </ResponsiveContainer>
+      <ChartWatermark />
+      </div>
 
       {/* Signal widget */}
       {signal && (
@@ -395,7 +402,8 @@ export function MACDPanel({ data }: { data: DataPoint[] }) {
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={130}>
+      <div style={{ position: 'relative', width: '100%', height: 130 }}>
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.4} />
           <XAxis dataKey="time" tickFormatter={fmtX} tick={{ fill: '#4B5563', fontSize: 9 }}
@@ -409,6 +417,8 @@ export function MACDPanel({ data }: { data: DataPoint[] }) {
           <Line type="monotone" dataKey="signal" stroke="#F97316" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />
         </ComposedChart>
       </ResponsiveContainer>
+      <ChartWatermark />
+      </div>
 
       {/* Signal widget */}
       {signal && (
