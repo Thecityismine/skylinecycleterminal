@@ -1,5 +1,5 @@
 export type StockType = 'equity' | 'etf' | 'btc_proxy';
-export type StockGroup = 'btc' | 'ai' | 'tech' | 'macro' | 'ai_pure' | 'space';
+export type StockGroup = 'btc' | 'ai' | 'tech' | 'macro' | 'ai_pure' | 'space' | 'health';
 
 export type WatchlistItem = {
   ticker:  string;
@@ -32,6 +32,8 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'RKLB',  name: 'Rocket Lab',        sector: 'Space Launch',       group: 'space',   type: 'equity',    color: '#C6422E' },
   { ticker: 'ASTS',  name: 'AST SpaceMobile',   sector: 'Space Connectivity', group: 'space',   type: 'equity',    color: '#5B7DD8' },
   { ticker: 'LUNR',  name: 'Intuitive Machines', sector: 'Lunar Exploration', group: 'space',   type: 'equity',    color: '#A9B4C0' },
+  // Healthcare / Pharma
+  { ticker: 'NVO',   name: 'Novo Nordisk',       sector: 'GLP-1 / Pharma',    group: 'health',  type: 'equity',    color: '#0066CC' },
   // Mega-cap Tech
   { ticker: 'AAPL',  name: 'Apple',             sector: 'Technology',         group: 'tech',    type: 'equity',    color: '#A2AAAD' },
   { ticker: 'MSFT',  name: 'Microsoft',         sector: 'Technology',         group: 'tech',    type: 'equity',    color: '#00A4EF' },
@@ -44,6 +46,7 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'SPY',   name: 'S&P 500 ETF',       sector: 'Index',              group: 'macro',   type: 'etf',       color: '#53A7FF' },
   { ticker: 'QQQ',   name: 'Nasdaq 100 ETF',    sector: 'Index',              group: 'macro',   type: 'etf',       color: '#9B8CFF' },
   { ticker: 'TLT',   name: '20Y Treasury ETF',  sector: 'Bonds',              group: 'macro',   type: 'etf',       color: '#35D07F' },
+  { ticker: 'SPCX',  name: 'SPAC & New Issue ETF', sector: 'SPACs / IPOs',   group: 'macro',   type: 'etf',       color: '#8B5CF6' },
 ];
 
 export const GROUP_LABELS: Record<StockGroup, string> = {
@@ -52,10 +55,11 @@ export const GROUP_LABELS: Record<StockGroup, string> = {
   ai_pure:  'AI Pure Play',
   space:    'Space',
   tech:     'Mega-Cap Tech',
+  health:   'Healthcare · Pharma',
   macro:    'Macro · ETFs',
 };
 
-export const GROUP_ORDER: StockGroup[] = ['btc', 'ai', 'ai_pure', 'space', 'tech', 'macro'];
+export const GROUP_ORDER: StockGroup[] = ['btc', 'ai', 'ai_pure', 'space', 'tech', 'health', 'macro'];
 
 export function getStock(ticker: string): WatchlistItem | undefined {
   return WATCHLIST.find((s) => s.ticker === ticker.toUpperCase());
