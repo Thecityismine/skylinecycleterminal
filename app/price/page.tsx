@@ -5,8 +5,6 @@ import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { PriceStructureChart, RSIPanel, MACDPanel } from '@/components/charts/PriceStructureChart';
-import { BtcM2Chart } from '@/components/charts/BtcM2Chart';
-import type { BtcM2Point } from '@/app/api/price/btc-m2/route';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -99,20 +97,15 @@ function downsample<T>(arr: T[], max = 800): T[] {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-type BtcM2Response = { points: BtcM2Point[]; current: { ratio: number | null; ema200: number | null; ema400: number | null; sma52: number | null } };
-
 export default function PricePage() {
-  const [asset,      setAsset]      = useState<'btc' | 'eth'>('btc');
-  const [timeframe,  setTimeframe]  = useState<Timeframe>('All');
-  const [overlays,   setOverlays]   = useState<Set<string>>(new Set(['200 DMA', 'Halvings']));
-  const [logScale,   setLogScale]   = useState(true);
-  const [m2LogScale, setM2LogScale] = useState(false);
+  const [asset,     setAsset]     = useState<'btc' | 'eth'>('btc');
+  const [timeframe, setTimeframe] = useState<Timeframe>('All');
+  const [overlays,  setOverlays]  = useState<Set<string>>(new Set(['200 DMA', 'Halvings']));
+  const [logScale,  setLogScale]  = useState(true);
 
   const { data: priceData, loading } = useApiData<{ prices: PricePoint[] }>(
     `/api/price?asset=${asset}&start=2010-01-01`
   );
-
-  const { data: m2Data, loading: m2Loading } = useApiData<BtcM2Response>('/api/price/btc-m2');
 
   function toggleOverlay(name: string) {
     setOverlays(prev => {
@@ -283,89 +276,6 @@ export default function PricePage() {
         )
       }
 
-      {/* BTC / M2 Money Supply */}
-      <div
-        className="rounded-xl border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        {/* Header */}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC / M2 Money Supply
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Weekly BTC price relative to US M2 — adjusts for monetary expansion · ratio × 1000
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Current value badges */}
-            {m2Data?.current.ratio != null && (
-              <div className="flex items-center gap-3 text-xs font-mono">
-                <span style={{ color: 'rgba(247,249,252,0.7)' }}>
-                  Ratio <span className="font-bold" style={{ color: 'var(--sct-text)' }}>{m2Data.current.ratio.toFixed(2)}</span>
-                </span>
-                {m2Data.current.ema200 != null && (
-                  <span style={{ color: '#35D07F' }}>
-                    200E <span className="font-bold">{m2Data.current.ema200.toFixed(2)}</span>
-                  </span>
-                )}
-                {m2Data.current.ema400 != null && (
-                  <span style={{ color: '#FF5C5C' }}>
-                    400E <span className="font-bold">{m2Data.current.ema400.toFixed(2)}</span>
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Log toggle */}
-            <button
-              onClick={() => setM2LogScale(v => !v)}
-              className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
-              style={{
-                backgroundColor: m2LogScale ? '#A855F720' : 'transparent',
-                borderColor: m2LogScale ? '#A855F7' : 'var(--sct-border)',
-                color: m2LogScale ? '#A855F7' : 'var(--sct-muted)',
-              }}
-            >
-              LOG
-            </button>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className="flex flex-wrap gap-x-5 gap-y-1">
-          {[
-            { color: 'rgba(247,249,252,0.85)', label: 'BTC / M2 Ratio' },
-            { color: '#35D07F',               label: '200 EMA' },
-            { color: '#FF5C5C',               label: '400 EMA' },
-            { color: '#E6B450',               label: '52 SMA', dashed: true },
-          ].map(({ color, label, dashed }) => (
-            <span key={label} className="flex items-center gap-1.5 text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>
-              <span
-                className="w-6 h-px inline-block"
-                style={{
-                  backgroundColor: color,
-                  borderTop: dashed ? `2px dashed ${color}` : undefined,
-                  height: dashed ? 0 : undefined,
-                  display: 'inline-block',
-                }}
-              />
-              {label}
-            </span>
-          ))}
-        </div>
-
-        {/* Chart */}
-        <div className="h-[400px]">
-          {m2Loading || !m2Data?.points.length
-            ? <ChartSkeleton height="h-full" />
-            : <BtcM2Chart data={m2Data.points} logScale={m2LogScale} />
-          }
-        </div>
-      </div>
     </div>
   );
 }
-

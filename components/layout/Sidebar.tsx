@@ -72,6 +72,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Heikin-Ashi",      href: "/price/heikin-ashi",        icon: BarChart2 },
       { label: "Pi Cycle Bottom",  href: "/price/pi-cycle-bottom",    icon: TrendingDown },
       { label: "Hash Ribbons",     href: "/price/hash-ribbons",       icon: Waves },
+      { label: "BTC / M2",        href: "/price/btc-m2",             icon: DollarSign },
     ],
   },
   {
