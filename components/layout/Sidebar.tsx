@@ -66,6 +66,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Market Regime",    href: "/price/market-regime",      icon: Radar },
       { label: "4-Year Cycle",     href: "/price/four-year-cycle",    icon: CalendarDays },
       { label: "2-Year MA",        href: "/price/two-year-ma",        icon: BarChart3 },
+      { label: "100-Week MA",      href: "/price/btc-100w-ma",        icon: TrendingUp },
       { label: "Realized Price",   href: "/price/realized-price",     icon: CircleDollarSign },
       { label: "Moving Averages",  href: "/price?view=ma",            icon: LineChart,         exact: true },
       { label: "Ratio Charts",    href: "/price/ratios",             icon: BarChart2 },
