@@ -74,7 +74,8 @@ export default async function CycleMasterPage() {
     if (i % 7 === 0 || i === points.length - 1) weekly.push(points[i]);
   }
 
-  const last = points.at(-1) ?? null;
+  // CoinMetrics publishes with a 1-day lag — skip today's incomplete row
+  const last = points.findLast((p) => p.realized != null) ?? points.at(-1) ?? null;
   const score = last ? scoreCycleMaster(last) : null;
 
   return (
