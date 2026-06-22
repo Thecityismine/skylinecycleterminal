@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
@@ -43,9 +44,9 @@ function xTickFormatter(time: string): string {
 
 // ─── Custom tooltip ───────────────────────────────────────────────────────────
 
-function ChartTip({ active, payload }: { active?: boolean; payload?: Array<{ payload: WeeklyPoint }> }) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
+type Visible = { ma50: boolean; ma100: boolean; ma200: boolean };
+
+function ChartTip({ d, visible }: { d: WeeklyPoint; visible: Visible }) {
   const dist = d.distanceFrom100W;
   const distColor = dist == null ? '#94A3B8' : dist >= 0 ? '#35D07F' : '#FF5C5C';
   const regimeLabel = d.trendRegime === 'bullish' ? 'Above Trend'
@@ -59,10 +60,10 @@ function ChartTip({ active, payload }: { active?: boolean; payload?: Array<{ pay
     >
       <p className="font-semibold" style={{ color: '#F8FAFC' }}>{d.time}</p>
       <p style={{ color: '#F7931A' }}>BTC:   <b>{fmtUSD(d.close)}</b></p>
-      {d.ma50  && <p style={{ color: '#3B82F6' }}>50W:   <b>{fmtUSD(d.ma50)}</b></p>}
-      {d.ma100 && <p style={{ color: '#EAB84D' }}>100W:  <b>{fmtUSD(d.ma100)}</b></p>}
-      {d.ma200 && <p style={{ color: '#A855F7' }}>200W:  <b>{fmtUSD(d.ma200)}</b></p>}
-      {dist != null && (
+      {visible.ma50  && d.ma50  && <p style={{ color: '#3B82F6' }}>50W:   <b>{fmtUSD(d.ma50)}</b></p>}
+      {visible.ma100 && d.ma100 && <p style={{ color: '#EAB84D' }}>100W:  <b>{fmtUSD(d.ma100)}</b></p>}
+      {visible.ma200 && d.ma200 && <p style={{ color: '#A855F7' }}>200W:  <b>{fmtUSD(d.ma200)}</b></p>}
+      {visible.ma100 && dist != null && (
         <p style={{ color: distColor }}>Dist 100W: <b>{dist >= 0 ? '+' : ''}{dist.toFixed(1)}%</b></p>
       )}
       <p style={{ color: '#4B5563' }}>{regimeLabel}</p>
@@ -78,17 +79,38 @@ type Props = {
 };
 
 export function BTC100WChart({ points, regimes }: Props) {
+  const [show50,      setShow50]      = useState(true);
+  const [show100,     setShow100]     = useState(true);
+  const [show200,     setShow200]     = useState(true);
+  const [showShading, setShowShading] = useState(true);
+
+  const visible: Visible = { ma50: show50, ma100: show100, ma200: show200 };
+
   const prices   = points.map((p) => p.close).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.4) : 0.01;
   const pMax     = prices.length ? Math.max(...prices) * 2.5  : 1_000_000;
   const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
 
-  // Only show the last data point as the tick so XAxis doesn't crowd
   const allTimes   = points.map((p) => p.time);
   const xTickTimes = allTimes.filter((t) => xTickFormatter(t) !== '');
 
   const regimeColor = (r: RegimeSegment['regime']) =>
     r === 'bullish' ? '#35D07F' : r === 'bearish' ? '#FF5C5C' : '#E6B450';
+
+  // Toggle button rows: lines (clickable) + shading + static shading legend
+  const lineToggles: Array<{
+    key: keyof Visible | 'shading';
+    color: string;
+    label: string;
+    lineW?: number;
+    active: boolean;
+    onToggle: () => void;
+  }> = [
+    { key: 'ma200',   color: '#A855F7', label: '200W MA',     lineW: 1.5, active: show200,      onToggle: () => setShow200((v) => !v) },
+    { key: 'ma50',    color: '#3B82F6', label: '50W MA',      lineW: 1.5, active: show50,       onToggle: () => setShow50((v) => !v) },
+    { key: 'ma100',   color: '#EAB84D', label: '100W MA',     lineW: 2.5, active: show100,      onToggle: () => setShow100((v) => !v) },
+    { key: 'shading', color: '#35D07F', label: 'Trend shading',           active: showShading,  onToggle: () => setShowShading((v) => !v) },
+  ];
 
   return (
     <div style={{ position: 'relative', width: '100%', height: 480 }}>
@@ -97,7 +119,7 @@ export function BTC100WChart({ points, regimes }: Props) {
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
 
           {/* ── Regime shading ──────────────────────────────────────────── */}
-          {regimes.map((seg, i) => (
+          {showShading && regimes.map((seg, i) => (
             <ReferenceArea
               key={i}
               x1={seg.start}
@@ -149,73 +171,85 @@ export function BTC100WChart({ points, regimes }: Props) {
             allowDataOverflow
           />
 
-          <Tooltip content={<ChartTip />} cursor={{ stroke: '#334155', strokeWidth: 1 }} />
+          <Tooltip
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const d = (payload[0] as any).payload as WeeklyPoint;
+              return <ChartTip d={d} visible={visible} />;
+            }}
+            cursor={{ stroke: '#334155', strokeWidth: 1 }}
+          />
 
-          {/* ── MAs — drawn bottom to top so price is on top ────────────── */}
-          <Line
-            dataKey="ma200"
-            stroke="#A855F7"
-            strokeWidth={1.5}
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-            name="200W MA"
-          />
-          <Line
-            dataKey="ma50"
-            stroke="#3B82F6"
-            strokeWidth={1.5}
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-            name="50W MA"
-          />
-          <Line
-            dataKey="ma100"
-            stroke="#EAB84D"
-            strokeWidth={2.5}
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-            name="100W MA"
-          />
-          <Line
-            dataKey="close"
-            stroke="#F7931A"
-            strokeWidth={2}
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-            name="BTC Price"
-          />
+          {/* ── MAs — drawn bottom to top so price is always on top ─────── */}
+          {show200 && (
+            <Line dataKey="ma200" stroke="#A855F7" strokeWidth={1.5}
+              dot={false} connectNulls isAnimationActive={false} name="200W MA" />
+          )}
+          {show50 && (
+            <Line dataKey="ma50" stroke="#3B82F6" strokeWidth={1.5}
+              dot={false} connectNulls isAnimationActive={false} name="50W MA" />
+          )}
+          {show100 && (
+            <Line dataKey="ma100" stroke="#EAB84D" strokeWidth={2.5}
+              dot={false} connectNulls isAnimationActive={false} name="100W MA" />
+          )}
+          <Line dataKey="close" stroke="#F7931A" strokeWidth={2}
+            dot={false} connectNulls isAnimationActive={false} name="BTC Price" />
         </ComposedChart>
       </ResponsiveContainer>
 
       <ChartWatermark />
 
-      {/* Legend */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mt-3 text-xs font-mono">
-        {[
-          { color: '#F7931A', label: 'BTC Price',           width: 2 },
-          { color: '#EAB84D', label: '100W MA',             width: 2.5 },
-          { color: '#3B82F6', label: '50W MA',              width: 1.5 },
-          { color: '#A855F7', label: '200W MA',             width: 1.5 },
-          { color: '#35D07F', label: 'Above trend',         opacity: 0.25 },
-          { color: '#E6B450', label: 'Testing (±5%)',       opacity: 0.25 },
-          { color: '#FF5C5C', label: 'Below trend',         opacity: 0.25 },
-        ].map((l) => (
-          <span key={l.label} className="flex items-center gap-1.5" style={{ color: l.color }}>
-            {'opacity' in l ? (
-              <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: l.color, opacity: l.opacity }} />
+      {/* ── Legend + toggles ──────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-1 mt-3">
+        {/* BTC Price — always on, not a button */}
+        <span className="flex items-center gap-1.5 px-2 py-1 text-xs font-mono" style={{ color: '#F7931A' }}>
+          <span className="rounded-full" style={{ width: 16, height: 2, backgroundColor: '#F7931A', display: 'inline-block' }} />
+          BTC Price
+        </span>
+
+        {/* Toggleable items */}
+        {lineToggles.map((t) => (
+          <button
+            key={t.key}
+            onClick={t.onToggle}
+            className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono border transition-all"
+            style={{
+              borderColor:     t.active ? `${t.color}50` : 'var(--sct-border)',
+              backgroundColor: t.active ? `${t.color}10` : 'transparent',
+              color:           t.active ? t.color : 'var(--sct-muted)',
+              opacity:         t.active ? 1 : 0.5,
+            }}
+            title={t.active ? `Hide ${t.label}` : `Show ${t.label}`}
+          >
+            {t.key === 'shading' ? (
+              <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: t.color, opacity: t.active ? 0.3 : 0.15 }} />
             ) : (
               <span
                 className="rounded-full"
-                style={{ width: 16, height: l.width ?? 2, backgroundColor: l.color, display: 'inline-block' }}
+                style={{ width: 16, height: t.lineW ?? 2, backgroundColor: t.color, display: 'inline-block' }}
               />
             )}
-            {l.label}
-          </span>
+            {t.label}
+          </button>
         ))}
+
+        {/* Static shading legend */}
+        {showShading && (
+          <span className="flex items-center gap-3 ml-2 pl-2 text-xs font-mono" style={{ borderLeft: '1px solid var(--sct-border)' }}>
+            {[
+              { color: '#35D07F', label: 'Above' },
+              { color: '#E6B450', label: '±5%' },
+              { color: '#FF5C5C', label: 'Below' },
+            ].map((s) => (
+              <span key={s.label} className="flex items-center gap-1" style={{ color: s.color }}>
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: s.color, opacity: 0.25 }} />
+                {s.label}
+              </span>
+            ))}
+          </span>
+        )}
       </div>
     </div>
   );
