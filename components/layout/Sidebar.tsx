@@ -33,6 +33,7 @@ import {
   Briefcase,
   Flame,
   Lock,
+  Crosshair,
 } from "lucide-react";
 
 type NavItem = {
@@ -90,7 +91,8 @@ const nav: (NavItem | NavSection)[] = [
       { label: "MVRV Z-Score",      href: "/onchain",                    icon: Zap },
       { label: "SOPR",               href: "/onchain/sopr",               icon: Activity },
       { label: "HODL Wave",          href: "/onchain/hodl-wave",          icon: Lock },
-      { label: "Value Floors",        href: "/onchain/cvdd",               icon: BarChart2 },
+      { label: "Value Floors",          href: "/onchain/cvdd",               icon: BarChart2 },
+      { label: "Bottom Confluence",    href: "/onchain/bottom-confluence",  icon: Crosshair },
       { label: "NUPL",               href: "/onchain/reserve-risk",       icon: ShieldCheck },
       { label: "Puell Multiple",    href: "/onchain?metric=puell",       icon: Cpu },
       { label: "NVT Signal",        href: "/onchain?metric=nvt",         icon: Network },
