@@ -4,18 +4,23 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const symbol = searchParams.get('symbol') ?? 'BTCUSDT';
-  const limit  = searchParams.get('limit')  ?? '1000';
+  const symbol   = searchParams.get('symbol')   ?? 'BTCUSDT';
+  const limit    = searchParams.get('limit')    ?? '1000';
+  const exchange = searchParams.get('exchange') ?? 'com'; // 'com' | 'us'
+
+  const base = exchange === 'us'
+    ? 'https://api.binance.us'
+    : 'https://api.binance.com';
 
   try {
     const res = await fetch(
-      `https://api.binance.com/api/v3/depth?symbol=${encodeURIComponent(symbol)}&limit=${encodeURIComponent(limit)}`,
+      `${base}/api/v3/depth?symbol=${encodeURIComponent(symbol)}&limit=${encodeURIComponent(limit)}`,
       { cache: 'no-store' },
     );
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: `Binance returned HTTP ${res.status}` },
+        { error: `Binance ${exchange} returned HTTP ${res.status}` },
         { status: res.status },
       );
     }

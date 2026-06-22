@@ -81,8 +81,18 @@ type TickerState = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const WS_URL            = 'wss://stream.binance.com:9443/ws/btcusdt@depth@100ms';
-const SNAPSHOT_MS       = 500;
+// Tried in round-robin order on each reconnect attempt.
+// Port 443 avoids most firewall blocks; 9443 is the "canonical" Binance port.
+// binance.us is the fallback for US-restricted IPs.
+const WS_URLS = [
+  'wss://stream.binance.com:443/ws/btcusdt@depth@100ms',
+  'wss://stream.binance.com:9443/ws/btcusdt@depth@100ms',
+  'wss://stream.binance.us:9443/ws/btcusdt@depth@100ms',
+  'wss://stream.binance.us:443/ws/btcusdt@depth@100ms',
+];
+
+const WS_CONNECT_TIMEOUT_MS = 8_000; // abort silent TCP hangs fast
+const SNAPSHOT_MS            = 500;
 const MAX_SNAPSHOTS     = 3600; // 30 min at 500 ms
 const NUM_PRICE_BINS    = 80;
 const CANVAS_H          = 560;
@@ -165,11 +175,15 @@ function renderHeatmap(
     ctx.textAlign = 'center';
     ctx.fillText(
       status === 'connecting' ? 'Connecting to Binance…'
-      : status === 'syncing'  ? 'Synchronizing order book…'
-      : status === 'error'    ? 'Connection failed'
+      : status === 'syncing'  ? 'Synchronizing order book snapshot…'
+      : status === 'error'    ? 'Connection failed — all endpoints unreachable'
       : 'Collecting order book data…',
       W / 2, H / 2,
     );
+    if (status === 'connecting') {
+      ctx.fillStyle = '#1E293B';
+      ctx.fillText('Trying multiple endpoints automatically', W / 2, H / 2 + 18);
+    }
     return;
   }
 
@@ -367,22 +381,34 @@ export function LiquidityHeatmap() {
   }, []);
 
   // ── WebSocket + order book management ────────────────────────────────────────
-  const connect = useCallback(async () => {
+  const connect = useCallback(() => {
     wsRef.current?.close();
 
-    const book    = bookRef.current;
-    book.ready    = false;
-    book.buffer   = [];
+    const book  = bookRef.current;
+    book.ready  = false;
+    book.buffer = [];
 
     setStatusBoth('connecting');
 
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
+    // Cycle through fallback URLs so each retry tries the next endpoint
+    const wsUrl    = WS_URLS[attemptsRef.current % WS_URLS.length];
+    const isUsHost = wsUrl.includes('binance.us');
+    const ws       = new WebSocket(wsUrl);
+    wsRef.current  = ws;
+
+    // Abort silent TCP hangs (e.g. port blocked, no RST sent)
+    const connectTimer = setTimeout(() => {
+      if (ws.readyState === WebSocket.CONNECTING) ws.close();
+    }, WS_CONNECT_TIMEOUT_MS);
 
     ws.onopen = async () => {
+      clearTimeout(connectTimer);
       setStatusBoth('syncing');
+      const exchange = isUsHost ? 'us' : 'com';
       try {
-        const res = await fetch('/api/binance/depth?symbol=BTCUSDT&limit=1000');
+        const res = await fetch(
+          `/api/binance/depth?symbol=BTCUSDT&limit=1000&exchange=${exchange}`,
+        );
         if (!res.ok) throw new Error(`Snapshot HTTP ${res.status}`);
         const snap = await res.json() as {
           lastUpdateId: number;
@@ -402,7 +428,6 @@ export function LiquidityHeatmap() {
         }
         book.lastUpdateId = snap.lastUpdateId;
 
-        // Replay buffered events after the snapshot
         for (const evt of book.buffer) {
           if (evt.u <= book.lastUpdateId) continue;
           applyDelta(book, evt);
@@ -423,9 +448,11 @@ export function LiquidityHeatmap() {
     };
 
     ws.onclose = () => {
+      clearTimeout(connectTimer);
       wsRef.current = null;
-      if (attemptsRef.current < 8) {
-        const delay = Math.min(2000 * (attemptsRef.current + 1), 15_000);
+      if (attemptsRef.current < WS_URLS.length * 3) {
+        // short delay so the browser can release the old socket
+        const delay = 1500;
         attemptsRef.current++;
         setStatusBoth('connecting');
         reconnRef.current = setTimeout(connect, delay);
@@ -434,7 +461,10 @@ export function LiquidityHeatmap() {
       }
     };
 
-    ws.onerror = () => ws.close();
+    ws.onerror = () => {
+      clearTimeout(connectTimer);
+      ws.close();
+    };
   }, [setStatusBoth]);
 
   // ── Snapshot capture interval + WebSocket lifecycle ───────────────────────
