@@ -1,4 +1,4 @@
-import type { OnChainPoint } from '@/lib/api/coinmetrics';
+import type { OnChainPoint, PricePoint } from '@/lib/api/coinmetrics';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,7 +11,7 @@ export type IndicatorResult = {
   rawLabel: string;
   signal: string;
   source: string;
-  weight: number;      // 10 per indicator (10 indicators × 10% = 100%)
+  weight: number;
   available: boolean;
 };
 
@@ -25,11 +25,21 @@ export type CycleScoreResult = {
 };
 
 export type ExtraData = {
-  mvrvRatio?:       number | null;
-  stablecoinSupply?: number | null;   // USD total from DeFiLlama
-  hashratePoints?:  Array<{ timestamp: number; avgHashrate: number }> | null;
-  splyCur?:         number | null;    // current BTC supply (for Reserve Risk)
-  splyAct1yr?:      number | null;    // BTC active in last 1yr (for Reserve Risk)
+  mvrvRatio?:        number | null;
+  stablecoinSupply?: number | null;
+  hashratePoints?:   Array<{ timestamp: number; avgHashrate: number }> | null;
+  splyCur?:          number | null;
+  splyAct1yr?:       number | null;
+};
+
+// Pre-computed historical series for self-calibrating percentile normalization.
+// Built once per day from full price history (2012–present) and passed into
+// computeSkylineScore so every price-multiple indicator knows its own distribution.
+export type HistoricalContext = {
+  piCycleSeries:    number[];   // 111DMA / (2 × 350DMA) for every valid day
+  mvrvProxySeries:  number[];   // price / 200DMA for every valid day
+  twoYMASeries:     number[];   // price / 730DMA for every valid day
+  powerLawSeries:   number[];   // price / powerLawFair for every valid day
 };
 
 // ─── Zone config ─────────────────────────────────────────────────────────────
@@ -51,10 +61,29 @@ function normalize(v: number, lo: number, hi: number): number {
   return clamp(((v - lo) / (hi - lo)) * 100, 0, 100);
 }
 
+// Full-array SMA — returns null until period is satisfied
+function smaArr(values: number[], period: number): (number | null)[] {
+  let sum = 0;
+  return values.map((v, i) => {
+    sum += v;
+    if (i >= period) sum -= values[i - period];
+    return i >= period - 1 ? sum / period : null;
+  });
+}
+
 function simpleMA(arr: number[], period: number): number | null {
   if (arr.length < period) return null;
   const slice = arr.slice(-period);
   return slice.reduce((s, v) => s + v, 0) / period;
+}
+
+// Percentile: where does `current` sit within `history`? Returns 0–100.
+// This is the core of self-calibration — no fixed ranges, no manual tuning.
+// As Bitcoin's multiples compress each cycle, the distribution shifts with them.
+function percentileScore(current: number, history: number[]): number {
+  if (history.length < 30) return 50; // not enough history yet
+  const below = history.filter((v) => v <= current).length;
+  return Math.round((below / history.length) * 100);
 }
 
 function signalLabel(score: number): string {
@@ -79,16 +108,64 @@ function unavailable(name: string, source: string): IndicatorResult {
   };
 }
 
-// ─── Indicator 1: Pi Cycle Top ───────────────────────────────────────────────
-// 111DMA / (2 × 350DMA) → approaches 1.0 at cycle tops
+const GENESIS_MS = new Date('2009-01-03').getTime();
 
-function piCycleIndicator(prices: number[]): IndicatorResult {
+function powerLawAtDate(dateStr: string): number {
+  const days = (new Date(dateStr + 'T00:00:00').getTime() - GENESIS_MS) / 86_400_000;
+  return Math.pow(10, 5.8 * Math.log10(Math.max(days, 1)) - 17.3);
+}
+
+// ─── Build calibration context (called once per day from the API route) ───────
+
+// Takes the full BTC daily price history (2012–present) and pre-computes the
+// distribution of each price-multiple indicator. These distributions are then
+// used to score the current reading as a percentile — fully self-calibrating.
+export function buildHistoricalContext(fullPrices: PricePoint[]): HistoricalContext {
+  const prices = fullPrices.map((p) => p.price);
+  const ma111  = smaArr(prices, 111);
+  const ma200  = smaArr(prices, 200);
+  const ma350  = smaArr(prices, 350);
+  const ma730  = smaArr(prices, 730);
+
+  const piCycleSeries:   number[] = [];
+  const mvrvProxySeries: number[] = [];
+  const twoYMASeries:    number[] = [];
+  const powerLawSeries:  number[] = [];
+
+  for (let i = 0; i < prices.length; i++) {
+    const p = prices[i];
+    const a111 = ma111[i], a200 = ma200[i], a350 = ma350[i], a730 = ma730[i];
+
+    if (a111 != null && a350 != null && a350 > 0)
+      piCycleSeries.push(a111 / (2 * a350));
+
+    if (a200 != null && a200 > 0)
+      mvrvProxySeries.push(p / a200);
+
+    if (a730 != null && a730 > 0)
+      twoYMASeries.push(p / a730);
+
+    const fair = powerLawAtDate(fullPrices[i].time);
+    if (fair > 0 && p > 0)
+      powerLawSeries.push(p / fair);
+  }
+
+  return { piCycleSeries, mvrvProxySeries, twoYMASeries, powerLawSeries };
+}
+
+// ─── Indicator 1: Pi Cycle Top ────────────────────────────────────────────────
+// 111DMA / (2 × 350DMA). Approaches 1.0 at historical cycle tops.
+// Percentile-scored: where does this ratio sit within all of BTC history?
+
+function piCycleIndicator(prices: number[], ctx?: HistoricalContext): IndicatorResult {
   const ma111 = simpleMA(prices, 111);
   const ma350 = simpleMA(prices, 350);
   if (ma111 == null || ma350 == null) return unavailable('Pi Cycle Top', 'CoinMetrics (calc)');
 
   const ratio = ma111 / (2 * ma350);
-  const score = normalize(ratio, 0.3, 1.0);
+  const score = ctx?.piCycleSeries.length
+    ? percentileScore(ratio, ctx.piCycleSeries)
+    : normalize(ratio, 0.3, 1.0);
 
   return {
     name: 'Pi Cycle Top', score, rawValue: ratio,
@@ -99,9 +176,11 @@ function piCycleIndicator(prices: number[]): IndicatorResult {
 }
 
 // ─── Indicator 2: MVRV Ratio ─────────────────────────────────────────────────
-// Real from CryptoQuant when available; proxy (price/200DMA) as fallback.
+// Real MVRV from CryptoQuant when available (fixed range is fine — it's a
+// standardized on-chain ratio not affected by diminishing price returns).
+// Proxy (price/200DMA) uses percentile to self-calibrate.
 
-function mvrvIndicator(prices: number[], realMVRV: number | null): IndicatorResult {
+function mvrvIndicator(prices: number[], realMVRV: number | null, ctx?: HistoricalContext): IndicatorResult {
   if (realMVRV != null && realMVRV > 0) {
     const score = normalize(realMVRV, 0.5, 5.0);
     return {
@@ -112,13 +191,14 @@ function mvrvIndicator(prices: number[], realMVRV: number | null): IndicatorResu
     };
   }
 
-  // Proxy: price / 200DMA (free-tier fallback)
   const ma200   = simpleMA(prices, 200);
   const current = prices[prices.length - 1];
   if (ma200 == null || current == null) return unavailable('MVRV Ratio', 'CoinMetrics (calc)');
 
   const ratio = current / ma200;
-  const score = normalize(ratio, 0.5, 4.0);
+  const score = ctx?.mvrvProxySeries.length
+    ? percentileScore(ratio, ctx.mvrvProxySeries)
+    : normalize(ratio, 0.5, 4.0);
 
   return {
     name: 'MVRV Ratio', score, rawValue: ratio,
@@ -129,7 +209,7 @@ function mvrvIndicator(prices: number[], realMVRV: number | null): IndicatorResu
 }
 
 // ─── Indicator 3: Puell Multiple ─────────────────────────────────────────────
-// Daily miner revenue / 365d MA — using IssTotNtv × price (free-tier approximation)
+// Miner revenue / 365d MA. Already a ratio-of-ratios — self-calibrating.
 
 function puellIndicator(data: Array<{ price: number | null; issTotNtv: number | null }>): IndicatorResult {
   const issTotUSD = data
@@ -152,15 +232,18 @@ function puellIndicator(data: Array<{ price: number | null; issTotNtv: number | 
 }
 
 // ─── Indicator 4: 2Y MA Multiplier ───────────────────────────────────────────
-// Price / 730d MA — accumulate below 1×, distribute above 5×
+// Price / 730d MA. Percentile-scored so diminishing cycle multiples don't
+// permanently under-read as the market matures.
 
-function twoYearMAIndicator(prices: number[]): IndicatorResult {
+function twoYearMAIndicator(prices: number[], ctx?: HistoricalContext): IndicatorResult {
   const ma730   = simpleMA(prices, 730);
   const current = prices[prices.length - 1];
   if (ma730 == null || current == null) return unavailable('2Y MA Multiplier', 'CoinMetrics (calc)');
 
   const multiplier = current / ma730;
-  const score = normalize(multiplier, 0.8, 5.0);
+  const score = ctx?.twoYMASeries.length
+    ? percentileScore(multiplier, ctx.twoYMASeries)
+    : normalize(multiplier, 0.8, 5.0);
 
   return {
     name: '2Y MA Multiplier', score, rawValue: multiplier,
@@ -171,14 +254,16 @@ function twoYearMAIndicator(prices: number[]): IndicatorResult {
 }
 
 // ─── Indicator 5: Log Regression (Bitcoin Power Law) ─────────────────────────
-// log10(price) = 5.8 × log10(daysSinceGenesis) − 17.3
+// price / powerLawFair. Percentile-scored so that the score reflects where
+// the current deviation sits in the full historical distribution.
 
-function logRegressionIndicator(currentPrice: number): IndicatorResult {
-  const genesis = new Date('2009-01-03').getTime();
-  const days    = (Date.now() - genesis) / 86_400_000;
-  const fair    = Math.pow(10, 5.8 * Math.log10(days) - 17.3);
-  const ratio   = currentPrice / fair;
-  const score   = normalize(ratio, 0.4, 3.0);
+function logRegressionIndicator(currentPrice: number, ctx?: HistoricalContext): IndicatorResult {
+  const days = (Date.now() - GENESIS_MS) / 86_400_000;
+  const fair = Math.pow(10, 5.8 * Math.log10(days) - 17.3);
+  const ratio = currentPrice / fair;
+  const score = ctx?.powerLawSeries.length
+    ? percentileScore(ratio, ctx.powerLawSeries)
+    : normalize(ratio, 0.4, 3.0);
 
   return {
     name: 'Log Regression', score, rawValue: ratio,
@@ -189,7 +274,7 @@ function logRegressionIndicator(currentPrice: number): IndicatorResult {
 }
 
 // ─── Indicator 6: NVT Signal ─────────────────────────────────────────────────
-// Market Cap / 90d MA of TxCnt — network value vs. actual usage
+// Market Cap / 90d MA of TxCnt.
 
 function nvtIndicator(data: Array<{ marketCap: number | null; txCnt: number | null }>): IndicatorResult {
   const valid = data.filter(
@@ -213,6 +298,7 @@ function nvtIndicator(data: Array<{ marketCap: number | null; txCnt: number | nu
 }
 
 // ─── Indicator 7: Fear & Greed ────────────────────────────────────────────────
+// Already 0–100, inherently self-calibrating.
 
 function fearGreedIndicator(value: number): IndicatorResult {
   return {
@@ -224,7 +310,7 @@ function fearGreedIndicator(value: number): IndicatorResult {
 }
 
 // ─── Indicator 8: Active Addresses Trend ─────────────────────────────────────
-// 30d MA / 365d MA — growing network participation is bullish
+// 30d MA / 365d MA. Ratio-of-ratios — self-calibrating.
 
 function activeAddressesIndicator(adrActCnt: number[]): IndicatorResult {
   const ma30  = simpleMA(adrActCnt, 30);
@@ -243,8 +329,7 @@ function activeAddressesIndicator(adrActCnt: number[]): IndicatorResult {
 }
 
 // ─── Indicator 9: Stablecoin Supply vs BTC Market Cap ────────────────────────
-// High stablecoin % of BTC MC = lots of dry powder on sidelines = early/mid cycle
-// Low stablecoin % = all capital deployed = late cycle risk
+// Ratio-based — self-calibrating.
 
 function stablecoinIndicator(stablecoinUSD: number | null, btcMarketCap: number | null): IndicatorResult {
   if (!stablecoinUSD || !btcMarketCap || btcMarketCap === 0) {
@@ -252,8 +337,6 @@ function stablecoinIndicator(stablecoinUSD: number | null, btcMarketCap: number 
   }
 
   const ratio = stablecoinUSD / btcMarketCap;
-  // ratio ~0.35 = lots of dry powder (bear/early bull) → score 0 (accumulate)
-  // ratio ~0.08 = all deployed (bull peak) → score 100 (distribute)
   const score = clamp(100 - normalize(ratio, 0.08, 0.35), 0, 100);
 
   return {
@@ -265,9 +348,7 @@ function stablecoinIndicator(stablecoinUSD: number | null, btcMarketCap: number 
 }
 
 // ─── Indicator 10: Hash Rate Ribbon ──────────────────────────────────────────
-// 60d MA / 365d MA of BTC hash rate
-// Ribbon < 1 = miner capitulation = historically excellent accumulation signal
-// Ribbon > 1.2 = hash rate expanding = miners bullish, confident
+// 60d MA / 365d MA. Ratio-of-ratios — self-calibrating.
 
 function hashRateRibbonIndicator(
   points: Array<{ timestamp: number; avgHashrate: number }> | null
@@ -282,9 +363,7 @@ function hashRateRibbonIndicator(
   if (ma60 == null || ma365 == null || ma365 === 0) return unavailable('Hash Rate Ribbon', 'Mempool.space');
 
   const ribbon = ma60 / ma365;
-  // ribbon 0.85 (capitulation → strong buy) → score 0
-  // ribbon 1.4  (expanded expansion)        → score 100
-  const score = normalize(ribbon, 0.85, 1.4);
+  const score  = normalize(ribbon, 0.85, 1.4);
 
   return {
     name: 'Hash Rate Ribbon', score, rawValue: ribbon,
@@ -295,36 +374,41 @@ function hashRateRibbonIndicator(
 }
 
 // ─── Indicator 11: Reserve Risk ───────────────────────────────────────────────
-// Proxy: (active supply ratio × price vs 200d MA)
-// Low active ratio (everyone HODLing) + low price = low risk (accumulate)
-// High active ratio (people selling) + elevated price = high risk (distribute)
+// Price component uses MVRV proxy percentile so it self-calibrates with the
+// market. Supply activity component (activeRatio) retains a fixed range —
+// that ratio doesn't exhibit the same cycle-to-cycle compression.
 
 function reserveRiskIndicator(
   prices:     number[],
   splyCur:    number | null,
   splyAct1yr: number | null,
+  ctx?:       HistoricalContext,
 ): IndicatorResult {
   if (splyCur == null || splyAct1yr == null || splyCur === 0) {
     return unavailable('Reserve Risk', 'CoinMetrics');
   }
 
-  const ma200       = simpleMA(prices, 200);
+  const ma200        = simpleMA(prices, 200);
   const currentPrice = prices[prices.length - 1];
   if (ma200 == null || currentPrice == null || ma200 === 0) {
     return unavailable('Reserve Risk', 'CoinMetrics');
   }
 
-  const dormantRatio = (splyCur - splyAct1yr) / splyCur; // fraction HODLing >1yr
-  const activeRatio  = 1 - dormantRatio;                  // fraction recently transacted
-  const priceMult    = currentPrice / ma200;              // how elevated price is vs avg
+  const dormantRatio = (splyCur - splyAct1yr) / splyCur;
+  const activeRatio  = 1 - dormantRatio;
+  const priceMult    = currentPrice / ma200;
 
-  // rrProxy is high when price is elevated AND fewer people are HODLing
-  const rrProxy = activeRatio * priceMult;
-
-  // Calibrated range:
-  // ~0.30 = deep accumulation (lots HODLing, price below avg)
-  // ~1.80 = late-cycle distribution (people selling into elevated price)
-  const score = normalize(rrProxy, 0.30, 1.80);
+  let score: number;
+  if (ctx?.mvrvProxySeries.length) {
+    // Price component: percentile-scored (self-calibrating)
+    const priceScore  = percentileScore(priceMult, ctx.mvrvProxySeries);
+    // Supply activity: fixed range (0.12 dormant-heavy → 0.38 active-heavy)
+    const activeScore = normalize(activeRatio, 0.12, 0.38);
+    score = Math.round(priceScore * 0.65 + activeScore * 0.35);
+  } else {
+    const rrProxy = activeRatio * priceMult;
+    score = normalize(rrProxy, 0.30, 1.80);
+  }
 
   return {
     name:      'Reserve Risk',
@@ -343,28 +427,28 @@ function reserveRiskIndicator(
 export function computeSkylineScore(
   onChain: OnChainPoint[],
   fearGreedValue: number,
-  extra: ExtraData = {}
+  extra: ExtraData = {},
+  ctx?: HistoricalContext,
 ): CycleScoreResult {
-  const prices    = onChain.filter((d) => d.price     != null).map((d) => d.price!);
-  const adrVals   = onChain.filter((d) => d.adrActCnt != null).map((d) => d.adrActCnt!);
-  const btcMC     = onChain.filter((d) => d.marketCap != null).at(-1)?.marketCap ?? null;
-  const curPrice  = prices[prices.length - 1] ?? 0;
+  const prices   = onChain.filter((d) => d.price     != null).map((d) => d.price!);
+  const adrVals  = onChain.filter((d) => d.adrActCnt != null).map((d) => d.adrActCnt!);
+  const btcMC    = onChain.filter((d) => d.marketCap != null).at(-1)?.marketCap ?? null;
+  const curPrice = prices[prices.length - 1] ?? 0;
 
   const indicators: IndicatorResult[] = [
-    piCycleIndicator(prices),
-    mvrvIndicator(prices, extra.mvrvRatio ?? null),
+    piCycleIndicator(prices, ctx),
+    mvrvIndicator(prices, extra.mvrvRatio ?? null, ctx),
     puellIndicator(onChain),
-    twoYearMAIndicator(prices),
-    logRegressionIndicator(curPrice),
+    twoYearMAIndicator(prices, ctx),
+    logRegressionIndicator(curPrice, ctx),
     nvtIndicator(onChain.map((d) => ({ marketCap: d.marketCap, txCnt: d.txCnt }))),
     fearGreedIndicator(fearGreedValue),
     activeAddressesIndicator(adrVals),
     stablecoinIndicator(extra.stablecoinSupply ?? null, btcMC),
     hashRateRibbonIndicator(extra.hashratePoints ?? null),
-    reserveRiskIndicator(prices, extra.splyCur ?? null, extra.splyAct1yr ?? null),
+    reserveRiskIndicator(prices, extra.splyCur ?? null, extra.splyAct1yr ?? null, ctx),
   ];
 
-  // Equal-weight average over only available indicators
   const avail       = indicators.filter((i) => i.available);
   const totalWeight = avail.reduce((s, i) => s + i.weight, 0);
   const weighted    = avail.reduce((s, i) => s + i.score * i.weight, 0);

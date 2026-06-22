@@ -2,21 +2,24 @@ import type { PricePoint } from '@/lib/api/coinmetrics';
 import type { ScoreZone } from './skylineScore';
 
 // Computes a price-based proxy for the Skyline Cycle Score across full BTC history.
-// Uses the 4 indicators derivable from price-only data, with identical normalization
-// ranges as the live score in skylineScore.ts.
+// Uses the 4 indicators derivable from price-only data.
 //
-// Indicators included:
-//   1. Pi Cycle Top ratio:   111DMA / (2 × 350DMA), range 0.3 → 1.0
-//   2. MVRV proxy:           price / 200DMA,         range 0.5 → 4.0
-//   3. 2Y MA Multiplier:     price / 730DMA,         range 0.8 → 5.0
-//   4. Log Regression:       price / powerLawFair,   range 0.4 → 3.0
+// Indicators:
+//   1. Pi Cycle Top ratio:   111DMA / (2 × 350DMA)
+//   2. MVRV proxy:           price / 200DMA
+//   3. 2Y MA Multiplier:     price / 730DMA
+//   4. Log Regression:       price / powerLawFair
+//
+// All 4 are scored as percentiles within their own full historical distribution
+// so the model self-calibrates — diminishing cycle returns are handled
+// automatically without ever touching this file again.
 
 export type HistoricalScorePoint = {
   time:     string;
   ts:       number;
-  score:    number;    // 0–100 composite of available price-based indicators
+  score:    number;    // 0–100 composite
   zone:     ScoreZone;
-  btcClose: number;    // BTC price for overlay correlation
+  btcClose: number;
 };
 
 const GENESIS_MS = new Date('2009-01-03').getTime();
@@ -37,8 +40,11 @@ function smaArr(values: number[], period: number): (number | null)[] {
   return out;
 }
 
-function norm(v: number, lo: number, hi: number): number {
-  return Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+// Where does `current` rank within `series`? Returns 0–100.
+function pct(current: number, series: number[]): number {
+  if (series.length < 30) return 50;
+  const below = series.filter((v) => v <= current).length;
+  return Math.round((below / series.length) * 100);
 }
 
 function zoneFromScore(s: number): ScoreZone {
@@ -55,6 +61,32 @@ export function computeHistoricalScore(prices: PricePoint[]): HistoricalScorePoi
   const ma350  = smaArr(closes, 350);
   const ma730  = smaArr(closes, 730);
 
+  // ── Build full distributions (used for percentile scoring below) ──────────
+  // Each series contains every valid value across all of BTC history.
+  // Scoring a day against the full distribution is "hindsight" but gives the
+  // most accurate cycle-level picture — it shows where each reading sits
+  // within the complete historical range Bitcoin has ever produced.
+
+  const piDist:    number[] = [];
+  const mvrvDist:  number[] = [];
+  const twoYDist:  number[] = [];
+  const powerDist: number[] = [];
+
+  for (let i = 0; i < closes.length; i++) {
+    const p = closes[i];
+    if (ma111[i] != null && ma350[i] != null && ma350[i]! > 0)
+      piDist.push(ma111[i]! / (2 * ma350[i]!));
+    if (ma200[i] != null && ma200[i]! > 0)
+      mvrvDist.push(p / ma200[i]!);
+    if (ma730[i] != null && ma730[i]! > 0)
+      twoYDist.push(p / ma730[i]!);
+    const fair = powerLawFair(prices[i].time);
+    if (fair > 0 && p > 0)
+      powerDist.push(p / fair);
+  }
+
+  // ── Score each day ────────────────────────────────────────────────────────
+
   const all: HistoricalScorePoint[] = [];
 
   for (let i = 0; i < prices.length; i++) {
@@ -62,25 +94,25 @@ export function computeHistoricalScore(prices: PricePoint[]): HistoricalScorePoi
     const price    = closes[i];
     const scores:  number[] = [];
 
-    // 1. Pi Cycle Top: 111DMA / (2 × 350DMA) → 0.3–1.0
+    // 1. Pi Cycle Top — percentile of 111DMA / (2 × 350DMA)
     if (ma111[i] != null && ma350[i] != null && ma350[i]! > 0) {
-      scores.push(norm(ma111[i]! / (2 * ma350[i]!), 0.3, 1.0));
+      scores.push(pct(ma111[i]! / (2 * ma350[i]!), piDist));
     }
 
-    // 2. MVRV proxy: price / 200DMA → 0.5–4.0
+    // 2. MVRV proxy — percentile of price / 200DMA
     if (ma200[i] != null && ma200[i]! > 0) {
-      scores.push(norm(price / ma200[i]!, 0.5, 4.0));
+      scores.push(pct(price / ma200[i]!, mvrvDist));
     }
 
-    // 3. 2Y MA Multiplier: price / 730DMA → 0.8–5.0
+    // 3. 2Y MA Multiplier — percentile of price / 730DMA
     if (ma730[i] != null && ma730[i]! > 0) {
-      scores.push(norm(price / ma730[i]!, 0.8, 5.0));
+      scores.push(pct(price / ma730[i]!, twoYDist));
     }
 
-    // 4. Log Regression / Power Law → 0.4–3.0
+    // 4. Log Regression / Power Law — percentile of price / fair value
     const fair = powerLawFair(time);
     if (fair > 0 && price > 0) {
-      scores.push(norm(price / fair, 0.4, 3.0));
+      scores.push(pct(price / fair, powerDist));
     }
 
     if (!scores.length) continue;
@@ -95,6 +127,6 @@ export function computeHistoricalScore(prices: PricePoint[]): HistoricalScorePoi
     });
   }
 
-  // Weekly downsample — 4000+ daily rows → ~600
+  // Weekly downsample — keeps the chart responsive
   return all.filter((_, i) => i % 7 === 0 || i === all.length - 1);
 }

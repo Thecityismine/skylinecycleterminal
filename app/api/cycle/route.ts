@@ -1,32 +1,43 @@
 import { NextResponse } from 'next/server';
-import { fetchOnChainMetrics, fetchCurrentLTHData } from '@/lib/api/coinmetrics';
+import { fetchOnChainMetrics, fetchCurrentLTHData, fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { fetchFearGreed } from '@/lib/api/feargreed';
 import { fetchMVRV } from '@/lib/api/cryptoquant';
 import { fetchStablecoinSupply } from '@/lib/api/defillama';
 import { fetchHashrate } from '@/lib/api/mempool';
-import { computeSkylineScore } from '@/lib/indicators/skylineScore';
+import { computeSkylineScore, buildHistoricalContext } from '@/lib/indicators/skylineScore';
 
 // 24-hour CDN cache — on-chain data is published daily with a 1-day lag
 export const revalidate = 86400;
 
 export async function GET() {
   try {
-    const [onChain, fg, mvrvData, stablecoin, hashrate, lthData] = await Promise.all([
+    const [onChain, fg, mvrvData, stablecoin, hashrate, lthData, fullPrices] = await Promise.all([
       fetchOnChainMetrics('2022-01-01'),
       fetchFearGreed(),
-      fetchMVRV(),             // null → proxy fallback in score engine
-      fetchStablecoinSupply(), // null → indicator marked unavailable
-      fetchHashrate(),         // null → indicator marked unavailable
-      fetchCurrentLTHData(),   // null → Reserve Risk marked unavailable
+      fetchMVRV(),
+      fetchStablecoinSupply(),
+      fetchHashrate(),
+      fetchCurrentLTHData(),
+      fetchBTCDailyPrice('2012-01-01'),   // full history for percentile calibration
     ]);
 
-    const result = computeSkylineScore(onChain, fg.value, {
-      mvrvRatio:        mvrvData?.mvrv ?? null,
-      stablecoinSupply: stablecoin?.totalCirculating ?? null,
-      hashratePoints:   hashrate?.points ?? null,
-      splyCur:          lthData?.splyCur    ?? null,
-      splyAct1yr:       lthData?.splyAct1yr ?? null,
-    });
+    // Build percentile distributions from full price history.
+    // This is what makes the score self-calibrating — each indicator is scored
+    // relative to where it sits within all of Bitcoin's recorded history.
+    const ctx = buildHistoricalContext(fullPrices);
+
+    const result = computeSkylineScore(
+      onChain,
+      fg.value,
+      {
+        mvrvRatio:        mvrvData?.mvrv ?? null,
+        stablecoinSupply: stablecoin?.totalCirculating ?? null,
+        hashratePoints:   hashrate?.points ?? null,
+        splyCur:          lthData?.splyCur    ?? null,
+        splyAct1yr:       lthData?.splyAct1yr ?? null,
+      },
+      ctx,
+    );
 
     return NextResponse.json(result);
   } catch (err) {
