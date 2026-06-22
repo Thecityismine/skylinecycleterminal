@@ -31,6 +31,7 @@ import {
   Scale,
   TrendingDown,
   Briefcase,
+  Flame,
 } from "lucide-react";
 
 type NavItem = {
@@ -73,6 +74,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Fear & Greed",      href: "/price/fear-greed",         icon: Activity },
       { label: "Drawdown / ATH",   href: "/price/drawdown",           icon: TrendingDown },
       { label: "Yearly Lows",      href: "/price/yearly-lows",        icon: TrendingDown },
+      { label: "Liquidity Heatmap", href: "/price/liquidity",          icon: Flame },
       { label: "Pi Cycle Bottom",  href: "/price/pi-cycle-bottom",    icon: TrendingDown },
       { label: "Hash Ribbons",     href: "/price/hash-ribbons",       icon: Waves },
       { label: "BTC / M2",        href: "/price/btc-m2",             icon: DollarSign },
