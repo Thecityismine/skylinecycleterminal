@@ -32,6 +32,7 @@ import {
   TrendingDown,
   Briefcase,
   Flame,
+  Lock,
 } from "lucide-react";
 
 type NavItem = {
@@ -88,6 +89,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Cycle Master",       href: "/onchain/cycle-master",       icon: Layers },
       { label: "MVRV Z-Score",      href: "/onchain",                    icon: Zap },
       { label: "SOPR",               href: "/onchain/sopr",               icon: Activity },
+      { label: "HODL Wave",          href: "/onchain/hodl-wave",          icon: Lock },
       { label: "NUPL",               href: "/onchain/reserve-risk",       icon: ShieldCheck },
       { label: "Puell Multiple",    href: "/onchain?metric=puell",       icon: Cpu },
       { label: "NVT Signal",        href: "/onchain?metric=nvt",         icon: Network },

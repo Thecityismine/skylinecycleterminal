@@ -291,6 +291,44 @@ export async function fetchCycleMasterData(startTime = '2010-07-01'): Promise<Cy
   return rows;
 }
 
+// ─── Exchange reserve data (SplyExNtv + SplyCur) ─────────────────────────────
+// SplyExNtv = BTC held on exchanges (free, available from ~2016)
+// Declining exchange supply = coins moving to cold storage = long-term holding behavior
+
+export type ExchangeReservePoint = {
+  time:    string;
+  price:   number;
+  exchBtc: number;   // BTC on exchanges (SplyExNtv)
+  splyCur: number;   // circulating supply (SplyCur)
+};
+
+export async function fetchBTCExchangeReserve(startTime = '2016-01-01'): Promise<ExchangeReservePoint[]> {
+  const all: ExchangeReservePoint[] = [];
+  let nextPageToken: string | null = null;
+
+  do {
+    const params: Record<string, string> = {
+      assets: 'btc', metrics: 'PriceUSD,SplyExNtv,SplyCur', frequency: '1d',
+      start_time: startTime, page_size: '10000',
+    };
+    if (nextPageToken) params.next_page_token = nextPageToken;
+
+    const json = await coinmetricsGet(params);
+    for (const d of json.data ?? []) {
+      if (d.PriceUSD == null || d.SplyExNtv == null || d.SplyCur == null) continue;
+      all.push({
+        time:    d.time.slice(0, 10),
+        price:   Number(d.PriceUSD),
+        exchBtc: Number(d.SplyExNtv),
+        splyCur: Number(d.SplyCur),
+      });
+    }
+    nextPageToken = (json as any).next_page_token ?? null;
+  } while (nextPageToken);
+
+  return all;
+}
+
 // Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
 export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnChainPoint[]> {
   // Only request metrics known to be in the free Community API
