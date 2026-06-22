@@ -119,38 +119,48 @@ function zoneOf(score: number): { zone: CycleZone; label: string; color: string 
 export function scoreCycleMaster(point: CycleMasterPoint): CycleMasterScore {
   const { price, realized, transferred, terminal, cdd, cdd90 } = point;
 
-  // Each ratio normalized 0–100 (clamped)
-  const priceToBalance = realized != null && transferred != null
-    ? clamp((price / ((realized - transferred) * 1.5)) * 100, 0, 100)
-    : 50;
+  // Dynamically collect components — only include what's available.
+  // Weights are proportional; they get re-normalized to sum to 1.0.
+  const parts: { score: number; weight: number }[] = [];
 
-  const priceToRealized = realized != null
-    ? clamp((price / (realized * 2)) * 100, 0, 100)
-    : 50;
-
-  const priceToTransferred = transferred != null
-    ? clamp((price / (transferred * 3)) * 100, 0, 100)
-    : 50;
-
-  const priceToTerminal = terminal != null
-    ? clamp((price / terminal) * 100, 0, 100)
-    : 50;
-
-  // CDD trend component: normalize cdd/cdd90 ratio
-  let cddComponent = 50;
-  if (cdd != null && cdd90 != null && cdd90 > 0) {
-    cddComponent = clamp((cdd / cdd90) * 50, 0, 100);
+  // MVRV = price / realized. Historical range ~0.5 (bottoms) → 5.0+ (tops).
+  // This is the primary signal when CDD is unavailable.
+  if (realized != null && realized > 0) {
+    const mvrv = price / realized;
+    const mvrvScore = clamp(((mvrv - 0.5) / (5.0 - 0.5)) * 100, 0, 100);
+    parts.push({ score: mvrvScore, weight: 0.50 });
   }
 
-  // Weighted sum: 25% + 20% + 20% + 25% + 10%
-  const score =
-    priceToBalance   * 0.25 +
-    priceToRealized  * 0.20 +
-    priceToTransferred * 0.20 +
-    priceToTerminal  * 0.25 +
-    cddComponent     * 0.10;
+  // Price vs 2× realized (overvaluation above cost basis)
+  if (realized != null && realized > 0) {
+    const s = clamp((price / (realized * 2)) * 100, 0, 100);
+    parts.push({ score: s, weight: 0.20 });
+  }
 
-  const { zone, label, color } = zoneOf(score);
+  // Price vs transferred × 3 (mid-cycle signal — only when CDD available)
+  if (transferred != null && transferred > 0) {
+    const s = clamp((price / (transferred * 3)) * 100, 0, 100);
+    parts.push({ score: s, weight: 0.15 });
+  }
 
-  return { score: Math.round(score * 10) / 10, zone, label, color };
+  // Price vs terminal (cycle-top signal — only when CDD available)
+  if (terminal != null && terminal > 0) {
+    const s = clamp((price / terminal) * 100, 0, 100);
+    parts.push({ score: s, weight: 0.15 });
+  }
+
+  // CDD spike component (only when CDD available)
+  if (cdd != null && cdd90 != null && cdd90 > 0) {
+    parts.push({ score: clamp((cdd / cdd90) * 50, 0, 100), weight: 0.10 });
+  }
+
+  if (parts.length === 0) {
+    return { score: 50, ...zoneOf(50) };
+  }
+
+  // Normalize weights so they always sum to 1.0
+  const totalWeight = parts.reduce((s, p) => s + p.weight, 0);
+  const score = parts.reduce((s, p) => s + p.score * (p.weight / totalWeight), 0);
+
+  return { score: Math.round(score * 10) / 10, ...zoneOf(score) };
 }

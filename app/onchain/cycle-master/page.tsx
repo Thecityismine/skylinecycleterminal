@@ -81,7 +81,7 @@ export default async function CycleMasterPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin Cycle Master"
-        subtitle="On-chain valuation model using Coin Days Destroyed, Transferred Price, and Terminal Price"
+        subtitle="On-chain valuation model — MVRV, Realized Price, Transferred Price, Terminal Price"
       />
 
       {/* ── Cycle zone banner ───────────────────────────────────────────── */}
@@ -131,46 +131,59 @@ export default async function CycleMasterPage() {
       )}
 
       {/* ── 5 stat cards ────────────────────────────────────────────────── */}
-      {last && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <StatCard
-            label="BTC Price"
-            value={fmtUSD(last.price)}
-            sub="Current market price"
-            accent="#F7931A"
-            freshness="daily"
-            source="CoinMetrics"
-          />
-          <StatCard
-            label="Terminal Price"
-            value={fmtUSD(last.terminal)}
-            sub={last.terminal != null ? pctRelToPrice(last.price, last.terminal) : 'Not available'}
-            accent="#FF5C68"
-            freshness="daily"
-          />
-          <StatCard
-            label="Transferred Price"
-            value={fmtUSD(last.transferred)}
-            sub={last.transferred != null ? pctRelToPrice(last.price, last.transferred) : 'Not available'}
-            accent="#EAB84D"
-            freshness="daily"
-          />
-          <StatCard
-            label="Realized Price"
-            value={fmtUSD(last.realized)}
-            sub={last.realized != null ? pctRelToPrice(last.price, last.realized) : 'Not available'}
-            accent="#3B82F6"
-            freshness="daily"
-          />
-          <StatCard
-            label="Balance Price"
-            value={fmtUSD(last.balance)}
-            sub={last.balance != null ? pctRelToPrice(last.price, last.balance) : 'Not available'}
-            accent="#35D07F"
-            freshness="daily"
-          />
-        </div>
-      )}
+      {last && (() => {
+        const mvrv = last.realized != null && last.realized > 0
+          ? last.price / last.realized
+          : null;
+        const mvrvSub = mvrv != null
+          ? mvrv < 1.0 ? 'Below cost basis — capitulation'
+          : mvrv < 2.0 ? 'Accumulation zone'
+          : mvrv < 3.5 ? 'Expansion / elevated'
+          : 'Distribution risk'
+          : 'Not available';
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <StatCard
+              label="BTC Price"
+              value={fmtUSD(last.price)}
+              sub="Current market price"
+              accent="#F7931A"
+              freshness="daily"
+              source="CoinMetrics"
+            />
+            <StatCard
+              label="MVRV Ratio"
+              value={mvrv != null ? `${mvrv.toFixed(2)}×` : '—'}
+              sub={mvrvSub}
+              accent="#A78BFA"
+              freshness="daily"
+              source="CoinMetrics"
+            />
+            <StatCard
+              label="Transferred Price"
+              value={fmtUSD(last.transferred)}
+              sub={last.transferred != null ? pctRelToPrice(last.price, last.transferred) : 'Requires CDD data'}
+              accent="#EAB84D"
+              freshness="daily"
+            />
+            <StatCard
+              label="Realized Price"
+              value={fmtUSD(last.realized)}
+              sub={last.realized != null ? pctRelToPrice(last.price, last.realized) : 'Not available'}
+              accent="#3B82F6"
+              freshness="daily"
+              source="CoinMetrics"
+            />
+            <StatCard
+              label="Balance Price"
+              value={fmtUSD(last.balance)}
+              sub={last.balance != null ? pctRelToPrice(last.price, last.balance) : 'Requires CDD data'}
+              accent="#35D07F"
+              freshness="daily"
+            />
+          </div>
+        );
+      })()}
 
       {/* Error state */}
       {(fetchError || !last) && (
@@ -204,7 +217,7 @@ export default async function CycleMasterPage() {
         </div>
       )}
 
-      {/* ── CDD chart card ───────────────────────────────────────────────── */}
+      {/* ── MVRV / CDD chart card ────────────────────────────────────────── */}
       {weekly.length > 0 && (
         <div
           className="rounded-xl border p-5"
@@ -212,10 +225,11 @@ export default async function CycleMasterPage() {
         >
           <div className="mb-4">
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Coin Days Destroyed (CDD) · 90-Day Moving Average
+              MVRV Ratio · Market Value to Realized Value
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              CDD spikes indicate long-term holders are moving coins — historically associated with cycle tops.
+              MVRV below 1.0 = price below average cost basis (cycle bottoms). Above 3.5 = distribution risk.
+              {' '}CDD chart shown here when a subscription source is configured.
             </p>
           </div>
           <CDDChart data={weekly} />
@@ -292,20 +306,24 @@ export default async function CycleMasterPage() {
           style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
         >
           <p>
+            <span style={{ color: 'var(--sct-text)' }}>MVRV Ratio</span>
+            {' '}= Market Cap ÷ Realized Cap = Price ÷ Realized Price. Below 1.0 = price below holder cost basis. Historical tops at 3.5–7.0×.
+          </p>
+          <p>
+            <span style={{ color: 'var(--sct-text)' }}>Realized Price</span>
+            {' '}= Avg. price at which all BTC last moved on-chain. Derived via MVRV from the CoinMetrics Community API.
+          </p>
+          <p>
             <span style={{ color: 'var(--sct-text)' }}>Transferred Price</span>
-            {' '}= Cumulative CDD ÷ Circulating Supply. Measures the aggregate value transferred per coin over Bitcoin&apos;s history.
+            {' '}= Cumulative CDD ÷ Circulating Supply. Requires Coin Days Destroyed (unavailable on free tier).
           </p>
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Terminal Price</span>
-            {' '}= Transferred Price × 21. A theoretical upper bound for each cycle, derived from the 21M supply cap.
-          </p>
-          <p>
-            <span style={{ color: 'var(--sct-text)' }}>Balance Price</span>
-            {' '}= Realized Price − Transferred Price. Historically marks cycle capitulation floors.
+            {' '}= Transferred Price × 21. Requires CDD (unavailable on free tier).
           </p>
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Data source:</span>
-            {' '}CoinMetrics Community API · Revalidated every 24 hours · CDD requires Pro tier.
+            {' '}CoinMetrics Community API (PriceUSD, SplyCur, CapMVRVCur — all free tier) · Revalidated every 24 hours.
           </p>
         </div>
       </div>

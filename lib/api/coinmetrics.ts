@@ -217,80 +217,41 @@ export type CycleMasterRaw = {
   cdd: number | null;
 };
 
-// Blockchain.com Charts API — free, no auth, daily CDD since 2009
-async function fetchBlockchainCDD(): Promise<Map<string, number>> {
-  try {
-    const res = await fetch(
-      'https://api.blockchain.info/charts/coin-days-destroyed?timespan=all&sampled=false&metadata=false&format=json',
-      { next: { revalidate: 86400 }, signal: AbortSignal.timeout(20000) },
-    );
-    if (!res.ok) return new Map();
-    const json: { values?: { x: number; y: number }[] } = await res.json();
-    const map = new Map<string, number>();
-    for (const { x, y } of json.values ?? []) {
-      const date = new Date(x * 1000).toISOString().slice(0, 10);
-      map.set(date, y);
-    }
-    return map;
-  } catch {
-    return new Map();
-  }
-}
-
+// CapMVRVCur (MVRV ratio) is available on the CoinMetrics Community free tier.
+// We derive Realized Cap:  CapRealUSD = Price × SplyCur / MVRV
+// because:  MVRV = CapMrktCurUSD / CapRealUSD  →  CapRealUSD = (Price × SplyCur) / MVRV
+// CDD remains null — unavailable from any free public API.
 export async function fetchCycleMasterData(startTime = '2010-07-01'): Promise<CycleMasterRaw[]> {
-  // Fetch CoinMetrics (PriceUSD, SplyCur, CapRealUSD) and Blockchain.com CDD in parallel
-  const [cddMap, cmData] = await Promise.all([
-    fetchBlockchainCDD(),
-    (async () => {
-      const rows: { time: string; price: number; splyCur: number | null; capRealUSD: number | null }[] = [];
-      let nextPageToken: string | null = null;
-      try {
-        do {
-          const params: Record<string, string> = {
-            assets: 'btc',
-            metrics: 'PriceUSD,SplyCur,CapRealUSD',
-            frequency: '1d',
-            start_time: startTime,
-            page_size: '10000',
-          };
-          if (nextPageToken) params.next_page_token = nextPageToken;
-          const json = await coinmetricsGet(params);
-          for (const d of json.data ?? []) {
-            if (d.PriceUSD == null) continue;
-            rows.push({
-              time:       d.time.slice(0, 10),
-              price:      Number(d.PriceUSD),
-              splyCur:    d.SplyCur    != null ? Number(d.SplyCur)    : null,
-              capRealUSD: d.CapRealUSD != null ? Number(d.CapRealUSD) : null,
-            });
-          }
-          nextPageToken = (json as any).next_page_token ?? null;
-        } while (nextPageToken);
-      } catch {
-        // CapRealUSD paywalled — retry with just price + supply
-        let retryToken: string | null = null;
-        do {
-          const params: Record<string, string> = {
-            assets: 'btc', metrics: 'PriceUSD,SplyCur', frequency: '1d',
-            start_time: startTime, page_size: '10000',
-          };
-          if (retryToken) params.next_page_token = retryToken;
-          const json = await coinmetricsGet(params);
-          for (const d of json.data ?? []) {
-            if (d.PriceUSD == null) continue;
-            rows.push({ time: d.time.slice(0, 10), price: Number(d.PriceUSD), splyCur: d.SplyCur != null ? Number(d.SplyCur) : null, capRealUSD: null });
-          }
-          retryToken = (json as any).next_page_token ?? null;
-        } while (retryToken);
-      }
-      return rows;
-    })(),
-  ]);
+  const rows: CycleMasterRaw[] = [];
+  let nextPageToken: string | null = null;
 
-  return cmData.map((r) => ({
-    ...r,
-    cdd: cddMap.get(r.time) ?? null,
-  }));
+  do {
+    const params: Record<string, string> = {
+      assets: 'btc',
+      metrics: 'PriceUSD,SplyCur,CapMVRVCur',
+      frequency: '1d',
+      start_time: startTime,
+      page_size: '10000',
+    };
+    if (nextPageToken) params.next_page_token = nextPageToken;
+    const json = await coinmetricsGet(params);
+
+    for (const d of json.data ?? []) {
+      if (d.PriceUSD == null) continue;
+      const price   = Number(d.PriceUSD);
+      const splyCur = d.SplyCur    != null ? Number(d.SplyCur)    : null;
+      const mvrv    = d.CapMVRVCur != null ? Number(d.CapMVRVCur) : null;
+      // Derive realized cap from MVRV (both free-tier)
+      const capRealUSD =
+        mvrv != null && mvrv > 0 && splyCur != null
+          ? (price * splyCur) / mvrv
+          : null;
+      rows.push({ time: d.time.slice(0, 10), price, splyCur, capRealUSD, cdd: null });
+    }
+    nextPageToken = (json as any).next_page_token ?? null;
+  } while (nextPageToken);
+
+  return rows;
 }
 
 // Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
