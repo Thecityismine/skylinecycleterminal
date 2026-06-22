@@ -12,10 +12,11 @@ import type { ScoreZone } from './skylineScore';
 //   4. Log Regression:       price / powerLawFair,   range 0.4 → 3.0
 
 export type HistoricalScorePoint = {
-  time:  string;
-  ts:    number;
-  score: number;   // 0–100 composite of available price-based indicators
-  zone:  ScoreZone;
+  time:     string;
+  ts:       number;
+  score:    number;    // 0–100 composite of available price-based indicators
+  zone:     ScoreZone;
+  btcClose: number;    // BTC price for overlay correlation
 };
 
 const GENESIS_MS = new Date('2009-01-03').getTime();
@@ -87,9 +88,10 @@ export function computeHistoricalScore(prices: PricePoint[]): HistoricalScorePoi
     const score = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
     all.push({
       time,
-      ts:   new Date(time + 'T00:00:00').getTime(),
+      ts:       new Date(time + 'T00:00:00').getTime(),
       score,
-      zone: zoneFromScore(score),
+      zone:     zoneFromScore(score),
+      btcClose: price,
     });
   }
 

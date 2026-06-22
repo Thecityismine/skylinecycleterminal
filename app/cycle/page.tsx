@@ -111,7 +111,50 @@ export default function CyclePage() {
         )}
       </div>
 
-      {/* Indicator breakdown + historical chart */}
+      {/* ── History chart — full width, prominent ───────────────────────── */}
+      <div
+        className="rounded-xl border p-5"
+        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+      >
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <p className="text-xs font-medium tracking-wider uppercase" style={{ color: 'var(--sct-muted)' }}>
+            Skyline Score History — Price-Based Proxy
+          </p>
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Score zones */}
+            {[
+              { color: '#3B82F6', label: '0–25 Accumulate' },
+              { color: '#35D07F', label: '25–50 Hold / Build' },
+              { color: '#E6B450', label: '50–75 Caution' },
+              { color: '#FF5C5C', label: '75–100 Distribution' },
+            ].map((b) => (
+              <div key={b.label} className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
+                <span className="text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>{b.label}</span>
+              </div>
+            ))}
+            {/* BTC price legend */}
+            <div className="flex items-center gap-1.5 pl-3" style={{ borderLeft: '1px solid var(--sct-border)' }}>
+              <span className="rounded-full" style={{ width: 20, height: 2, backgroundColor: '#F7931A', opacity: 0.75, display: 'inline-block' }} />
+              <span className="text-[10px] font-mono" style={{ color: '#F7931A', opacity: 0.75 }}>BTC Price</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ height: 420 }}>
+          {!history?.points?.length
+            ? <ChartSkeleton height="h-full" />
+            : <ScoreHistoryChart points={history.points} />
+          }
+        </div>
+
+        <p className="text-[10px] mt-2" style={{ color: 'var(--sct-muted)' }}>
+          Score uses 4 price-derived indicators: Pi Cycle Top, 200DMA ratio, 2Y MA Multiplier, Power Law deviation.
+          Dashed verticals mark Bitcoin halvings. Orange line = BTC price (log scale, right axis).
+        </p>
+      </div>
+
+      {/* ── Indicator breakdown + methodology ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
         {/* Breakdown panel */}
         <div
@@ -149,7 +192,6 @@ export default function CyclePage() {
                           </span>
                         </div>
                       </div>
-                      {/* Progress bar */}
                       <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--sct-border)' }}>
                         <div
                           className="h-full rounded-full transition-all duration-500"
@@ -165,40 +207,8 @@ export default function CyclePage() {
           </div>
         </div>
 
-        {/* Historical score chart + methodology */}
-        <div className="lg:col-span-3 flex flex-col gap-4">
-          <div>
-            <p className="text-xs font-medium tracking-wider uppercase mb-3" style={{ color: 'var(--sct-muted)' }}>
-              Skyline Score History — Price-Based Proxy
-            </p>
-            <div
-              className="rounded-lg overflow-hidden"
-              style={{ border: '1px solid var(--sct-border)', height: 256 }}
-            >
-              {!history?.points?.length
-                ? <ChartSkeleton height="h-64" />
-                : <ScoreHistoryChart points={history.points} />
-              }
-            </div>
-            {/* Zone legend */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4 mt-2">
-              {[
-                { color: '#3B82F6', label: '0–25 Accumulate' },
-                { color: '#35D07F', label: '25–50 Hold / Build' },
-                { color: '#E6B450', label: '50–75 Caution' },
-                { color: '#FF5C5C', label: '75–100 Distribution' },
-              ].map((b) => (
-                <div key={b.label} className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
-                  <span className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>{b.label}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] mt-1.5" style={{ color: 'var(--sct-muted)' }}>
-              Uses 4 price-derived indicators: Pi Cycle Top, 200DMA ratio, 2Y MA Multiplier, Power Law deviation. Dashed lines mark Bitcoin halvings.
-            </p>
-          </div>
-
+        {/* Methodology */}
+        <div className="lg:col-span-3">
           <InsightPanel title="Score Methodology">
             <p className="text-xs leading-relaxed">
               Eight indicators are each normalized to 0–100 based on their historical range.
