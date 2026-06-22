@@ -113,7 +113,59 @@ export function BTC100WChart({ points, regimes }: Props) {
   ];
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: 480 }}>
+    <div style={{ position: 'relative', width: '100%' }}>
+      {/* ── Legend + toggles (above chart) ───────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-1 mb-3">
+        {/* BTC Price — always on, not a button */}
+        <span className="flex items-center gap-1.5 px-2 py-1 text-xs font-mono" style={{ color: '#F7931A' }}>
+          <span className="rounded-full" style={{ width: 16, height: 2, backgroundColor: '#F7931A', display: 'inline-block' }} />
+          BTC Price
+        </span>
+
+        {/* Toggleable items */}
+        {lineToggles.map((t) => (
+          <button
+            key={t.key}
+            onClick={t.onToggle}
+            className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono border transition-all"
+            style={{
+              borderColor:     t.active ? `${t.color}50` : 'var(--sct-border)',
+              backgroundColor: t.active ? `${t.color}10` : 'transparent',
+              color:           t.active ? t.color : 'var(--sct-muted)',
+              opacity:         t.active ? 1 : 0.5,
+            }}
+            title={t.active ? `Hide ${t.label}` : `Show ${t.label}`}
+          >
+            {t.key === 'shading' ? (
+              <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: t.color, opacity: t.active ? 0.3 : 0.15 }} />
+            ) : (
+              <span
+                className="rounded-full"
+                style={{ width: 16, height: t.lineW ?? 2, backgroundColor: t.color, display: 'inline-block' }}
+              />
+            )}
+            {t.label}
+          </button>
+        ))}
+
+        {/* Static shading legend */}
+        {showShading && (
+          <span className="flex items-center gap-3 ml-2 pl-2 text-xs font-mono" style={{ borderLeft: '1px solid var(--sct-border)' }}>
+            {[
+              { color: '#35D07F', label: 'Above' },
+              { color: '#E6B450', label: '±5%' },
+              { color: '#FF5C5C', label: 'Below' },
+            ].map((s) => (
+              <span key={s.label} className="flex items-center gap-1" style={{ color: s.color }}>
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: s.color, opacity: 0.25 }} />
+                {s.label}
+              </span>
+            ))}
+          </span>
+        )}
+      </div>
+
+      <div style={{ position: 'relative', width: '100%', height: 480 }}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={points} margin={{ top: 8, right: 16, bottom: 0, left: 4 }}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
@@ -200,56 +252,6 @@ export function BTC100WChart({ points, regimes }: Props) {
       </ResponsiveContainer>
 
       <ChartWatermark />
-
-      {/* ── Legend + toggles ──────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-1 mt-3">
-        {/* BTC Price — always on, not a button */}
-        <span className="flex items-center gap-1.5 px-2 py-1 text-xs font-mono" style={{ color: '#F7931A' }}>
-          <span className="rounded-full" style={{ width: 16, height: 2, backgroundColor: '#F7931A', display: 'inline-block' }} />
-          BTC Price
-        </span>
-
-        {/* Toggleable items */}
-        {lineToggles.map((t) => (
-          <button
-            key={t.key}
-            onClick={t.onToggle}
-            className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-mono border transition-all"
-            style={{
-              borderColor:     t.active ? `${t.color}50` : 'var(--sct-border)',
-              backgroundColor: t.active ? `${t.color}10` : 'transparent',
-              color:           t.active ? t.color : 'var(--sct-muted)',
-              opacity:         t.active ? 1 : 0.5,
-            }}
-            title={t.active ? `Hide ${t.label}` : `Show ${t.label}`}
-          >
-            {t.key === 'shading' ? (
-              <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: t.color, opacity: t.active ? 0.3 : 0.15 }} />
-            ) : (
-              <span
-                className="rounded-full"
-                style={{ width: 16, height: t.lineW ?? 2, backgroundColor: t.color, display: 'inline-block' }}
-              />
-            )}
-            {t.label}
-          </button>
-        ))}
-
-        {/* Static shading legend */}
-        {showShading && (
-          <span className="flex items-center gap-3 ml-2 pl-2 text-xs font-mono" style={{ borderLeft: '1px solid var(--sct-border)' }}>
-            {[
-              { color: '#35D07F', label: 'Above' },
-              { color: '#E6B450', label: '±5%' },
-              { color: '#FF5C5C', label: 'Below' },
-            ].map((s) => (
-              <span key={s.label} className="flex items-center gap-1" style={{ color: s.color }}>
-                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: s.color, opacity: 0.25 }} />
-                {s.label}
-              </span>
-            ))}
-          </span>
-        )}
       </div>
     </div>
   );
