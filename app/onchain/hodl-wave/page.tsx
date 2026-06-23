@@ -5,7 +5,7 @@ import {
   getDistributionScore,
   HODL_CYCLE_EVENTS,
 } from '@/lib/indicators/exchangeReserve';
-import { BTCHodlWaveChart } from '@/components/charts/BTCHodlWaveChart';
+import { BTCHodlWaveChartSection } from '@/components/charts/BTCHodlWaveChartSection';
 import { PageHeader }       from '@/components/dashboard/PageHeader';
 import { StatCard }         from '@/components/dashboard/StatCard';
 
@@ -182,52 +182,18 @@ export default async function HodlWavePage() {
       )}
 
       {/* ── Main chart ────────────────────────────────────────────────────── */}
-      <div
-        className="rounded-xl border p-5"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-secondary)' }}>
-              BTC Exchange Reserve — % of Circulating Supply
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Orange area = BTC supply on exchanges (left axis) · Gray line = BTC price log scale (right axis)
-            </p>
-          </div>
-          {/* Legend */}
-          <div className="flex items-center gap-4 flex-wrap text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#F7931A', display: 'inline-block' }} />
-              Exchange %
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-0.5 rounded" style={{ backgroundColor: '#3B82F6', display: 'inline-block' }} />
-              90D SMA
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-0.5 rounded" style={{ backgroundColor: 'rgba(230,237,243,0.6)', display: 'inline-block' }} />
-              BTC Price
-            </span>
-          </div>
-        </div>
-
-        <div style={{ height: 420 }}>
-          {!points.length
-            ? (
-              <div className="flex items-center justify-center h-full" style={{ color: 'var(--sct-muted)' }}>
-                <p className="text-sm">No data available</p>
-              </div>
-            )
-            : <BTCHodlWaveChart points={points} range="all" />
-          }
-        </div>
-
-        <p className="text-[10px] mt-2" style={{ color: 'var(--sct-muted)' }}>
-          Source: CoinMetrics Community API (SplyExNtv, SplyCur, PriceUSD). Data available from ~2016.
-          Dashed verticals mark Bitcoin halvings. Colored verticals mark cycle peaks and bear-market lows.
-        </p>
-      </div>
+      <BTCHodlWaveChartSection
+        points={points}
+        regimeLabel={regime.label}
+        regimeColor={regime.color}
+        exchPct={last?.exchPct ?? null}
+        change30d={last?.change30d ?? null}
+        change90d={last?.change90d ?? null}
+        btcClose={last?.btcClose ?? null}
+        scoreScore={score.score}
+        scoreLabel={score.label}
+        scoreColor={score.color}
+      />
 
       {/* ── Regime + Distribution Score ────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

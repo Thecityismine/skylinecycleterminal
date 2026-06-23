@@ -17,8 +17,13 @@ import { HALVINGS_WITH_EXCHANGE, HODL_CYCLE_EVENTS } from '@/lib/indicators/exch
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
-  points:   HodlWavePoint[];
-  range?:   '4y' | '8y' | 'all';
+  points:                HodlWavePoint[];
+  range?:                '4y' | '8y' | 'all';
+  onShowPriceChange?:    (v: boolean) => void;
+  onShow30dChange?:      (v: boolean) => void;
+  onShow90dChange?:      (v: boolean) => void;
+  onShowHalvingsChange?: (v: boolean) => void;
+  onShowEventsChange?:   (v: boolean) => void;
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -82,7 +87,7 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function BTCHodlWaveChart({ points, range = 'all' }: Props) {
+export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onShow30dChange, onShow90dChange, onShowHalvingsChange, onShowEventsChange }: Props) {
   const [showPrice,    setShowPrice]    = useState(true);
   const [show30d,      setShow30d]      = useState(false);
   const [show90d,      setShow90d]      = useState(true);
@@ -131,11 +136,11 @@ export function BTCHodlWaveChart({ points, range = 'all' }: Props) {
       {/* Toggles */}
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
-          {toggleBtn(showPrice,    'BTC Price',  () => setShowPrice((p)    => !p), '#E6EDF3')}
-          {toggleBtn(show30d,      '30D SMA',    () => setShow30d((p)      => !p), '#F2B84B')}
-          {toggleBtn(show90d,      '90D SMA',    () => setShow90d((p)      => !p), '#3B82F6')}
-          {toggleBtn(showHalvings, 'Halvings',   () => setShowHalvings((p) => !p), 'rgba(255,255,255,0.4)')}
-          {toggleBtn(showEvents,   'Cycle Events', () => setShowEvents((p) => !p), '#6B7280')}
+          {toggleBtn(showPrice,    'BTC Price',    () => { const n = !showPrice;    setShowPrice(n);    onShowPriceChange?.(n);    }, '#E6EDF3')}
+          {toggleBtn(show30d,      '30D SMA',      () => { const n = !show30d;      setShow30d(n);      onShow30dChange?.(n);      }, '#F2B84B')}
+          {toggleBtn(show90d,      '90D SMA',      () => { const n = !show90d;      setShow90d(n);      onShow90dChange?.(n);      }, '#3B82F6')}
+          {toggleBtn(showHalvings, 'Halvings',     () => { const n = !showHalvings; setShowHalvings(n); onShowHalvingsChange?.(n); }, 'rgba(255,255,255,0.4)')}
+          {toggleBtn(showEvents,   'Cycle Events', () => { const n = !showEvents;   setShowEvents(n);   onShowEventsChange?.(n);   }, '#6B7280')}
         </div>
         <p className="text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
           ↓ Falling exchange supply = more coins in cold storage = LTH accumulation
