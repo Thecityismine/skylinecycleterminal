@@ -31,7 +31,7 @@ export type FourYearCycleSharePayload = {
 
 const PAD      = 32;
 const HEADER_H = 72;
-const STATS_H  = 60;
+const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
 const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
@@ -138,13 +138,13 @@ export function FourYearCycleShareCard({ payload }: { payload: FourYearCycleShar
             backgroundColor: '#161B22',
             border:          '1px solid #21262D',
             borderRadius:    8,
-            padding:         '8px 12px',
+            padding:         '10px 12px',
             display:         'flex',
             flexDirection:   'column',
             justifyContent:  'center',
           }}>
             <p style={{ fontSize: 10, color: '#8B949E', margin: 0 }}>{s.label}</p>
-            <p style={{ fontSize: 15, fontWeight: 700, color: s.color, margin: '2px 0 0' }}>{s.value}</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: s.color, margin: '3px 0 2px' }}>{s.value}</p>
             <p style={{ fontSize: 9, color: '#484F58', margin: 0 }}>{s.sub}</p>
           </div>
         ))}
