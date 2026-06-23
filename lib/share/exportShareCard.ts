@@ -39,25 +39,36 @@ export function compositeWatermark(
         logo.onload = () => {
           const logoW = 320 * EXPORT_SCALE;
           const logoH = Math.round((logo.naturalHeight / logo.naturalWidth) * logoW);
-          ctx.globalAlpha = 0.13;
-          ctx.drawImage(
-            logo,
-            Math.round((W - logoW) / 2),
-            Math.round((H - logoH) / 2),
-            logoW,
-            logoH,
-          );
-          ctx.globalAlpha = 1;
+
+          // Whiten the logo on a small temp canvas using source-in compositing.
+          // This avoids getImageData entirely — no per-pixel CPU work, no taint
+          // security check, no large-buffer allocation. Works on all browsers.
+          const lc   = document.createElement('canvas');
+          lc.width   = logoW;
+          lc.height  = logoH;
+          const lCtx = lc.getContext('2d');
+
+          if (lCtx) {
+            lCtx.drawImage(logo, 0, 0, logoW, logoH);
+            lCtx.globalCompositeOperation = 'source-in';
+            lCtx.fillStyle = '#FFFFFF';
+            lCtx.fillRect(0, 0, logoW, logoH);
+
+            ctx.globalAlpha = 0.13;
+            ctx.drawImage(lc, Math.round((W - logoW) / 2), Math.round((H - logoH) / 2), logoW, logoH);
+            ctx.globalAlpha = 1;
+          } else {
+            drawTextWatermark(ctx, W, H);
+          }
+
           resolve(canvas.toDataURL('image/png'));
         };
-        // Logo load failed — fall through to text watermark
         logo.onerror = () => {
           drawTextWatermark(ctx, W, H);
           resolve(canvas.toDataURL('image/png'));
         };
         logo.src = logoDataUrl;
       } else {
-        // processLogoForWatermark returned '' — use text watermark
         drawTextWatermark(ctx, W, H);
         resolve(canvas.toDataURL('image/png'));
       }
