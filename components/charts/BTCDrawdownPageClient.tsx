@@ -3,14 +3,31 @@
 import { useState, useMemo } from 'react';
 import { BTCDrawdownChart }  from '@/components/charts/BTCDrawdownChart';
 import type { DrawdownPoint } from '@/lib/indicators/drawdownFromATH';
+import { DrawdownShareModal } from '@/components/share/DrawdownShareModal';
+import type { DrawdownSharePayload } from '@/components/share/DrawdownShareCard';
 
 type Timeframe = 'All' | '4Y' | '2Y';
 const TIMEFRAMES: Timeframe[] = ['All', '4Y', '2Y'];
 const TF_DAYS: Record<Timeframe, number> = { All: Infinity, '4Y': 1460, '2Y': 730 };
 
-type Props = { data: DrawdownPoint[] };
+type Props = {
+  data:            DrawdownPoint[];
+  currentDD:       number;
+  currentATH:      number;
+  currentPrice:    number;
+  athDate:         string;
+  daysSinceATH:    number;
+  recovery:        number;
+  currentCycleMax: number;
+  regimeLabel:     string;
+  regimeColor:     string;
+};
 
-export function BTCDrawdownPageClient({ data }: Props) {
+export function BTCDrawdownPageClient({
+  data,
+  currentDD, currentATH, currentPrice, athDate, daysSinceATH, recovery, currentCycleMax,
+  regimeLabel, regimeColor,
+}: Props) {
   const [timeframe,    setTimeframe]    = useState<Timeframe>('All');
   const [showHalvings, setShowHalvings] = useState(true);
   const [showCycles,   setShowCycles]   = useState(true);
@@ -21,6 +38,23 @@ export function BTCDrawdownPageClient({ data }: Props) {
     const cutoff = Date.now() - days * 86_400_000;
     return data.filter(d => d.ts >= cutoff);
   }, [data, timeframe]);
+
+  const sharePayload: DrawdownSharePayload = {
+    data: displayed,
+    timeframe,
+    showHalvings,
+    showCycles,
+    currentDD,
+    currentATH,
+    currentPrice,
+    athDate,
+    daysSinceATH,
+    recovery,
+    currentCycleMax,
+    regimeLabel,
+    regimeColor,
+    generatedAt: new Date().toISOString(),
+  };
 
   const toggleBtn = (active: boolean, label: string, color: string, onClick: () => void) => (
     <button
@@ -52,7 +86,7 @@ export function BTCDrawdownPageClient({ data }: Props) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           {TIMEFRAMES.map(tf => (
             <button
               key={tf}
@@ -70,6 +104,8 @@ export function BTCDrawdownPageClient({ data }: Props) {
           <div className="w-px mx-0.5" style={{ backgroundColor: 'var(--sct-border)' }} />
           {toggleBtn(showHalvings, 'Halvings', '#F7931A', () => setShowHalvings(v => !v))}
           {toggleBtn(showCycles,   'Cycle Lows', '#FF5C5C', () => setShowCycles(v => !v))}
+          <div className="w-px mx-0.5" style={{ backgroundColor: 'var(--sct-border)' }} />
+          <DrawdownShareModal payload={sharePayload} />
         </div>
       </div>
 

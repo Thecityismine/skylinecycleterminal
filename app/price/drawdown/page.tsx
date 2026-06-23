@@ -157,7 +157,18 @@ export default async function BTCDrawdownPage() {
       </div>
 
       {/* Chart */}
-      <BTCDrawdownPageClient data={chartPoints} />
+      <BTCDrawdownPageClient
+        data={chartPoints}
+        currentDD={currentDD}
+        currentATH={currentATH}
+        currentPrice={currentPrice}
+        athDate={athDate}
+        daysSinceATH={daysSinceATH}
+        recovery={recovery}
+        currentCycleMax={currentCycleMax}
+        regimeLabel={regime.label}
+        regimeColor={regime.color}
+      />
 
       {/* Historical cycle comparison table */}
       <div
