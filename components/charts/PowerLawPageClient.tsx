@@ -1,16 +1,34 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import { PowerLawChart }    from '@/components/charts/PowerLawChart';
-import type { PowerLawPoint } from '@/lib/indicators/powerLaw';
+import { PowerLawChart }        from '@/components/charts/PowerLawChart';
+import { PowerLawShareModal }   from '@/components/share/PowerLawShareModal';
+import type { PowerLawPoint }   from '@/lib/indicators/powerLaw';
+import type { PowerLawSharePayload } from '@/components/share/PowerLawShareCard';
 
 type Range = '2Y' | '4Y' | 'All';
 const RANGES: Range[] = ['All', '4Y', '2Y'];
 const RANGE_DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, All: Infinity };
 
-type Props = { data: PowerLawPoint[] };
+type Props = {
+  data:       PowerLawPoint[];
+  price:      number | null;
+  fair:       number | null;
+  floor:      number | null;
+  ceil:       number | null;
+  pctVsFair:  number | null;
+  leadFloor:  number | null;
+  leadCeil:   number | null;
+  zoneLabel:  string | null;
+  zoneColor:  string | null;
+};
 
-export function PowerLawPageClient({ data }: Props) {
+export function PowerLawPageClient({
+  data,
+  price, fair, floor, ceil,
+  pctVsFair, leadFloor, leadCeil,
+  zoneLabel, zoneColor,
+}: Props) {
   const [range, setRange] = useState<Range>('All');
 
   const filtered = useMemo(() => {
@@ -19,6 +37,21 @@ export function PowerLawPageClient({ data }: Props) {
     const cutoff = Date.now() - days * 86_400_000;
     return data.filter(d => d.ts >= cutoff);
   }, [data, range]);
+
+  const sharePayload: PowerLawSharePayload = {
+    data: filtered,
+    range,
+    price,
+    fair,
+    floor,
+    ceil,
+    pctVsFair,
+    leadFloor,
+    leadCeil,
+    zoneLabel,
+    zoneColor,
+    generatedAt: new Date().toISOString(),
+  };
 
   return (
     <div
@@ -36,22 +69,26 @@ export function PowerLawPageClient({ data }: Props) {
           </p>
         </div>
 
-        {/* Timeframe filter */}
-        <div className="flex gap-1.5">
-          {RANGES.map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
-              style={{
-                backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
-                borderColor: 'var(--sct-border)',
-                color: range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
-              }}
-            >
-              {r}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <PowerLawShareModal payload={sharePayload} />
+
+          {/* Timeframe filter */}
+          <div className="flex gap-1.5">
+            {RANGES.map(r => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+                style={{
+                  backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+                  borderColor: 'var(--sct-border)',
+                  color: range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

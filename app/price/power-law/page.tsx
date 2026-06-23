@@ -113,7 +113,18 @@ export default async function PowerLawPage() {
           Unable to load data — CoinMetrics API unreachable
         </div>
       ) : (
-        <PowerLawPageClient data={data} />
+        <PowerLawPageClient
+          data={data}
+          price={stats?.price ?? null}
+          fair={stats?.fair ?? null}
+          floor={stats?.floor ?? null}
+          ceil={stats?.ceil ?? null}
+          pctVsFair={stats?.pctVsFair ?? null}
+          leadFloor={stats?.leadFloor ?? null}
+          leadCeil={stats?.leadCeil ?? null}
+          zoneLabel={zone?.label ?? null}
+          zoneColor={zone?.color ?? null}
+        />
       )}
 
       {/* Insight panel */}
