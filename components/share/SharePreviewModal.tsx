@@ -28,6 +28,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
   const [dataUrl,  setDataUrl]  = useState<string | null>(null);
   const [copied,   setCopied]   = useState(false);
   const [hasShare, setHasShare] = useState(false);
+  const [logoSrc,  setLogoSrc]  = useState<string | null>(null);
 
   // Detect Web Share API capability
   useEffect(() => {
@@ -39,12 +40,29 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     );
   }, []);
 
-  // Auto-generate on open
+  // Pre-fetch the logo as base64 so html-to-image can embed it in the canvas
   useEffect(() => {
+    fetch('/skyline-full.png')
+      .then((r) => r.blob())
+      .then(
+        (blob) =>
+          new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target!.result as string);
+            reader.readAsDataURL(blob);
+          }),
+      )
+      .then(setLogoSrc)
+      .catch(() => setLogoSrc(''));   // watermark optional — don't block export
+  }, []);
+
+  // Auto-generate once the logo is ready
+  useEffect(() => {
+    if (logoSrc === null) return;   // still loading
     const timer = setTimeout(() => void generate(), 300);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [logoSrc]);
 
   const generate = useCallback(async () => {
     if (!cardRef.current) return;
@@ -119,20 +137,22 @@ export function SharePreviewModal({ payload, onClose }: Props) {
 
         {/* Preview area */}
         <div className="relative p-4 flex items-center justify-center" style={{ backgroundColor: '#090D13' }}>
-          {/* The hidden 1200×675 render target */}
+          {/* 1200×675 render target — fixed+opacity:0 so images actually load */}
           <div
             style={{
-              position:        'absolute',
-              top:             -9999,
-              left:            -9999,
-              width:           SHARE_CARD_WIDTH,
-              height:          SHARE_CARD_HEIGHT,
-              pointerEvents:   'none',
-              userSelect:      'none',
+              position:      'fixed',
+              top:           0,
+              left:          0,
+              width:         SHARE_CARD_WIDTH,
+              height:        SHARE_CARD_HEIGHT,
+              opacity:       0,
+              pointerEvents: 'none',
+              userSelect:    'none',
+              zIndex:        -1,
             }}
           >
             <div ref={cardRef}>
-              <ScoreShareCard payload={payload} />
+              <ScoreShareCard payload={{ ...payload, logoSrc: logoSrc ?? undefined }} />
             </div>
           </div>
 

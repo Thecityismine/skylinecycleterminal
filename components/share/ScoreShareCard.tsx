@@ -22,6 +22,7 @@ export type ScoreSharePayload = {
   zoneColor:    string;
   btcPrice:     number;
   generatedAt:  string;   // ISO string
+  logoSrc?:     string;   // pre-fetched base64 data URL for the watermark
 };
 
 // ─── Shared chart constants ───────────────────────────────────────────────────
@@ -74,7 +75,7 @@ const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
-  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt } = payload;
+  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt, logoSrc } = payload;
 
   const prices   = points.map((p) => p.btcClose).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.6) : 0.01;
@@ -137,6 +138,27 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
 
       {/* ── Chart ── */}
       <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', position: 'relative' }}>
+        {/* Watermark — uses pre-fetched base64 so html-to-image captures it */}
+        {logoSrc && (
+          <div style={{
+            position:      'absolute',
+            top:           '50%',
+            left:          '50%',
+            transform:     'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            userSelect:    'none',
+            opacity:       0.35,
+            mixBlendMode:  'screen',
+            zIndex:        10,
+          }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoSrc}
+              alt=""
+              style={{ display: 'block', width: 280, height: 'auto', filter: 'invert(1) brightness(1.8)' }}
+            />
+          </div>
+        )}
         <ComposedChart
           width={CHART_W}
           height={CHART_H}
