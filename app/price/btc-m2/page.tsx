@@ -102,7 +102,15 @@ export default async function BtcM2Page() {
           Unable to load data — CoinMetrics or FRED API unreachable
         </div>
       ) : result ? (
-        <BtcM2PageClient points={result.points} />
+        <BtcM2PageClient
+          points={result.points}
+          ratio={ratio}
+          ema200={ema200}
+          ema400={ema400}
+          sma52={sma52}
+          zoneLabel={zone?.label ?? null}
+          zoneColor={zone?.color ?? null}
+        />
       ) : null}
 
       {/* Insight panel */}

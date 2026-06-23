@@ -1,13 +1,35 @@
 "use client";
 
 import { useState } from 'react';
-import { BtcM2Chart }      from '@/components/charts/BtcM2Chart';
-import type { BtcM2Point } from '@/lib/indicators/btcM2';
+import { BtcM2Chart }       from '@/components/charts/BtcM2Chart';
+import { BtcM2ShareModal }  from '@/components/share/BtcM2ShareModal';
+import type { BtcM2Point }  from '@/lib/indicators/btcM2';
+import type { BtcM2SharePayload } from '@/components/share/BtcM2ShareCard';
 
-type Props = { points: BtcM2Point[] };
+type Props = {
+  points:    BtcM2Point[];
+  ratio:     number | null;
+  ema200:    number | null;
+  ema400:    number | null;
+  sma52:     number | null;
+  zoneLabel: string | null;
+  zoneColor: string | null;
+};
 
-export function BtcM2PageClient({ points }: Props) {
+export function BtcM2PageClient({ points, ratio, ema200, ema400, sma52, zoneLabel, zoneColor }: Props) {
   const [logScale, setLogScale] = useState(false);
+
+  const sharePayload: BtcM2SharePayload = {
+    points,
+    logScale,
+    ratio,
+    ema200,
+    ema400,
+    sma52,
+    zoneLabel,
+    zoneColor,
+    generatedAt: new Date().toISOString(),
+  };
 
   return (
     <div
@@ -24,17 +46,21 @@ export function BtcM2PageClient({ points }: Props) {
           </p>
         </div>
 
-        <button
-          onClick={() => setLogScale(v => !v)}
-          className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
-          style={{
-            backgroundColor: logScale ? '#A855F720' : 'transparent',
-            borderColor:     logScale ? '#A855F7'   : 'var(--sct-border)',
-            color:           logScale ? '#A855F7'   : 'var(--sct-muted)',
-          }}
-        >
-          LOG
-        </button>
+        <div className="flex items-center gap-2">
+          <BtcM2ShareModal payload={sharePayload} />
+
+          <button
+            onClick={() => setLogScale(v => !v)}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+            style={{
+              backgroundColor: logScale ? '#A855F720' : 'transparent',
+              borderColor:     logScale ? '#A855F7'   : 'var(--sct-border)',
+              color:           logScale ? '#A855F7'   : 'var(--sct-muted)',
+            }}
+          >
+            LOG
+          </button>
+        </div>
       </div>
 
       {/* Legend */}
