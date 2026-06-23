@@ -152,22 +152,22 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
           <div style={{
             fontSize:      56,
             fontWeight:    900,
-            letterSpacing: '0.22em',
+            letterSpacing: '0.18em',
             color:         '#FFFFFF',
             textTransform: 'uppercase',
-            fontFamily:    'ui-monospace, SFMono-Regular, Menlo, monospace',
+            fontFamily:    "'Orbitron', ui-monospace, monospace",
             lineHeight:    1,
           }}>
             SKYLINE
           </div>
           <div style={{
-            fontSize:      15,
-            fontWeight:    600,
-            letterSpacing: '0.48em',
+            fontSize:      14,
+            fontWeight:    700,
+            letterSpacing: '0.42em',
             color:         '#FFFFFF',
             textTransform: 'uppercase',
-            fontFamily:    'ui-monospace, SFMono-Regular, Menlo, monospace',
-            marginTop:     8,
+            fontFamily:    "'Orbitron', ui-monospace, monospace",
+            marginTop:     10,
           }}>
             CYCLE TERMINAL
           </div>

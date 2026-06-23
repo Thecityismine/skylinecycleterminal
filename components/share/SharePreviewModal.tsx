@@ -41,7 +41,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
 
   // Auto-generate on open
   useEffect(() => {
-    const timer = setTimeout(() => void generate(), 300);
+    const timer = setTimeout(() => void generate(), 800);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
