@@ -136,7 +136,26 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
       </div>
 
       {/* ── Chart ── */}
-      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto' }}>
+      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', position: 'relative' }}>
+        {/* Centered watermark — same treatment as live charts */}
+        <div style={{
+          position:      'absolute',
+          top:           '50%',
+          left:          '50%',
+          transform:     'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          userSelect:    'none',
+          opacity:       0.35,
+          mixBlendMode:  'screen',
+          zIndex:        10,
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/skyline-full.png"
+            alt=""
+            style={{ display: 'block', width: 280, height: 'auto', filter: 'invert(1) brightness(1.8)' }}
+          />
+        </div>
         <ComposedChart
           width={CHART_W}
           height={CHART_H}
@@ -278,22 +297,6 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
         </div>
       </div>
 
-      {/* ── Footer ── */}
-      <div style={{
-        marginTop:       'auto',
-        paddingTop:      8,
-        display:         'flex',
-        alignItems:      'center',
-        justifyContent:  'space-between',
-        borderTop:       '1px solid #21262D',
-      }}>
-        <span style={{ fontSize: 10, color: '#484F58', letterSpacing: '0.08em' }}>
-          skylinecycle.com
-        </span>
-        <span style={{ fontSize: 10, color: '#484F58' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
-        </span>
-      </div>
     </div>
   );
 }
