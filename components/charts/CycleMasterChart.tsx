@@ -14,9 +14,11 @@ import { ChartWatermark } from '@/components/charts/ChartWatermark';
 type Props = {
   data: CycleMasterPoint[];
   logScale?: boolean;
+  onRangeChange?: (r: Range) => void;
+  onLogChange?:   (log: boolean) => void;
 };
 
-type Range = '4Y' | '8Y' | 'All';
+export type Range = '4Y' | '8Y' | 'All';
 const RANGES: Range[] = ['4Y', '8Y', 'All'];
 const DAYS: Record<Range, number> = { '4Y': 1460, '8Y': 2920, 'All': Infinity };
 
@@ -97,7 +99,7 @@ function ChartTip({
 
 // ─── Chart ────────────────────────────────────────────────────────────────────
 
-export function CycleMasterChart({ data, logScale = true }: Props) {
+export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogChange }: Props) {
   const [range, setRange] = useState<Range>('All');
   const [log, setLog]     = useState(logScale);
 
@@ -139,7 +141,7 @@ export function CycleMasterChart({ data, logScale = true }: Props) {
           {RANGES.map((r) => (
             <button
               key={r}
-              onClick={() => setRange(r)}
+              onClick={() => { setRange(r); onRangeChange?.(r); }}
               className="px-3 py-1 rounded text-xs font-mono border transition-all"
               style={{
                 backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
@@ -167,7 +169,7 @@ export function CycleMasterChart({ data, logScale = true }: Props) {
             </span>
           ))}
           <button
-            onClick={() => setLog((v) => !v)}
+            onClick={() => { setLog((v) => { const next = !v; onLogChange?.(next); return next; }); }}
             className="ml-2 px-2.5 py-0.5 rounded text-xs font-mono border transition-all"
             style={{
               backgroundColor: log ? 'var(--sct-border)' : 'transparent',

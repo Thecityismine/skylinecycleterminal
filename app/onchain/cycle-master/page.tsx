@@ -1,7 +1,7 @@
 import { fetchCycleMasterData } from '@/lib/api/coinmetrics';
 import { computeCycleMaster, scoreCycleMaster } from '@/lib/indicators/cycleMaster';
 import type { CycleMasterPoint } from '@/lib/indicators/cycleMaster';
-import { CycleMasterChart } from '@/components/charts/CycleMasterChart';
+import { CycleMasterChartSection } from '@/components/charts/CycleMasterChartSection';
 import { CDDChart } from '@/components/charts/CDDChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -201,22 +201,22 @@ export default async function CycleMasterPage() {
       )}
 
       {/* ── Main chart card ──────────────────────────────────────────────── */}
-      {weekly.length > 0 && (
-        <div
-          className="rounded-xl border p-5"
-          style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-        >
-          <div className="mb-4">
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC Price Model — Terminal · Transferred · Realized · Balance
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Log scale · Dashed verticals = halvings · All prices in USD
-            </p>
-          </div>
-          <CycleMasterChart data={weekly} logScale />
-        </div>
-      )}
+      {weekly.length > 0 && (() => {
+        const mvrv = last?.realized != null && last.realized > 0
+          ? last.price / last.realized : null;
+        return (
+          <CycleMasterChartSection
+            data={weekly}
+            price={last?.price ?? null}
+            realized={last?.realized ?? null}
+            transferred={last?.transferred ?? null}
+            mvrv={mvrv}
+            score={score?.score ?? null}
+            scoreLabel={score?.label ?? null}
+            scoreColor={score?.color ?? null}
+          />
+        );
+      })()}
 
       {/* ── MVRV / CDD chart card ────────────────────────────────────────── */}
       {weekly.length > 0 && (
