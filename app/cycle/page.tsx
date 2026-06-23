@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from 'react';
+import { ImageDown } from 'lucide-react';
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { InsightPanel } from '@/components/dashboard/InsightPanel';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { ScoreHistoryChart } from '@/components/charts/ScoreHistoryChart';
+import { SharePreviewModal } from '@/components/share/SharePreviewModal';
 import type { CycleScoreResult, ScoreZone } from '@/lib/indicators/skylineScore';
 import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
 
@@ -34,10 +37,12 @@ function scoreColor(score: number): string {
 export default function CyclePage() {
   const { data: cycle, loading, error } = useApiData<CycleScoreResult>('/api/cycle');
   const { data: history }               = useApiData<HistoryResponse>('/api/cycle/history');
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
 
   return (
+    <>
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
         title="Skyline Cycle Score"
@@ -138,6 +143,31 @@ export default function CyclePage() {
               <span className="rounded-full" style={{ width: 20, height: 2, backgroundColor: '#F7931A', opacity: 0.75, display: 'inline-block' }} />
               <span className="text-[10px] font-mono" style={{ color: '#F7931A', opacity: 0.75 }}>BTC Price</span>
             </div>
+            {/* Share card button */}
+            <button
+              onClick={() => setShowShareModal(true)}
+              disabled={!history?.points?.length || !cycle}
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-medium transition-all border"
+              style={{
+                backgroundColor: 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           'var(--sct-muted)',
+                cursor:          (!history?.points?.length || !cycle) ? 'not-allowed' : 'pointer',
+                opacity:         (!history?.points?.length || !cycle) ? 0.4 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!history?.points?.length || !cycle) return;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#E6B450';
+                (e.currentTarget as HTMLButtonElement).style.color = '#E6B450';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--sct-border)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--sct-muted)';
+              }}
+            >
+              <ImageDown size={12} />
+              Share Card
+            </button>
           </div>
         </div>
 
@@ -229,5 +259,21 @@ export default function CyclePage() {
         </div>
       </div>
     </div>
+
+    {/* Share card modal */}
+    {showShareModal && history?.points?.length && cycle && (
+      <SharePreviewModal
+        payload={{
+          points:       history.points,
+          currentScore: cycle.score,
+          zoneLabel:    cycle.zoneLabel,
+          zoneColor:    cycle.zoneColor,
+          btcPrice:     history.points[history.points.length - 1]?.btcClose ?? 0,
+          generatedAt:  new Date().toISOString(),
+        }}
+        onClose={() => setShowShareModal(false)}
+      />
+    )}
+    </>
   );
 }
