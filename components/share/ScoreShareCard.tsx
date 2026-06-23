@@ -111,6 +111,33 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
       }}
     >
 
+      {/* ── Watermark — on outer card div so it's never buried under chart SVG ── */}
+      <div style={{
+        position:      'absolute',
+        top:           '50%',
+        left:          '50%',
+        transform:     'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        userSelect:    'none',
+        textAlign:     'center',
+        opacity:       logoSrc ? 0.13 : 0.09,
+        zIndex:        20,
+      }}>
+        {logoSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoSrc} alt="" style={{ display: 'block', width: 320, height: 'auto' }} />
+        ) : (
+          <>
+            <div style={{ fontSize: 56, fontWeight: 900, letterSpacing: '0.18em', color: '#FFFFFF', textTransform: 'uppercase', fontFamily: "'Orbitron', ui-monospace, monospace", lineHeight: 1 }}>
+              SKYLINE
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.42em', color: '#FFFFFF', textTransform: 'uppercase', fontFamily: "'Orbitron', ui-monospace, monospace", marginTop: 10 }}>
+              CYCLE TERMINAL
+            </div>
+          </>
+        )}
+      </div>
+
       {/* ── Header ── */}
       <div style={{ height: HEADER_H, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
@@ -132,52 +159,6 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
 
       {/* ── Chart ── */}
       <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', position: 'relative' }}>
-        {/* Watermark — logo image if processed, otherwise Orbitron text fallback */}
-        <div style={{
-          position:      'absolute',
-          top:           '50%',
-          left:          '50%',
-          transform:     'translate(-50%, -50%)',
-          pointerEvents: 'none',
-          userSelect:    'none',
-          textAlign:     'center',
-          opacity:       logoSrc ? 0.13 : 0.09,
-          zIndex:        10,
-        }}>
-          {logoSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logoSrc}
-              alt=""
-              style={{ display: 'block', width: 320, height: 'auto' }}
-            />
-          ) : (
-            <>
-              <div style={{
-                fontSize:      56,
-                fontWeight:    900,
-                letterSpacing: '0.18em',
-                color:         '#FFFFFF',
-                textTransform: 'uppercase',
-                fontFamily:    "'Orbitron', ui-monospace, monospace",
-                lineHeight:    1,
-              }}>
-                SKYLINE
-              </div>
-              <div style={{
-                fontSize:      14,
-                fontWeight:    700,
-                letterSpacing: '0.42em',
-                color:         '#FFFFFF',
-                textTransform: 'uppercase',
-                fontFamily:    "'Orbitron', ui-monospace, monospace",
-                marginTop:     10,
-              }}>
-                CYCLE TERMINAL
-              </div>
-            </>
-          )}
-        </div>
         <ComposedChart
           width={CHART_W}
           height={CHART_H}
