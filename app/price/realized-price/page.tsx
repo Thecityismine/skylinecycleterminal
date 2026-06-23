@@ -1,6 +1,6 @@
 ﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
-import { RealizedPriceChart } from '@/components/charts/RealizedPriceChart';
+import { RealizedPriceChartSection } from '@/components/charts/RealizedPriceChartSection';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
@@ -130,11 +130,17 @@ export default async function RealizedPricePage() {
       </div>
 
       {/* Chart */}
-      <RealizedPriceChart
+      <RealizedPriceChartSection
         data={data}
-        realizedAvailable={true}
+        currentPrice={currentPrice}
+        ma200w={ma200w}
+        ratio={ratio}
+        premium={premium}
+        zoneLabel={zone?.label ?? ''}
+        zoneColor={zone?.color ?? ''}
         secondaryLabel="200-Week MA"
         secondaryColor="#E879F9"
+        generatedAt={new Date().toISOString()}
       />
 
       {/* Insight panels */}

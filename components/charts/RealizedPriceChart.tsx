@@ -88,13 +88,22 @@ export function RealizedPriceChart({
   realizedAvailable,
   secondaryLabel = 'Avg Buy Price (Realized)',
   secondaryColor = '#E879F9',
+  onPeriodChange,
+  shareButton,
 }: {
   data: RealizedPricePoint[];
   realizedAvailable: boolean;
   secondaryLabel?: string;
   secondaryColor?: string;
+  onPeriodChange?: (period: string) => void;
+  shareButton?: React.ReactNode;
 }) {
   const [period, setPeriod] = useState<string>('3Y');
+
+  function handlePeriodChange(p: string) {
+    setPeriod(p);
+    onPeriodChange?.(p);
+  }
 
   const filtered = useMemo(() => {
     const p = PERIODS.find((x) => x.label === period);
@@ -130,12 +139,14 @@ export function RealizedPriceChart({
           )}
         </div>
 
-        {/* Period selector */}
-        <div className="flex gap-1">
+        {/* Share button + period selector */}
+        <div className="flex items-center gap-2">
+          {shareButton}
+          <div className="flex gap-1">
           {PERIODS.map((p) => (
             <button
               key={p.label}
-              onClick={() => setPeriod(p.label)}
+              onClick={() => handlePeriodChange(p.label)}
               className="px-3 py-1 text-xs font-mono rounded transition-all duration-150"
               style={{
                 backgroundColor: period === p.label ? 'var(--sct-border)' : 'transparent',
@@ -146,6 +157,7 @@ export function RealizedPriceChart({
               {p.label}
             </button>
           ))}
+          </div>
         </div>
       </div>
 
