@@ -137,10 +137,10 @@ export function SharePreviewModal({ payload, onClose }: Props) {
               left:          0,
               width:         SHARE_CARD_WIDTH,
               height:        SHARE_CARD_HEIGHT,
-              opacity:       0,
+              opacity:       0.001,
               pointerEvents: 'none',
               userSelect:    'none',
-              zIndex:        -1,
+              zIndex:        9999,
             }}
           >
             <div ref={cardRef}>
