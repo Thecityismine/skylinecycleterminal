@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { ImageDown } from 'lucide-react';
 import { useApiData } from '@/lib/hooks/useApiData';
 import { HalvingCycleChart } from '@/components/charts/HalvingCycleChart';
+import { HalvingShareModal } from '@/components/share/HalvingShareModal';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import {
   HALVINGS, PHASES, computeHalvingZones, getCurrentPosition,
@@ -31,8 +33,9 @@ function fmtDate(iso: string): string {
 }
 
 export default function HalvingCyclesPage() {
-  const [rangeIdx, setRangeIdx] = useState(2);
-  const [logScale, setLog]      = useState(true);
+  const [rangeIdx,       setRangeIdx]       = useState(2);
+  const [logScale,       setLog]            = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { data, loading } = useApiData<ApiResponse>('/api/price/halving-cycles');
   const segments = useMemo(() => computeHalvingZones(), []);
@@ -54,6 +57,7 @@ export default function HalvingCyclesPage() {
   }));
 
   return (
+    <>
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Halving Accumulation Cycles"
@@ -176,6 +180,30 @@ export default function HalvingCyclesPage() {
               }}>
               Log
             </button>
+            <button
+              onClick={() => setShowShareModal(true)}
+              disabled={!data?.points.length}
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all border"
+              style={{
+                backgroundColor: 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           'var(--sct-muted)',
+                cursor:          !data?.points.length ? 'not-allowed' : 'pointer',
+                opacity:         !data?.points.length ? 0.4 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!data?.points.length) return;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#F7931A';
+                (e.currentTarget as HTMLButtonElement).style.color = '#F7931A';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--sct-border)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--sct-muted)';
+              }}
+            >
+              <ImageDown size={12} />
+              Share Card
+            </button>
           </div>
         </div>
 
@@ -289,5 +317,20 @@ export default function HalvingCyclesPage() {
         </div>
       </div>
     </div>
+
+    {showShareModal && data?.points.length && (
+      <HalvingShareModal
+        payload={{
+          points:      data.points,
+          segments,
+          logScale,
+          rangeLabel:  RANGES[rangeIdx].label,
+          startTs,
+          generatedAt: new Date().toISOString(),
+        }}
+        onClose={() => setShowShareModal(false)}
+      />
+    )}
+    </>
   );
 }
