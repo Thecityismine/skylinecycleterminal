@@ -17,9 +17,10 @@ import { BOTTOM_EVENTS, HALVINGS_BOTTOM } from '@/lib/indicators/bottomConfluenc
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
-  points:  BottomConfluencePoint[];
-  periods: ConfluencePeriod[];
-  range?:  'all' | '8y' | '4y';
+  points:           BottomConfluencePoint[];
+  periods:          ConfluencePeriod[];
+  range?:           'all' | '8y' | '4y';
+  onVisibleChange?: (visible: Record<string, boolean>) => void;
 };
 
 const LOG_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
@@ -67,7 +68,7 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function BTCBottomConfluenceChart({ points, periods, range = 'all' }: Props) {
+export function BTCBottomConfluenceChart({ points, periods, range = 'all', onVisibleChange }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>({
     btcPrice:  true,
     ma2y:      true,
@@ -77,7 +78,11 @@ export function BTCBottomConfluenceChart({ points, periods, range = 'all' }: Pro
   });
 
   const toggle = (key: string) =>
-    setVisible((prev) => ({ ...prev, [key]: !prev[key] }));
+    setVisible((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      onVisibleChange?.(next);
+      return next;
+    });
 
   if (!points.length) return null;
 

@@ -11,7 +11,7 @@ import {
   getSignalTimeline,
 } from '@/lib/indicators/bottomConfluence';
 import type { SignalStatus } from '@/lib/indicators/bottomConfluence';
-import { BTCBottomConfluenceChart } from '@/components/charts/BTCBottomConfluenceChart';
+import { BTCBottomConfluenceChartSection } from '@/components/charts/BTCBottomConfluenceChartSection';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 
@@ -231,20 +231,17 @@ export default async function BottomConfluencePage() {
       </div>
 
       {/* Chart */}
-      <div>
-        <h2 className="text-sm font-medium mb-3 tracking-wide" style={{ color: 'var(--sct-muted)' }}>
-          BTC PRICE + HISTORICAL CONFLUENCE ZONES
-        </h2>
-        <div
-          className="rounded-xl border p-4"
-          style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', height: 460 }}
-        >
-          <BTCBottomConfluenceChart points={points} periods={periods} />
-        </div>
-        <p className="text-[10px] mt-1.5" style={{ color: 'var(--sct-muted)' }}>
-          Green shaded zones = historical periods when confluence score ≥ 2/4 persisted for 14+ days. Dashed green line = 2-year moving average (Signal 3 threshold).
-        </p>
-      </div>
+      <BTCBottomConfluenceChartSection
+        points={points}
+        periods={periods}
+        confluenceScore={last.confluenceScore}
+        regimeLabel={regime.label}
+        regimeColor={regime.color}
+        btcClose={last.btcClose}
+        mvrv={last.mvrv}
+        hrRatio={last.hrRatio}
+        priceTo2y={last.priceTo2y}
+      />
 
       {/* Two columns: Signal Timeline + Current Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
