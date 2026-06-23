@@ -22,6 +22,7 @@ export type ScoreSharePayload = {
   zoneColor:    string;
   btcPrice:     number;
   generatedAt:  string;   // ISO string
+  logoSrc?:     string;   // processed transparent data URL — white bg stripped via canvas
 };
 
 // ─── Shared chart constants ───────────────────────────────────────────────────
@@ -74,7 +75,7 @@ const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
-  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt } = payload;
+  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt, logoSrc } = payload;
 
   const prices   = points.map((p) => p.btcClose).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.6) : 0.01;
@@ -137,7 +138,7 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
 
       {/* ── Chart ── */}
       <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', position: 'relative' }}>
-        {/* Text watermark — CSS text works reliably in html-to-image canvas */}
+        {/* Watermark — logo image if processed, otherwise Orbitron text fallback */}
         <div style={{
           position:      'absolute',
           top:           '50%',
@@ -146,31 +147,42 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
           pointerEvents: 'none',
           userSelect:    'none',
           textAlign:     'center',
-          opacity:       0.09,
+          opacity:       logoSrc ? 0.13 : 0.09,
           zIndex:        10,
         }}>
-          <div style={{
-            fontSize:      56,
-            fontWeight:    900,
-            letterSpacing: '0.18em',
-            color:         '#FFFFFF',
-            textTransform: 'uppercase',
-            fontFamily:    "'Orbitron', ui-monospace, monospace",
-            lineHeight:    1,
-          }}>
-            SKYLINE
-          </div>
-          <div style={{
-            fontSize:      14,
-            fontWeight:    700,
-            letterSpacing: '0.42em',
-            color:         '#FFFFFF',
-            textTransform: 'uppercase',
-            fontFamily:    "'Orbitron', ui-monospace, monospace",
-            marginTop:     10,
-          }}>
-            CYCLE TERMINAL
-          </div>
+          {logoSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoSrc}
+              alt=""
+              style={{ display: 'block', width: 320, height: 'auto' }}
+            />
+          ) : (
+            <>
+              <div style={{
+                fontSize:      56,
+                fontWeight:    900,
+                letterSpacing: '0.18em',
+                color:         '#FFFFFF',
+                textTransform: 'uppercase',
+                fontFamily:    "'Orbitron', ui-monospace, monospace",
+                lineHeight:    1,
+              }}>
+                SKYLINE
+              </div>
+              <div style={{
+                fontSize:      14,
+                fontWeight:    700,
+                letterSpacing: '0.42em',
+                color:         '#FFFFFF',
+                textTransform: 'uppercase',
+                fontFamily:    "'Orbitron', ui-monospace, monospace",
+                marginTop:     10,
+              }}>
+                CYCLE TERMINAL
+              </div>
+            </>
+          )}
         </div>
         <ComposedChart
           width={CHART_W}

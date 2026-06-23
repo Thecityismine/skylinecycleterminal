@@ -22,12 +22,58 @@ type ExportState = 'idle' | 'exporting' | 'ready';
 
 const PREVIEW_SCALE = 0.42;   // ≈ 504 × 283 preview on screen
 
+// Strips the white background from a PNG and converts logo pixels to white,
+// returning a transparent data URL suitable for use as a canvas-safe watermark.
+function processLogoForWatermark(src: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < data.length; i += 4) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        if (lum > 240) {
+          // Near-white background → fully transparent
+          data[i + 3] = 0;
+        } else if (lum > 160) {
+          // Anti-aliased edge → partial alpha, set pixel to white
+          data[i]     = 255;
+          data[i + 1] = 255;
+          data[i + 2] = 255;
+          data[i + 3] = Math.round((240 - lum) / 80 * 255);
+        } else {
+          // Logo content → force to white so it reads on the dark card
+          data[i]     = 255;
+          data[i + 1] = 255;
+          data[i + 2] = 255;
+        }
+      }
+
+      const out = document.createElement('canvas');
+      out.width  = canvas.width;
+      out.height = canvas.height;
+      out.getContext('2d')!.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
+      resolve(out.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve('');
+    img.src = src;
+  });
+}
+
 export function SharePreviewModal({ payload, onClose }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [state,    setState]    = useState<ExportState>('idle');
   const [dataUrl,  setDataUrl]  = useState<string | null>(null);
   const [copied,   setCopied]   = useState(false);
   const [hasShare, setHasShare] = useState(false);
+  const [logoSrc,  setLogoSrc]  = useState<string | null>(null);
 
   // Detect Web Share API capability
   useEffect(() => {
@@ -39,12 +85,20 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     );
   }, []);
 
-  // Auto-generate on open
+  // Process the logo on mount — strips white bg, converts pixels to white
   useEffect(() => {
-    const timer = setTimeout(() => void generate(), 800);
+    processLogoForWatermark('/skyline-full.png')
+      .then(setLogoSrc)
+      .catch(() => setLogoSrc(''));
+  }, []);
+
+  // Auto-generate once logo processing is done
+  useEffect(() => {
+    if (logoSrc === null) return;  // still processing
+    const timer = setTimeout(() => void generate(), 300);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [logoSrc]);
 
   const generate = useCallback(async () => {
     if (!cardRef.current) return;
@@ -134,7 +188,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
             }}
           >
             <div ref={cardRef}>
-              <ScoreShareCard payload={payload} />
+              <ScoreShareCard payload={{ ...payload, logoSrc: logoSrc ?? undefined }} />
             </div>
           </div>
 
