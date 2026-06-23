@@ -83,10 +83,14 @@ function SoprTip({ d, showSma30, showSma90, showPrice }: {
 // ─── Chart ────────────────────────────────────────────────────────────────────
 
 type Props = {
-  points: SoprPoint[];
+  points:               SoprPoint[];
+  onShowPriceChange?:   (v: boolean) => void;
+  onShowSma30Change?:   (v: boolean) => void;
+  onShowSma90Change?:   (v: boolean) => void;
+  onShowShadingChange?: (v: boolean) => void;
 };
 
-export function BTCSoprChart({ points }: Props) {
+export function BTCSoprChart({ points, onShowPriceChange, onShowSma30Change, onShowSma90Change, onShowShadingChange }: Props) {
   const [showPrice,   setShowPrice]   = useState(true);
   const [showSma30,   setShowSma30]   = useState(false);
   const [showSma90,   setShowSma90]   = useState(true);
@@ -106,10 +110,10 @@ export function BTCSoprChart({ points }: Props) {
   );
 
   const toggles = [
-    { key: 'price',   color: '#E6EDF3', label: 'BTC Price',      active: showPrice,   onToggle: () => setShowPrice((v) => !v) },
-    { key: 'sma30',   color: '#F2B84B', label: '30D Average',    active: showSma30,   onToggle: () => setShowSma30((v) => !v) },
-    { key: 'sma90',   color: '#3B82F6', label: '90D Average',    active: showSma90,   onToggle: () => setShowSma90((v) => !v) },
-    { key: 'shading', color: '#35D07F', label: 'Regime shading', active: showShading, onToggle: () => setShowShading((v) => !v) },
+    { key: 'price',   color: '#E6EDF3', label: 'BTC Price',      active: showPrice,   onToggle: () => { const n = !showPrice;   setShowPrice(n);   onShowPriceChange?.(n);   } },
+    { key: 'sma30',   color: '#F2B84B', label: '30D Average',    active: showSma30,   onToggle: () => { const n = !showSma30;   setShowSma30(n);   onShowSma30Change?.(n);   } },
+    { key: 'sma90',   color: '#3B82F6', label: '90D Average',    active: showSma90,   onToggle: () => { const n = !showSma90;   setShowSma90(n);   onShowSma90Change?.(n);   } },
+    { key: 'shading', color: '#35D07F', label: 'Regime shading', active: showShading, onToggle: () => { const n = !showShading; setShowShading(n); onShowShadingChange?.(n); } },
   ];
 
   return (

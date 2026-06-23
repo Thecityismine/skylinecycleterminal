@@ -6,7 +6,7 @@ import {
   getSoprTrendRead,
   HISTORICAL_SOPR_EVENTS,
 } from '@/lib/indicators/sopr';
-import { BTCSoprChart }  from '@/components/charts/BTCSoprChart';
+import { BTCSoprChartSection } from '@/components/charts/BTCSoprChartSection';
 import { PageHeader }    from '@/components/dashboard/PageHeader';
 import { StatCard }      from '@/components/dashboard/StatCard';
 
@@ -165,27 +165,27 @@ export default async function SoprPage() {
       </div>
 
       {/* ── Main chart ──────────────────────────────────────────────────── */}
-      <div
-        className="rounded-xl border p-5"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        <div className="mb-4">
-          <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-            Bitcoin SOPR (MVRV Deviation) · BTC Price — Log Scale
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-            Green bars = above 1.0 (profit territory) · Red bars = below 1.0 (loss territory) ·
-            Zero line = MVRV 1.0 (break-even) · Dashed verticals = halvings
-          </p>
-        </div>
-        {points.length > 0 ? (
-          <BTCSoprChart points={points} />
-        ) : (
+      {points.length > 0 ? (
+        <BTCSoprChartSection
+          points={points}
+          regimeLabel={regime.label}
+          regimeColor={regime.color}
+          rawSopr={last?.rawSopr ?? null}
+          soprDev={last?.soprDeviation ?? null}
+          sma30={last?.sma30 ?? null}
+          sma90={last?.sma90 ?? null}
+          btcClose={last?.btcClose ?? null}
+        />
+      ) : (
+        <div
+          className="rounded-xl border p-5"
+          style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+        >
           <p className="text-sm text-center py-16" style={{ color: 'var(--sct-muted)' }}>
             Unable to load MVRV data.
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Secondary panels ────────────────────────────────────────────── */}
       {last && (
