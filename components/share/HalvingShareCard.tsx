@@ -71,33 +71,6 @@ export function HalvingShareCard({ payload }: { payload: HalvingSharePayload }) 
       boxSizing:       'border-box',
     }}>
 
-      {/* ── Watermark — on outer card div so it's never buried under chart SVG ── */}
-      <div style={{
-        position:      'absolute',
-        top:           '50%',
-        left:          '50%',
-        transform:     'translate(-50%, -50%)',
-        pointerEvents: 'none',
-        userSelect:    'none',
-        textAlign:     'center',
-        opacity:       logoSrc ? 0.13 : 0.09,
-        zIndex:        20,
-      }}>
-        {logoSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoSrc} alt="" style={{ display: 'block', width: 320, height: 'auto' }} />
-        ) : (
-          <>
-            <div style={{ fontSize: 56, fontWeight: 900, letterSpacing: '0.18em', color: '#FFFFFF', textTransform: 'uppercase', fontFamily: "'Orbitron', ui-monospace, monospace", lineHeight: 1 }}>
-              SKYLINE
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.42em', color: '#FFFFFF', textTransform: 'uppercase', fontFamily: "'Orbitron', ui-monospace, monospace", marginTop: 10 }}>
-              CYCLE TERMINAL
-            </div>
-          </>
-        )}
-      </div>
-
       {/* ── Header ── */}
       <div style={{
         height:         HEADER_H,
@@ -235,6 +208,33 @@ export function HalvingShareCard({ payload }: { payload: HalvingSharePayload }) 
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
           Generated from Skyline Cycle Terminal · Not financial advice
         </span>
+      </div>
+
+      {/* ── Watermark — LAST in DOM so html-to-image always paints it on top ── */}
+      <div style={{
+        position:      'absolute',
+        top:           '50%',
+        left:          '50%',
+        transform:     'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        userSelect:    'none',
+        textAlign:     'center',
+        opacity:       logoSrc ? 0.13 : 0.09,
+        zIndex:        20,
+      }}>
+        {logoSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoSrc} alt="" style={{ display: 'block', width: 320, height: 'auto' }} />
+        ) : (
+          <>
+            <div style={{ fontSize: 56, fontWeight: 900, letterSpacing: '0.18em', color: '#FFFFFF', textTransform: 'uppercase', fontFamily: "'Orbitron', ui-monospace, monospace", lineHeight: 1 }}>
+              SKYLINE
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.42em', color: '#FFFFFF', textTransform: 'uppercase', fontFamily: "'Orbitron', ui-monospace, monospace", marginTop: 10 }}>
+              CYCLE TERMINAL
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
