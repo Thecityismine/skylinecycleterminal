@@ -15,7 +15,7 @@ export type PiBottomPoint = {
   inZone:    boolean;
 };
 
-type Range = '2Y' | '4Y' | 'All';
+export type Range = '2Y' | '4Y' | 'All';
 const RANGES: Range[] = ['2Y', '4Y', 'All'];
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
@@ -56,7 +56,13 @@ function Tip({ active, payload, label }: {
   );
 }
 
-export function PiCycleBottomChart({ data }: { data: PiBottomPoint[] }) {
+export function PiCycleBottomChart({
+  data,
+  onRangeChange,
+}: {
+  data: PiBottomPoint[];
+  onRangeChange?: (r: Range) => void;
+}) {
   const [range, setRange] = useState<Range>('All');
 
   const displayed = useMemo(() => {
@@ -90,7 +96,7 @@ export function PiCycleBottomChart({ data }: { data: PiBottomPoint[] }) {
         {RANGES.map(r => (
           <button
             key={r}
-            onClick={() => setRange(r)}
+            onClick={() => { setRange(r); onRangeChange?.(r); }}
             className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
               backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',

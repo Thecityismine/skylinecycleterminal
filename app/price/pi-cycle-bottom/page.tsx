@@ -1,7 +1,7 @@
 import { fetchBTCDailyPrice }   from '@/lib/api/coinmetrics';
 import { PageHeader }            from '@/components/dashboard/PageHeader';
 import { StatCard }              from '@/components/dashboard/StatCard';
-import { PiCycleBottomChart }   from '@/components/charts/PiCycleBottomChart';
+import { PiCycleChartSection }  from '@/components/charts/PiCycleChartSection';
 import type { PiBottomPoint }   from '@/components/charts/PiCycleBottomChart';
 
 export const revalidate = 86400;
@@ -240,46 +240,16 @@ export default async function PiCycleBottomPage() {
       </div>
 
       {/* ── Chart card ── */}
-      <div
-        className="rounded-xl border p-5"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Pi Cycle Bottom — BTC Price vs Moving Averages · Log Scale
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Blue shading = bottom zone active (150d MA below 471d×0.745) · Signal fires on the cross-under
-            </p>
-          </div>
-          <div className="flex items-center gap-5 text-xs font-mono shrink-0">
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.75)' }} />
-              <span style={{ color: 'var(--sct-muted)' }}>BTC Price</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-6 h-0.5" style={{ backgroundColor: '#E6B450' }} />
-              <span style={{ color: '#E6B450' }}>150d MA</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-6 h-0.5" style={{ backgroundColor: '#3B82F6' }} />
-              <span style={{ color: '#3B82F6' }}>471d × 0.745</span>
-            </span>
-          </div>
-        </div>
-
-        {fetchError ? (
-          <div
-            className="h-[460px] flex items-center justify-center rounded-lg border text-sm"
-            style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
-          >
-            Unable to load price data — CoinMetrics API unreachable
-          </div>
-        ) : (
-          <PiCycleBottomChart data={chartData} />
-        )}
-      </div>
+      <PiCycleChartSection
+        data={chartData}
+        fetchError={fetchError}
+        statusLabel={sc.label}
+        statusColor={sc.color}
+        currentPrice={currentPrice}
+        currentMA150={currentMA150}
+        currentThreshold={currentThreshold}
+        ratio={ratio}
+      />
 
       {/* ── Bottom row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
