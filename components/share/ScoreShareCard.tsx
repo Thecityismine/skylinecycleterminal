@@ -22,7 +22,6 @@ export type ScoreSharePayload = {
   zoneColor:    string;
   btcPrice:     number;
   generatedAt:  string;   // ISO string
-  logoSrc?:     string;   // pre-fetched base64 data URL for the watermark
 };
 
 // ─── Shared chart constants ───────────────────────────────────────────────────
@@ -75,7 +74,7 @@ const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
-  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt, logoSrc } = payload;
+  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt } = payload;
 
   const prices   = points.map((p) => p.btcClose).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.6) : 0.01;
@@ -138,27 +137,41 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
 
       {/* ── Chart ── */}
       <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', position: 'relative' }}>
-        {/* Watermark — uses pre-fetched base64 so html-to-image captures it */}
-        {logoSrc && (
+        {/* Text watermark — CSS text works reliably in html-to-image canvas */}
+        <div style={{
+          position:      'absolute',
+          top:           '50%',
+          left:          '50%',
+          transform:     'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          userSelect:    'none',
+          textAlign:     'center',
+          opacity:       0.09,
+          zIndex:        10,
+        }}>
           <div style={{
-            position:      'absolute',
-            top:           '50%',
-            left:          '50%',
-            transform:     'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            userSelect:    'none',
-            opacity:       0.35,
-            mixBlendMode:  'screen',
-            zIndex:        10,
+            fontSize:      56,
+            fontWeight:    900,
+            letterSpacing: '0.22em',
+            color:         '#FFFFFF',
+            textTransform: 'uppercase',
+            fontFamily:    'ui-monospace, SFMono-Regular, Menlo, monospace',
+            lineHeight:    1,
           }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={logoSrc}
-              alt=""
-              style={{ display: 'block', width: 280, height: 'auto', filter: 'invert(1) brightness(1.8)' }}
-            />
+            SKYLINE
           </div>
-        )}
+          <div style={{
+            fontSize:      15,
+            fontWeight:    600,
+            letterSpacing: '0.48em',
+            color:         '#FFFFFF',
+            textTransform: 'uppercase',
+            fontFamily:    'ui-monospace, SFMono-Regular, Menlo, monospace',
+            marginTop:     8,
+          }}>
+            CYCLE TERMINAL
+          </div>
+        </div>
         <ComposedChart
           width={CHART_W}
           height={CHART_H}

@@ -28,7 +28,6 @@ export function SharePreviewModal({ payload, onClose }: Props) {
   const [dataUrl,  setDataUrl]  = useState<string | null>(null);
   const [copied,   setCopied]   = useState(false);
   const [hasShare, setHasShare] = useState(false);
-  const [logoSrc,  setLogoSrc]  = useState<string | null>(null);
 
   // Detect Web Share API capability
   useEffect(() => {
@@ -40,29 +39,12 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     );
   }, []);
 
-  // Pre-fetch the logo as base64 so html-to-image can embed it in the canvas
+  // Auto-generate on open
   useEffect(() => {
-    fetch('/skyline-full.png')
-      .then((r) => r.blob())
-      .then(
-        (blob) =>
-          new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target!.result as string);
-            reader.readAsDataURL(blob);
-          }),
-      )
-      .then(setLogoSrc)
-      .catch(() => setLogoSrc(''));   // watermark optional — don't block export
-  }, []);
-
-  // Auto-generate once the logo is ready
-  useEffect(() => {
-    if (logoSrc === null) return;   // still loading
     const timer = setTimeout(() => void generate(), 300);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logoSrc]);
+  }, []);
 
   const generate = useCallback(async () => {
     if (!cardRef.current) return;
@@ -152,7 +134,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
             }}
           >
             <div ref={cardRef}>
-              <ScoreShareCard payload={{ ...payload, logoSrc: logoSrc ?? undefined }} />
+              <ScoreShareCard payload={payload} />
             </div>
           </div>
 
