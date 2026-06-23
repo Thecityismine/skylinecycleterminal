@@ -6,6 +6,7 @@ import { RegimeShareCard } from '@/components/share/RegimeShareCard';
 import type { RegimeSharePayload } from '@/components/share/RegimeShareCard';
 import {
   exportShareCard,
+  compositeWatermark,
   downloadPng,
   dataUrlToFile,
   SHARE_CARD_WIDTH,
@@ -57,7 +58,8 @@ export function RegimeShareModal({ payload, onClose }: Props) {
     if (!cardRef.current) return;
     setState('exporting');
     try {
-      const url = await exportShareCard(cardRef.current);
+      const raw = await exportShareCard(cardRef.current);
+      const url = logoSrc ? await compositeWatermark(raw, logoSrc) : raw;
       setDataUrl(url);
       setState('ready');
     } catch {
@@ -138,7 +140,7 @@ export function RegimeShareModal({ payload, onClose }: Props) {
             }}
           >
             <div ref={cardRef}>
-              <RegimeShareCard payload={{ ...payload, logoSrc: logoSrc ?? undefined }} />
+              <RegimeShareCard payload={payload} />
             </div>
           </div>
 

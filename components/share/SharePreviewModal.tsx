@@ -6,6 +6,7 @@ import { ScoreShareCard }  from '@/components/share/ScoreShareCard';
 import type { ScoreSharePayload } from '@/components/share/ScoreShareCard';
 import {
   exportShareCard,
+  compositeWatermark,
   downloadPng,
   dataUrlToFile,
   SHARE_CARD_WIDTH,
@@ -60,7 +61,8 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     if (!cardRef.current) return;
     setState('exporting');
     try {
-      const url = await exportShareCard(cardRef.current);
+      const raw = await exportShareCard(cardRef.current);
+      const url = logoSrc ? await compositeWatermark(raw, logoSrc) : raw;
       setDataUrl(url);
       setState('ready');
     } catch (err) {
@@ -144,7 +146,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
             }}
           >
             <div ref={cardRef}>
-              <ScoreShareCard payload={{ ...payload, logoSrc: logoSrc ?? undefined }} />
+              <ScoreShareCard payload={payload} />
             </div>
           </div>
 

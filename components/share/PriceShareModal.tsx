@@ -6,6 +6,7 @@ import { PriceShareCard } from '@/components/share/PriceShareCard';
 import type { PriceSharePayload } from '@/components/share/PriceShareCard';
 import {
   exportShareCard,
+  compositeWatermark,
   downloadPng,
   dataUrlToFile,
   SHARE_CARD_WIDTH,
@@ -57,7 +58,8 @@ export function PriceShareModal({ payload, onClose }: Props) {
     if (!cardRef.current) return;
     setState('exporting');
     try {
-      const url = await exportShareCard(cardRef.current);
+      const raw = await exportShareCard(cardRef.current);
+      const url = logoSrc ? await compositeWatermark(raw, logoSrc) : raw;
       setDataUrl(url);
       setState('ready');
     } catch {
@@ -139,7 +141,7 @@ export function PriceShareModal({ payload, onClose }: Props) {
             }}
           >
             <div ref={cardRef}>
-              <PriceShareCard payload={{ ...payload, logoSrc: logoSrc ?? undefined }} />
+              <PriceShareCard payload={payload} />
             </div>
           </div>
 
