@@ -297,6 +297,12 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
         </div>
       </div>
 
+      {/* ── Footer ── */}
+      <div style={{ marginTop: 'auto', paddingTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
+        <span style={{ fontSize: 10, color: '#484F58' }}>
+          Generated from Skyline Cycle Terminal · Not financial advice
+        </span>
+      </div>
     </div>
   );
 }
