@@ -8,6 +8,8 @@ import { EquityChart } from '@/components/charts/EquityChart';
 import type { EquityData } from '@/lib/indicators/equityScore';
 import Link from 'next/link';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { EquityShareModal } from '@/components/share/EquityShareModal';
+import type { EquitySharePayload } from '@/components/share/EquityShareCard';
 
 type EquityResponse = EquityData & { fundamentalsAvailable?: boolean };
 
@@ -278,6 +280,25 @@ export default function EquityDetailPage() {
               }}>
               Log
             </button>
+            {data && (
+              <EquityShareModal payload={{
+                ticker:     ticker,
+                name:       data.fundamentals.name ?? ticker,
+                sector:     data.sector,
+                type:       data.type,
+                color:      color,
+                points:     data.points,
+                segments:   data.segments,
+                price:      data.fundamentals.price ?? null,
+                change1d:   data.fundamentals.change1d ?? null,
+                currency:   data.fundamentals.currency ?? null,
+                trend:      data.trend,
+                scores:     data.scores,
+                logScale:   log,
+                startTs:    startTs,
+                generatedAt: new Date().toISOString(),
+              } satisfies EquitySharePayload} />
+            )}
           </div>
         </div>
         <div style={{ height: 420 }}>
