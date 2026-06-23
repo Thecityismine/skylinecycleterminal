@@ -1,6 +1,6 @@
 import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeNUPL, nuplSignal } from '@/lib/indicators/nupl';
-import { NUPLChart } from '@/components/charts/NUPLChart';
+import { NUPLChartSection } from '@/components/charts/NUPLChartSection';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
@@ -101,47 +101,26 @@ export default async function NUPLPage() {
       )}
 
       {/* Main chart */}
-      <div
-        className="rounded-xl border p-5"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC Price (log) · NUPL Proxy
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Dashed verticals = Bitcoin halvings · Zones: Capitulation → Hope → Optimism → Belief → Euphoria
-            </p>
-          </div>
-          {/* Zone legend */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: 'var(--sct-muted)' }}>
-            {[
-              { label: 'Capitulation',  color: '#3B82F6' },
-              { label: 'Hope',          color: '#35D07F' },
-              { label: 'Optimism',      color: '#A3E635' },
-              { label: 'Belief',        color: '#E6B450' },
-              { label: 'Euphoria',      color: '#FF5C5C' },
-            ].map((z) => (
-              <span key={z.label} className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
-                {z.label}
-              </span>
-            ))}
-          </div>
+      {result?.available ? (
+        <NUPLChartSection
+          points={result.points}
+          nupl={cur?.nupl ?? null}
+          price={cur?.price ?? null}
+          ma730={cur?.ma730 ?? null}
+          zoneLabel={sig.label}
+          zoneColor={sig.color}
+          zone={sig.zone}
+        />
+      ) : (
+        <div
+          className="rounded-xl border p-5"
+          style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+        >
+          <p className="text-sm text-center py-16" style={{ color: 'var(--sct-muted)' }}>
+            Unable to load price data.
+          </p>
         </div>
-
-        {!result?.available ? (
-          <div
-            className="h-[380px] flex flex-col items-center justify-center rounded-lg border gap-3"
-            style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
-          >
-            <p className="text-sm">Loading data…</p>
-          </div>
-        ) : (
-          <NUPLChart data={result.points} />
-        )}
-      </div>
+      )}
 
       {/* Insight panel */}
       <InsightPanel title="Indicator Logic">
