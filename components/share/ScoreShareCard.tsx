@@ -68,6 +68,10 @@ const METRICS_H = 88;         // metrics strip
 const FOOTER_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - CHART_H - METRICS_H - PAD;
 const CHART_W   = SHARE_CARD_WIDTH - PAD * 2;
 
+export const SCORE_CARD_CHART_RECT = {
+  x: PAD, y: PAD + HEADER_H, w: CHART_W, h: CHART_H,
+};
+
 const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
   new Date(`${2011 + i}-01-01`).getTime(),
 );

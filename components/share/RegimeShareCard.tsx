@@ -28,6 +28,10 @@ const FOOTER_H = 28;
 const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH  - PAD * 2;
 
+export const REGIME_CARD_CHART_RECT = {
+  x: PAD, y: PAD + HEADER_H + STATS_H, w: CHART_W, h: CHART_H,
+};
+
 const LOG_TICKS  = [100, 1_000, 10_000, 100_000, 1_000_000];
 const YEAR_TICKS = Array.from({ length: 14 }, (_, i) =>
   new Date(`${2012 + i}-01-01`).getTime(),

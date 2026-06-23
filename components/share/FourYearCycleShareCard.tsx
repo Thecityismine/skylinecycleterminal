@@ -37,6 +37,10 @@ const FOOTER_H = 24;
 const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
+export const FOUR_YEAR_CARD_CHART_RECT = {
+  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+};
+
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
 
 function fmtPrice(v: number): string {

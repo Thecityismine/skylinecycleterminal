@@ -14,15 +14,35 @@ export async function exportShareCard(node: HTMLElement): Promise<string> {
   });
 }
 
+// Card coordinates (pre-scale) of the chart plot area — used to match the
+// watermark position/size to the live ChartWatermark component.
+export type CardChartRect = { x: number; y: number; w: number; h: number };
+
 // Composites a watermark onto a captured card PNG via plain canvas drawImage.
-// Always produces SOME watermark: logo if available, ctx.fillText otherwise.
-// Canvas 2D ops work identically on all browsers including mobile Safari.
+// chartRect (card-pixel coords) scopes the watermark to the chart area so it
+// matches the live ChartWatermark position. Falls back to full-card centering.
 export function compositeWatermark(
   cardDataUrl: string,
   logoDataUrl: string,
+  chartRect?: CardChartRect,
 ): Promise<string> {
   const W = SHARE_CARD_WIDTH  * EXPORT_SCALE;
   const H = SHARE_CARD_HEIGHT * EXPORT_SCALE;
+
+  // Scale rect to export canvas coordinates
+  const rect = chartRect
+    ? {
+        x: chartRect.x * EXPORT_SCALE,
+        y: chartRect.y * EXPORT_SCALE,
+        w: chartRect.w * EXPORT_SCALE,
+        h: chartRect.h * EXPORT_SCALE,
+      }
+    : { x: 0, y: 0, w: W, h: H };
+
+  // Logo width: 220/1136 ≈ 19.4% of chart width, matching live ChartWatermark
+  const logoW = Math.round(rect.w * 0.194);
+  const cxLogo = rect.x + rect.w / 2;
+  const cyLogo = rect.y + rect.h / 2;
 
   return new Promise((resolve) => {
     const canvas  = document.createElement('canvas');
@@ -37,12 +57,9 @@ export function compositeWatermark(
       if (logoDataUrl) {
         const logo = new Image();
         logo.onload = () => {
-          const logoW = 320 * EXPORT_SCALE;
           const logoH = Math.round((logo.naturalHeight / logo.naturalWidth) * logoW);
 
-          // Whiten the logo on a small temp canvas using source-in compositing.
-          // This avoids getImageData entirely — no per-pixel CPU work, no taint
-          // security check, no large-buffer allocation. Works on all browsers.
+          // Whiten the logo via source-in compositing — no getImageData needed.
           const lc   = document.createElement('canvas');
           lc.width   = logoW;
           lc.height  = logoH;
@@ -55,21 +72,21 @@ export function compositeWatermark(
             lCtx.fillRect(0, 0, logoW, logoH);
 
             ctx.globalAlpha = 0.13;
-            ctx.drawImage(lc, Math.round((W - logoW) / 2), Math.round((H - logoH) / 2), logoW, logoH);
+            ctx.drawImage(lc, Math.round(cxLogo - logoW / 2), Math.round(cyLogo - logoH / 2), logoW, logoH);
             ctx.globalAlpha = 1;
           } else {
-            drawTextWatermark(ctx, W, H);
+            drawTextWatermark(ctx, rect);
           }
 
           resolve(canvas.toDataURL('image/png'));
         };
         logo.onerror = () => {
-          drawTextWatermark(ctx, W, H);
+          drawTextWatermark(ctx, rect);
           resolve(canvas.toDataURL('image/png'));
         };
         logo.src = logoDataUrl;
       } else {
-        drawTextWatermark(ctx, W, H);
+        drawTextWatermark(ctx, rect);
         resolve(canvas.toDataURL('image/png'));
       }
     };
@@ -79,16 +96,18 @@ export function compositeWatermark(
 }
 
 // ctx.fillText watermark — zero external dependencies, works on every browser.
-function drawTextWatermark(ctx: CanvasRenderingContext2D, W: number, H: number): void {
+function drawTextWatermark(ctx: CanvasRenderingContext2D, rect: { x: number; y: number; w: number; h: number }): void {
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
   ctx.save();
-  ctx.globalAlpha = 0.09;
-  ctx.fillStyle   = '#FFFFFF';
-  ctx.textAlign   = 'center';
+  ctx.globalAlpha  = 0.09;
+  ctx.fillStyle    = '#FFFFFF';
+  ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `900 ${Math.round(W * 0.074)}px Arial, Helvetica, sans-serif`;
-  ctx.fillText('SKYLINE', W / 2, H / 2 - Math.round(H * 0.044));
-  ctx.font = `700 ${Math.round(W * 0.019)}px Arial, Helvetica, sans-serif`;
-  ctx.fillText('CYCLE  TERMINAL', W / 2, H / 2 + Math.round(H * 0.055));
+  ctx.font = `900 ${Math.round(rect.w * 0.074)}px Arial, Helvetica, sans-serif`;
+  ctx.fillText('SKYLINE', cx, cy - Math.round(rect.h * 0.044));
+  ctx.font = `700 ${Math.round(rect.w * 0.019)}px Arial, Helvetica, sans-serif`;
+  ctx.fillText('CYCLE  TERMINAL', cx, cy + Math.round(rect.h * 0.055));
   ctx.restore();
 }
 

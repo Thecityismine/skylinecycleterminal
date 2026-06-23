@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { PriceShareCard } from '@/components/share/PriceShareCard';
+import { PriceShareCard, PRICE_CARD_CHART_RECT } from '@/components/share/PriceShareCard';
 import type { PriceSharePayload } from '@/components/share/PriceShareCard';
 import {
   exportShareCard,
@@ -59,7 +59,7 @@ export function PriceShareModal({ payload, onClose }: Props) {
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = await compositeWatermark(raw, logoSrc ?? '');
+      const url = await compositeWatermark(raw, logoSrc ?? '', PRICE_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
     } catch {

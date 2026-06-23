@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { RegimeShareCard } from '@/components/share/RegimeShareCard';
+import { RegimeShareCard, REGIME_CARD_CHART_RECT } from '@/components/share/RegimeShareCard';
 import type { RegimeSharePayload } from '@/components/share/RegimeShareCard';
 import {
   exportShareCard,
@@ -59,7 +59,7 @@ export function RegimeShareModal({ payload, onClose }: Props) {
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = await compositeWatermark(raw, logoSrc ?? '');
+      const url = await compositeWatermark(raw, logoSrc ?? '', REGIME_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
     } catch {

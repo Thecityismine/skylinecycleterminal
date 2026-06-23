@@ -42,6 +42,10 @@ const FOOTER_H      = 28;
 const CHART_H       = SHARE_CARD_HEIGHT - PAD - HEADER_H - PRICE_STRIP_H - FOOTER_H - PAD;
 const CHART_W       = SHARE_CARD_WIDTH  - PAD * 2;
 
+export const PRICE_CARD_CHART_RECT = {
+  x: PAD, y: PAD + HEADER_H + PRICE_STRIP_H, w: CHART_W, h: CHART_H,
+};
+
 function fmtY(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;

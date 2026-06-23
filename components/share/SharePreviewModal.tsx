@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { ScoreShareCard }  from '@/components/share/ScoreShareCard';
+import { ScoreShareCard, SCORE_CARD_CHART_RECT }  from '@/components/share/ScoreShareCard';
 import type { ScoreSharePayload } from '@/components/share/ScoreShareCard';
 import {
   exportShareCard,
@@ -62,7 +62,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = await compositeWatermark(raw, logoSrc ?? '');
+      const url = await compositeWatermark(raw, logoSrc ?? '', SCORE_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
     } catch (err) {

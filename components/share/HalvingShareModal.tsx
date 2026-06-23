@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { HalvingShareCard } from '@/components/share/HalvingShareCard';
+import { HalvingShareCard, HALVING_CARD_CHART_RECT } from '@/components/share/HalvingShareCard';
 import type { HalvingSharePayload } from '@/components/share/HalvingShareCard';
 import {
   exportShareCard,
@@ -59,7 +59,7 @@ export function HalvingShareModal({ payload, onClose }: Props) {
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = await compositeWatermark(raw, logoSrc ?? '');
+      const url = await compositeWatermark(raw, logoSrc ?? '', HALVING_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
     } catch {

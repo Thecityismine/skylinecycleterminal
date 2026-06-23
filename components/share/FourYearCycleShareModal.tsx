@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { ImageDown, X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { FourYearCycleShareCard } from '@/components/share/FourYearCycleShareCard';
+import { FourYearCycleShareCard, FOUR_YEAR_CARD_CHART_RECT } from '@/components/share/FourYearCycleShareCard';
 import type { FourYearCycleSharePayload } from '@/components/share/FourYearCycleShareCard';
 import {
   exportShareCard,
@@ -76,7 +76,7 @@ function Modal({ payload, onClose }: { payload: FourYearCycleSharePayload; onClo
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = await compositeWatermark(raw, logoSrc ?? '');
+      const url = await compositeWatermark(raw, logoSrc ?? '', FOUR_YEAR_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
     } catch {
