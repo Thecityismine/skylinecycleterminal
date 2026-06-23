@@ -8,6 +8,7 @@ import {
 import { useApiData } from '@/lib/hooks/useApiData';
 import type { RatioKey, RatioData, RatioSeries, RotationSignal } from '@/lib/api/ratios';
 import { RatioChart } from '@/components/charts/RatioChart';
+import { RatioShareModal } from '@/components/share/RatioShareModal';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -270,6 +271,21 @@ export default function RatiosPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            {!loading && filtered.length > 0 && series && (
+              <RatioShareModal payload={{
+                data:          filtered,
+                ratioKey:      active,
+                ratioLabel:    cfg.label,
+                ratioDesc:     cfg.desc,
+                logScale,
+                range,
+                current:       series.current,
+                ath:           series.ath,
+                pctFromAth:    series.pctFromAth,
+                oneYearChange,
+                generatedAt:   new Date().toISOString(),
+              }} />
+            )}
             <div className="flex gap-1">
               {RANGES.map((r) => (
                 <button key={r} onClick={() => setRange(r)}
