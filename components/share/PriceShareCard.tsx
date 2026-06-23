@@ -92,6 +92,7 @@ export function PriceShareCard({ payload }: { payload: PriceSharePayload }) {
         display:        'flex',
         justifyContent: 'space-between',
         alignItems:     'flex-start',
+        overflow:       'hidden',
       }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: '#E6EDF3', textTransform: 'uppercase' }}>
@@ -101,7 +102,7 @@ export function PriceShareCard({ payload }: { payload: PriceSharePayload }) {
             {asset === 'btc' ? 'BTC / USD' : 'ETH / USD'} · Price Structure · {timeframe}
           </div>
           {/* Overlay legend */}
-          <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ width: 14, height: 2, borderRadius: 1, backgroundColor: PRICE_COLOR, display: 'inline-block' }} />
               <span style={{ fontSize: 9, color: PRICE_COLOR, letterSpacing: '0.05em' }}>{asset.toUpperCase()} Price</span>
