@@ -7,10 +7,9 @@ import {
   findRegimeSegments,
   findHistoricalTouchpoints,
 } from '@/lib/indicators/weeklyMA';
-import { BTC100WChart }        from '@/components/charts/BTC100WChart';
-import { BTC100WMAShareModal } from '@/components/share/BTC100WMAShareModal';
-import { PageHeader }          from '@/components/dashboard/PageHeader';
-import { StatCard }            from '@/components/dashboard/StatCard';
+import { BTC100WChartSection }  from '@/components/charts/BTC100WChartSection';
+import { PageHeader }           from '@/components/dashboard/PageHeader';
+import { StatCard }             from '@/components/dashboard/StatCard';
 
 export const revalidate = 86400;
 
@@ -162,37 +161,22 @@ export default async function BTC100WMAPage() {
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC Weekly Price · 50W · 100W · 200W Moving Averages — Log Scale
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Green shading = above 100W MA · Amber = testing (±5%) · Red = below 100W MA · Dashed verticals = halvings
-            </p>
-          </div>
-          {chartPoints.length > 0 && last && (
-            <BTC100WMAShareModal payload={{
-              data:          chartPoints,
-              regimes:       regseg,
-              latestClose:   last.close,
-              latestMA100:   last.ma100,
-              latestMA50:    last.ma50,
-              latestMA200:   last.ma200,
-              distancePct:   last.distanceFrom100W,
-              distanceColor: distColor,
-              trendScoreNum: score.score,
-              trendLabel:    score.label,
-              trendColor:    score.color,
-              slope,
-              slopeText,
-              slopeColor,
-              generatedAt:   new Date().toISOString(),
-            }} />
-          )}
-        </div>
-        {chartPoints.length > 0 ? (
-          <BTC100WChart points={chartPoints} regimes={regseg} />
+        {chartPoints.length > 0 && last ? (
+          <BTC100WChartSection
+            points={chartPoints}
+            regimes={regseg}
+            latestClose={last.close}
+            latestMA100={last.ma100}
+            latestMA50={last.ma50}
+            latestMA200={last.ma200}
+            distancePct={last.distanceFrom100W}
+            distanceColor={distColor}
+            trendScore={score}
+            slope={slope}
+            slopeText={slopeText}
+            slopeColor={slopeColor}
+            generatedAt={new Date().toISOString()}
+          />
         ) : (
           <p className="text-sm text-center py-12" style={{ color: 'var(--sct-muted)' }}>
             Unable to load price data.

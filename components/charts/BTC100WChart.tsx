@@ -73,12 +73,15 @@ function ChartTip({ d, visible }: { d: WeeklyPoint; visible: Visible }) {
 
 // ─── Chart ────────────────────────────────────────────────────────────────────
 
+export type VisibilityState = { show50: boolean; show100: boolean; show200: boolean; showShading: boolean };
+
 type Props = {
-  points: WeeklyPoint[];
+  points:  WeeklyPoint[];
   regimes: RegimeSegment[];
+  onVisibilityChange?: (v: VisibilityState) => void;
 };
 
-export function BTC100WChart({ points, regimes }: Props) {
+export function BTC100WChart({ points, regimes, onVisibilityChange }: Props) {
   const [show50,      setShow50]      = useState(true);
   const [show100,     setShow100]     = useState(true);
   const [show200,     setShow200]     = useState(true);
@@ -106,10 +109,10 @@ export function BTC100WChart({ points, regimes }: Props) {
     active: boolean;
     onToggle: () => void;
   }> = [
-    { key: 'ma200',   color: '#A855F7', label: '200W MA',     lineW: 1.5, active: show200,      onToggle: () => setShow200((v) => !v) },
-    { key: 'ma50',    color: '#3B82F6', label: '50W MA',      lineW: 1.5, active: show50,       onToggle: () => setShow50((v) => !v) },
-    { key: 'ma100',   color: '#EAB84D', label: '100W MA',     lineW: 2.5, active: show100,      onToggle: () => setShow100((v) => !v) },
-    { key: 'shading', color: '#35D07F', label: 'Trend shading',           active: showShading,  onToggle: () => setShowShading((v) => !v) },
+    { key: 'ma200',   color: '#A855F7', label: '200W MA',      lineW: 1.5, active: show200,     onToggle: () => { const n = !show200;      setShow200(n);      onVisibilityChange?.({ show50, show100, show200: n,     showShading }); } },
+    { key: 'ma50',    color: '#3B82F6', label: '50W MA',       lineW: 1.5, active: show50,      onToggle: () => { const n = !show50;       setShow50(n);       onVisibilityChange?.({ show50: n,   show100, show200,      showShading }); } },
+    { key: 'ma100',   color: '#EAB84D', label: '100W MA',      lineW: 2.5, active: show100,     onToggle: () => { const n = !show100;      setShow100(n);      onVisibilityChange?.({ show50, show100: n,   show200,      showShading }); } },
+    { key: 'shading', color: '#35D07F', label: 'Trend shading',            active: showShading, onToggle: () => { const n = !showShading;   setShowShading(n);  onVisibilityChange?.({ show50, show100,      show200,      showShading: n }); } },
   ];
 
   return (

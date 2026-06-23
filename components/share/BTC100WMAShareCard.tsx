@@ -27,6 +27,10 @@ export type BTC100WMASharePayload = {
   slope:         number | null;
   slopeText:     string;
   slopeColor:    string;
+  show50:        boolean;
+  show100:       boolean;
+  show200:       boolean;
+  showShading:   boolean;
   generatedAt:   string;
   logoSrc?:      never;
 };
@@ -87,6 +91,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
     distancePct, distanceColor,
     trendScoreNum, trendLabel, trendColor,
     slope, slopeText, slopeColor,
+    show50, show100, show200, showShading,
     generatedAt,
   } = payload;
 
@@ -115,11 +120,11 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
   ];
 
   const legend = [
-    { color: '#F7931A', label: 'BTC Price',  w: 2   },
-    { color: '#EAB84D', label: '100W MA',    w: 2.5 },
-    { color: '#3B82F6', label: '50W MA',     w: 1.5 },
-    { color: '#A855F7', label: '200W MA',    w: 1.5 },
-  ];
+    { color: '#F7931A', label: 'BTC Price',  w: 2,   visible: true      },
+    { color: '#EAB84D', label: '100W MA',    w: 2.5, visible: show100   },
+    { color: '#3B82F6', label: '50W MA',     w: 1.5, visible: show50    },
+    { color: '#A855F7', label: '200W MA',    w: 1.5, visible: show200   },
+  ].filter((l) => l.visible);
 
   return (
     <div style={{
@@ -210,7 +215,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
 
           {/* Regime shading */}
-          {regimes.map((seg, i) => (
+          {showShading && regimes.map((seg, i) => (
             <ReferenceArea
               key={i}
               x1={seg.start}
@@ -255,10 +260,10 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
             allowDataOverflow
           />
 
-          <Line dataKey="ma200" stroke="#A855F7" strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />
-          <Line dataKey="ma50"  stroke="#3B82F6" strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />
-          <Line dataKey="ma100" stroke="#EAB84D" strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />
-          <Line dataKey="close" stroke="#F7931A" strokeWidth={2}   dot={false} connectNulls isAnimationActive={false} />
+          {show200 && <Line dataKey="ma200" stroke="#A855F7" strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />}
+          {show50  && <Line dataKey="ma50"  stroke="#3B82F6" strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />}
+          {show100 && <Line dataKey="ma100" stroke="#EAB84D" strokeWidth={2.5} dot={false} connectNulls isAnimationActive={false} />}
+                      <Line dataKey="close" stroke="#F7931A" strokeWidth={2}   dot={false} connectNulls isAnimationActive={false} />
         </ComposedChart>
       </div>
 
