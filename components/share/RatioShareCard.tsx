@@ -31,11 +31,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const RATIO_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const COLORS: Record<RatioKey, { stroke: string; fill: string }> = {
@@ -124,12 +124,8 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
             {ratioLabel}
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Relative strength Â· {ratioDesc}
+            Relative strength · {ratioDesc}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 16, height: 2, backgroundColor: col.stroke, display: 'inline-block', borderRadius: 1 }} />
-            <span style={{ fontSize: 10, color: col.stroke }}>{ratioLabel}</span>
-          </div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
@@ -158,6 +154,7 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -226,10 +223,14 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{ width: 16, height: 2, backgroundColor: col.stroke, display: 'inline-block', borderRadius: 1 }} />
+            <span style={{ fontSize: 10, color: col.stroke }}>{ratioLabel}</span>
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

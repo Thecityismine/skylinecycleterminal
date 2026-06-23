@@ -33,11 +33,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const HODL_WAVE_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -138,33 +138,8 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
             Bitcoin HODL Wave
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Exchange reserve Â· long-term holder accumulation signal
+            Exchange reserve · long-term holder accumulation signal
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 14, height: 8, backgroundColor: '#F7931A', opacity: 0.4, display: 'inline-block', borderRadius: 2 }} />
-              <span style={{ width: 14, height: 2, backgroundColor: '#F7931A', display: 'inline-block', borderRadius: 1 }} />
-              <span style={{ fontSize: 10, color: '#8B949E' }}>Exchange Reserve</span>
-            </div>
-            {showPrice && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: 'rgba(230,237,243,0.6)', display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>BTC Price</span>
-              </div>
-            )}
-            {show30d && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: '#F2B84B', display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>30D SMA</span>
-              </div>
-            )}
-            {show90d && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: '#3B82F6', display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>90D SMA</span>
-              </div>
-            )}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -191,6 +166,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -306,10 +282,35 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 14, height: 8, backgroundColor: '#F7931A', opacity: 0.4, display: 'inline-block', borderRadius: 2 }} />
+              <span style={{ width: 14, height: 2, backgroundColor: '#F7931A', display: 'inline-block', borderRadius: 1 }} />
+              <span style={{ fontSize: 10, color: '#8B949E' }}>Exchange Reserve</span>
+            </div>
+            {showPrice && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: 'rgba(230,237,243,0.6)', display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>BTC Price</span>
+              </div>
+            )}
+            {show30d && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: '#F2B84B', display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>30D SMA</span>
+              </div>
+            )}
+            {show90d && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: '#3B82F6', display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>90D SMA</span>
+              </div>
+            )}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

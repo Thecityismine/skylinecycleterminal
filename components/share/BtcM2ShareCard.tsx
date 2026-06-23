@@ -24,11 +24,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const BTC_M2_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 function fmt(v: number | null, d = 2): string {
@@ -91,28 +91,8 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             BTC / M2 Money Supply
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Weekly BTC price Ã· US M2 Â· strips out monetary expansion{logScale ? ' Â· Log scale' : ''}
+            Weekly BTC price Ã· US M2 · strips out monetary expansion{logScale ? ' · Log scale' : ''}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {[
-              { color: 'rgba(247,249,252,0.85)', label: 'BTC / M2' },
-              { color: '#35D07F',               label: '200 EMA'   },
-              { color: '#FF5C5C',               label: '400 EMA'   },
-              { color: '#E6B450',               label: '52 SMA', dashed: true },
-            ].map((l) => (
-              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{
-                  display:         'inline-block',
-                  width:           16,
-                  height:          l.dashed ? 0 : 2,
-                  backgroundColor: l.dashed ? undefined : l.color,
-                  borderTop:       l.dashed ? `2px dashed ${l.color}` : undefined,
-                  borderRadius:    1,
-                }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -141,6 +121,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -243,10 +224,30 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {[
+              { color: 'rgba(247,249,252,0.85)', label: 'BTC / M2' },
+              { color: '#35D07F',               label: '200 EMA'   },
+              { color: '#FF5C5C',               label: '400 EMA'   },
+              { color: '#E6B450',               label: '52 SMA', dashed: true },
+            ].map((l) => (
+              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{
+                  display:         'inline-block',
+                  width:           16,
+                  height:          l.dashed ? 0 : 2,
+                  backgroundColor: l.dashed ? undefined : l.color,
+                  borderTop:       l.dashed ? `2px dashed ${l.color}` : undefined,
+                  borderRadius:    1,
+                }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
+              </div>
+            ))}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

@@ -28,11 +28,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const POWER_LAW_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -128,21 +128,8 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             Bitcoin Power Law
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            logâ‚â‚€(P) = 5.82 Ã— logâ‚â‚€(days) âˆ’ 16.73 Â· Log scale{range !== 'All' ? ` Â· ${range}` : ''}
+            logâ‚â‚€(P) = 5.82 Ã— logâ‚â‚€(days) âˆ’ 16.73 · Log scale{range !== 'All' ? ` · ${range}` : ''}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {[
-              { color: 'rgba(247,249,252,0.9)', label: 'BTC Price'       },
-              { color: '#F472B6',              label: 'Ceiling (Ã—4.27)' },
-              { color: '#38BDF8',              label: 'Fair Value'       },
-              { color: '#818CF8',              label: 'Floor (Ã—0.42)'   },
-            ].map((l) => (
-              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -171,6 +158,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -291,10 +279,23 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {[
+              { color: 'rgba(247,249,252,0.9)', label: 'BTC Price'       },
+              { color: '#F472B6',              label: 'Ceiling (Ã—4.27)' },
+              { color: '#38BDF8',              label: 'Fair Value'       },
+              { color: '#818CF8',              label: 'Floor (Ã—0.42)'   },
+            ].map((l) => (
+              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
+              </div>
+            ))}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

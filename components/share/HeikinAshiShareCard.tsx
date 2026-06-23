@@ -17,11 +17,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const HEIKIN_ASHI_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 // Chart layout constants (within the SVG)
@@ -63,7 +63,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
     {
       label: 'Monthly HA',
       value: isSignal ? 'â–² Signal' : isGreen ? 'â–² Green' : 'â–¼ Red',
-      sub:   latest ? `${latest.month}${latest.partial ? ' Â· partial' : ''}` : 'â€”',
+      sub:   latest ? `${latest.month}${latest.partial ? ' · partial' : ''}` : 'â€”',
       color: statusColor,
     },
     {
@@ -140,24 +140,8 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
             Monthly Heikin-Ashi
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            BTC monthly HA candles Â· Log scale Â· Bear market end signals
+            BTC monthly HA candles · Log scale · Bear market end signals
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {[
-              { color: GREEN, label: 'Bullish HA'       },
-              { color: RED,   label: 'Bearish HA'       },
-              { color: GREEN, label: 'â–² Bear-End Signal', isTriangle: true },
-            ].map((l) => (
-              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                {l.isTriangle ? (
-                  <span style={{ fontSize: 12, color: l.color, lineHeight: 1 }}>â–²</span>
-                ) : (
-                  <span style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
-                )}
-                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -180,6 +164,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -267,10 +252,26 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {[
+              { color: GREEN, label: 'Bullish HA'       },
+              { color: RED,   label: 'Bearish HA'       },
+              { color: GREEN, label: 'â–² Bear-End Signal', isTriangle: true },
+            ].map((l) => (
+              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                {l.isTriangle ? (
+                  <span style={{ fontSize: 12, color: l.color, lineHeight: 1 }}>â–²</span>
+                ) : (
+                  <span style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
+                )}
+                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
+              </div>
+            ))}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

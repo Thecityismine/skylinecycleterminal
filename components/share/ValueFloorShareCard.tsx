@@ -27,11 +27,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const VALUE_FLOOR_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -128,22 +128,8 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
             Bitcoin Value Floor Model
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Realized price Â· 200W MA Â· 2Y MA Â· Power Law â€” long-term cost basis floors
+            Realized price · 200W MA · 2Y MA · Power Law â€” long-term cost basis floors
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {[
-              { key: 'btcPrice',      color: '#E6EDF3', label: 'BTC Price' },
-              { key: 'realizedPrice', color: '#3B82F6', label: 'Realized' },
-              { key: 'ma2y',          color: '#35D07F', label: '2Y MA' },
-              { key: 'ma200w',        color: '#A855F7', label: '200W MA' },
-              { key: 'powerLaw',      color: '#E6B450', label: 'Power Law' },
-            ].filter(l => visible[l.key]).map(l => (
-              <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: l.key === 'btcPrice' ? 2.5 : 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -170,6 +156,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -270,10 +257,24 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {[
+              { key: 'btcPrice',      color: '#E6EDF3', label: 'BTC Price' },
+              { key: 'realizedPrice', color: '#3B82F6', label: 'Realized' },
+              { key: 'ma2y',          color: '#35D07F', label: '2Y MA' },
+              { key: 'ma200w',        color: '#A855F7', label: '200W MA' },
+              { key: 'powerLaw',      color: '#E6B450', label: 'Power Law' },
+            ].filter(l => visible[l.key]).map(l => (
+              <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: l.key === 'btcPrice' ? 2.5 : 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
+              </div>
+            ))}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

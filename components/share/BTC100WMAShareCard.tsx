@@ -40,11 +40,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const BTC_100W_MA_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const HALVINGS = [
@@ -153,16 +153,8 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
             100-Week Moving Average
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Medium-term trend Â· 50W / 100W / 200W MAs Â· Log scale
+            Medium-term trend · 50W / 100W / 200W MAs · Log scale
           </p>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            {legend.map((l) => (
-              <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 16, height: l.w, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: l.color }}>{l.label}</span>
-              </span>
-            ))}
-          </div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
@@ -186,6 +178,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -272,10 +265,18 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {legend.map((l) => (
+              <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 16, height: l.w, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: l.color }}>{l.label}</span>
+              </span>
+            ))}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

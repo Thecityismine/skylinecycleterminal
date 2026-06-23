@@ -25,11 +25,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const PI_CYCLE_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 function fmtY(v: number): string {
@@ -110,25 +110,8 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
             Pi Cycle Bottom
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            150d MA vs 471d MA Ã— 0.745 Â· Log scale{range !== 'All' ? ` Â· ${range}` : ''}
+            150d MA vs 471d MA Ã— 0.745 · Log scale{range !== 'All' ? ` · ${range}` : ''}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {[
-              { color: 'rgba(247,249,252,0.75)', label: 'BTC Price'    },
-              { color: '#E6B450',                label: '150d MA'      },
-              { color: '#3B82F6',                label: '471d Ã— 0.745' },
-              { color: 'rgba(59,130,246,0.35)',  label: 'Bottom Zone', square: true },
-            ].map((l) => (
-              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                {l.square ? (
-                  <span style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
-                ) : (
-                  <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
-                )}
-                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -156,6 +139,7 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -261,10 +245,27 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            {[
+              { color: 'rgba(247,249,252,0.75)', label: 'BTC Price'    },
+              { color: '#E6B450',                label: '150d MA'      },
+              { color: '#3B82F6',                label: '471d Ã— 0.745' },
+              { color: 'rgba(59,130,246,0.35)',  label: 'Bottom Zone', square: true },
+            ].map((l) => (
+              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                {l.square ? (
+                  <span style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
+                ) : (
+                  <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
+                )}
+                <span style={{ fontSize: 10, color: '#8B949E' }}>{l.label}</span>
+              </div>
+            ))}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

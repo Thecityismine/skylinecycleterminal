@@ -28,11 +28,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const BOTTOM_CONFLUENCE_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
@@ -114,26 +114,8 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
             Bear-Market Bottom Confluence
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            MVRV Â· Hash Ribbon Â· 2Y MA Â· Exchange Flow â€” signal alignment model
+            MVRV · Hash Ribbon · 2Y MA · Exchange Flow â€” signal alignment model
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 14, height: 2.5, backgroundColor: '#E6EDF3', display: 'inline-block', borderRadius: 1 }} />
-              <span style={{ fontSize: 10, color: '#8B949E' }}>BTC Price</span>
-            </div>
-            {visible.ma2y && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: '#35D07F', display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>2Y MA</span>
-              </div>
-            )}
-            {visible.zones && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 10, backgroundColor: '#35D07F', opacity: 0.15, display: 'inline-block', borderRadius: 2 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>Confluence Zones</span>
-              </div>
-            )}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -160,6 +142,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -258,10 +241,28 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 14, height: 2.5, backgroundColor: '#E6EDF3', display: 'inline-block', borderRadius: 1 }} />
+              <span style={{ fontSize: 10, color: '#8B949E' }}>BTC Price</span>
+            </div>
+            {visible.ma2y && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: '#35D07F', display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>2Y MA</span>
+              </div>
+            )}
+            {visible.zones && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 10, backgroundColor: '#35D07F', opacity: 0.15, display: 'inline-block', borderRadius: 2 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>Confluence Zones</span>
+              </div>
+            )}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

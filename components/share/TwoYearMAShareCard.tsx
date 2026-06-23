@@ -29,11 +29,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const TWO_YEAR_MA_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
@@ -96,23 +96,9 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
             2-Year Moving Average
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Accumulate below 2YMA Â· Distribute above 2YMAÃ—5 Â· Log scale
+            Accumulate below 2YMA · Distribute above 2YMAÃ—5 · Log scale
           </p>
           {/* Legend */}
-          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 16, height: 2, backgroundColor: 'rgba(247,249,252,0.9)', display: 'inline-block' }} />
-              <span style={{ fontSize: 10, color: '#F7F9FC' }}>BTC Price</span>
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 16, height: 2, backgroundColor: '#F7931A', display: 'inline-block' }} />
-              <span style={{ fontSize: 10, color: '#F7931A' }}>2Y MA</span>
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 16, height: 0, borderTop: '2px dashed #FF5C5C', display: 'inline-block' }} />
-              <span style={{ fontSize: 10, color: '#FF5C5C' }}>2Y MA Ã—5</span>
-            </span>
-          </div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
@@ -131,6 +117,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -203,10 +190,24 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 16, height: 2, backgroundColor: 'rgba(247,249,252,0.9)', display: 'inline-block' }} />
+              <span style={{ fontSize: 10, color: '#F7F9FC' }}>BTC Price</span>
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 16, height: 2, backgroundColor: '#F7931A', display: 'inline-block' }} />
+              <span style={{ fontSize: 10, color: '#F7931A' }}>2Y MA</span>
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 16, height: 0, borderTop: '2px dashed #FF5C5C', display: 'inline-block' }} />
+              <span style={{ fontSize: 10, color: '#FF5C5C' }}>2Y MA Ã—5</span>
+            </span>
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>

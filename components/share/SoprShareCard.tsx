@@ -30,11 +30,11 @@ const HEADER_H = 72;
 const STATS_H  = 68;
 const GAP      = 8;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const SOPR_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -132,35 +132,8 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
             Bitcoin SOPR
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            MVRV Deviation Â· profit/loss behavior of coins on-chain
+            MVRV Deviation · profit/loss behavior of coins on-chain
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ display: 'flex', gap: 2 }}>
-                <span style={{ width: 6, height: 14, backgroundColor: '#35D07F', opacity: 0.8, display: 'inline-block', borderRadius: 2 }} />
-                <span style={{ width: 6, height: 14, backgroundColor: '#F85149', opacity: 0.8, display: 'inline-block', borderRadius: 2 }} />
-              </span>
-              <span style={{ fontSize: 10, color: '#8B949E' }}>MVRV Deviation</span>
-            </div>
-            {showPrice && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: '#E6EDF3', display: 'inline-block', borderRadius: 1, opacity: 0.7 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>BTC Price</span>
-              </div>
-            )}
-            {showSma30 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: '#F2B84B', display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>30D Avg</span>
-              </div>
-            )}
-            {showSma90 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 2, backgroundColor: '#3B82F6', display: 'inline-block', borderRadius: 1 }} />
-                <span style={{ fontSize: 10, color: '#8B949E' }}>90D Avg</span>
-              </div>
-            )}
-          </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -187,6 +160,7 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -314,10 +288,37 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ display: 'flex', gap: 2 }}>
+                <span style={{ width: 6, height: 14, backgroundColor: '#35D07F', opacity: 0.8, display: 'inline-block', borderRadius: 2 }} />
+                <span style={{ width: 6, height: 14, backgroundColor: '#F85149', opacity: 0.8, display: 'inline-block', borderRadius: 2 }} />
+              </span>
+              <span style={{ fontSize: 10, color: '#8B949E' }}>MVRV Deviation</span>
+            </div>
+            {showPrice && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: '#E6EDF3', display: 'inline-block', borderRadius: 1, opacity: 0.7 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>BTC Price</span>
+              </div>
+            )}
+            {showSma30 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: '#F2B84B', display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>30D Avg</span>
+              </div>
+            )}
+            {showSma90 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 2, backgroundColor: '#3B82F6', display: 'inline-block', borderRadius: 1 }} />
+                <span style={{ fontSize: 10, color: '#8B949E' }}>90D Avg</span>
+              </div>
+            )}
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal Â· Not financial advice
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>
