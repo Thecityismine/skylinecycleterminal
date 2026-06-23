@@ -17,8 +17,9 @@ import { HALVINGS_CVDD, FLOOR_EVENTS } from '@/lib/indicators/valueFloors';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 type Props = {
-  points: ValueFloorPoint[];
-  range?: 'all' | '8y' | '4y';
+  points:           ValueFloorPoint[];
+  range?:           'all' | '8y' | '4y';
+  onVisibleChange?: (visible: Record<string, boolean>) => void;
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -76,7 +77,7 @@ const FLOOR_LINES = [
   { key: 'powerLaw',      label: 'Power Law',      color: '#E6B450', width: 1,   dash: '4 4' },
 ];
 
-export function BTCValueFloorChart({ points, range = 'all' }: Props) {
+export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>({
     btcPrice:      true,
     realizedPrice: true,
@@ -89,7 +90,11 @@ export function BTCValueFloorChart({ points, range = 'all' }: Props) {
   });
 
   const toggle = (key: string) =>
-    setVisible((prev) => ({ ...prev, [key]: !prev[key] }));
+    setVisible((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      onVisibleChange?.(next);
+      return next;
+    });
 
   if (!points.length) return null;
 
