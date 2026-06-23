@@ -1,6 +1,7 @@
 import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
 import { calculate2YearMA } from "@/lib/indicators/cycleHelpers";
 import { TwoYearMAChart } from "@/components/charts/TwoYearMAChart";
+import { TwoYearMAShareModal } from "@/components/share/TwoYearMAShareModal";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
@@ -156,20 +157,34 @@ export default async function TwoYearMAPage() {
               Price below orange = historically best buy zone · Price above red = historically cycle top
             </p>
           </div>
-          {/* Legend */}
-          <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--sct-muted)' }}>
-            <span className="flex items-center gap-1.5">
-              <span className="w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.9)' }} />
-              BTC Price
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-6 h-0.5" style={{ backgroundColor: '#F7931A' }} />
-              2Y MA
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-6 h-px border-t-2 border-dashed" style={{ borderColor: '#FF5C5C' }} />
-              2Y MA ×5
-            </span>
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Legend */}
+            <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--sct-muted)' }}>
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.9)' }} />
+                BTC Price
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 h-0.5" style={{ backgroundColor: '#F7931A' }} />
+                2Y MA
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 h-px border-t-2 border-dashed" style={{ borderColor: '#FF5C5C' }} />
+                2Y MA ×5
+              </span>
+            </div>
+            {!fetchError && (
+              <TwoYearMAShareModal payload={{
+                data:        chartData,
+                latestPrice,
+                latestMA,
+                latestMA5,
+                multiplier,
+                zoneLabel:   zone.label,
+                zoneColor:   zone.color,
+                generatedAt: new Date().toISOString(),
+              }} />
+            )}
           </div>
         </div>
 
