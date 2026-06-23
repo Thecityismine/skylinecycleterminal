@@ -110,12 +110,6 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
         gap:             0,
       }}
     >
-      {/* ── Subtle grid background ── */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }} />
 
       {/* ── Header ── */}
       <div style={{ height: HEADER_H, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
