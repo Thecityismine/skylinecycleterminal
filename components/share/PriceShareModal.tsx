@@ -59,7 +59,7 @@ export function PriceShareModal({ payload, onClose }: Props) {
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = logoSrc ? await compositeWatermark(raw, logoSrc) : raw;
+      const url = await compositeWatermark(raw, logoSrc ?? '');
       setDataUrl(url);
       setState('ready');
     } catch {
