@@ -1,6 +1,7 @@
 import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
 import { assignCycles, getCurrentCycleInfo, CYCLE_STROKE, CYCLE_LABEL } from "@/lib/indicators/cycleHelpers";
 import { FourYearCycleChart } from "@/components/charts/FourYearCycleChart";
+import { FourYearCycleShareModal } from "@/components/share/FourYearCycleShareModal";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
@@ -79,17 +80,30 @@ export default async function FourYearCyclePage() {
               Dashed verticals mark halvings · Shaded zones represent each 4-year cycle
             </p>
           </div>
-          {/* Cycle legend */}
-          <div className="flex flex-wrap items-center gap-4 text-xs" style={{ color: 'var(--sct-muted)' }}>
-            {[1, 2, 3, 4].map((c) => (
-              <span key={c} className="flex items-center gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-sm"
-                  style={{ backgroundColor: CYCLE_STROKE[c], opacity: 0.6 }}
-                />
-                <span style={{ color: CYCLE_STROKE[c] }}>{CYCLE_LABEL[c]}</span>
-              </span>
-            ))}
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Cycle legend */}
+            <div className="flex flex-wrap items-center gap-4 text-xs" style={{ color: 'var(--sct-muted)' }}>
+              {[1, 2, 3, 4].map((c) => (
+                <span key={c} className="flex items-center gap-1.5">
+                  <span
+                    className="w-2.5 h-2.5 rounded-sm"
+                    style={{ backgroundColor: CYCLE_STROKE[c], opacity: 0.6 }}
+                  />
+                  <span style={{ color: CYCLE_STROKE[c] }}>{CYCLE_LABEL[c]}</span>
+                </span>
+              ))}
+            </div>
+            {!fetchError && (
+              <FourYearCycleShareModal payload={{
+                data:            chartData,
+                cycleNum:        info.currentCycleNum,
+                daysSince:       info.daysSince,
+                cycleProgress:   info.cycleProgress,
+                daysToNext:      info.daysToNext,
+                nextHalvingDate: info.nextHalving.date,
+                generatedAt:     new Date().toISOString(),
+              }} />
+            )}
           </div>
         </div>
 
