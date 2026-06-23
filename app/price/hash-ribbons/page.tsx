@@ -1,8 +1,8 @@
-import { fetchBTCHashRibbon }   from '@/lib/api/coinmetrics';
-import { PageHeader }            from '@/components/dashboard/PageHeader';
-import { StatCard }              from '@/components/dashboard/StatCard';
-import { HashRibbonChart }      from '@/components/charts/HashRibbonChart';
-import type { HRPoint }         from '@/components/charts/HashRibbonChart';
+import { fetchBTCHashRibbon }       from '@/lib/api/coinmetrics';
+import { PageHeader }               from '@/components/dashboard/PageHeader';
+import { StatCard }                 from '@/components/dashboard/StatCard';
+import { HashRibbonChartSection }  from '@/components/charts/HashRibbonChartSection';
+import type { HRPoint }            from '@/components/charts/HashRibbonChart';
 
 export const revalidate = 86400;
 
@@ -268,47 +268,17 @@ export default async function HashRibbonsPage() {
       </div>
 
       {/* ── Chart card ── */}
-      <div
-        className="rounded-xl border p-5"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Hash Ribbons — BTC Price + Ribbon Ratio · Log Scale
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Red shading = capitulation (30d MA below 60d MA) · Right axis = ribbon ratio (30d ÷ 60d)
-              {dataSource === 'DiffLast' && ' · Using mining difficulty as hash rate proxy'}
-            </p>
-          </div>
-          <div className="flex items-center gap-5 text-xs font-mono shrink-0">
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.75)' }} />
-              <span style={{ color: 'var(--sct-muted)' }}>BTC Price</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-6 h-0.5" style={{ backgroundColor: '#A78BFA' }} />
-              <span style={{ color: '#A78BFA' }}>30d / 60d Ratio</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(255,92,92,0.25)' }} />
-              <span style={{ color: '#FF5C5C' }}>Capitulation Zone</span>
-            </span>
-          </div>
-        </div>
-
-        {fetchError ? (
-          <div
-            className="h-[480px] flex items-center justify-center rounded-lg border text-sm"
-            style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
-          >
-            Unable to load hash rate data — CoinMetrics API unreachable
-          </div>
-        ) : (
-          <HashRibbonChart data={chartData} />
-        )}
-      </div>
+      <HashRibbonChartSection
+        data={chartData}
+        fetchError={fetchError}
+        statusLabel={sc.label}
+        statusColor={sc.color}
+        currentPrice={currentPrice}
+        currentMA30={currentMA30}
+        currentMA60={currentMA60}
+        currentRatio={currentRatio}
+        dataSource={dataSource}
+      />
 
       {/* ── Bottom row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">

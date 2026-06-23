@@ -16,7 +16,7 @@ export type HRPoint = {
   inCapit: boolean;
 };
 
-type Range = '2Y' | '4Y' | 'All';
+export type Range = '2Y' | '4Y' | 'All';
 const RANGES: Range[] = ['2Y', '4Y', 'All'];
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
@@ -57,7 +57,13 @@ function ChartTip({ active, payload, label }: {
   );
 }
 
-export function HashRibbonChart({ data }: { data: HRPoint[] }) {
+export function HashRibbonChart({
+  data,
+  onRangeChange,
+}: {
+  data: HRPoint[];
+  onRangeChange?: (r: Range) => void;
+}) {
   const [range, setRange] = useState<Range>('All');
 
   const displayed = useMemo(() => {
@@ -92,7 +98,7 @@ export function HashRibbonChart({ data }: { data: HRPoint[] }) {
         {RANGES.map(r => (
           <button
             key={r}
-            onClick={() => setRange(r)}
+            onClick={() => { setRange(r); onRangeChange?.(r); }}
             className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
               backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
