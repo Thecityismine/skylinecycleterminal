@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Area, Line, XAxis, YAxis,
@@ -34,14 +34,14 @@ export const HASH_RIBBON_CARD_CHART_RECT = {
 };
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtHashRate(v: number | null, source: string): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   if (source === 'DiffLast') {
     if (v >= 1e12) return `${(v / 1e12).toFixed(1)} T`;
     if (v >= 1e9)  return `${(v / 1e9).toFixed(1)} B`;
@@ -83,7 +83,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
     { label: 'BTC Price',        value: fmtUSD(currentPrice),                              sub: 'Latest close',                  color: '#F7F9FC'    },
     { label: `30d ${maLabel} MA`, value: fmtHashRate(currentMA30, dataSource),             sub: '30-day moving average',         color: '#E6B450'    },
     { label: `60d ${maLabel} MA`, value: fmtHashRate(currentMA60, dataSource),             sub: '60-day moving average',         color: '#3B82F6'    },
-    { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}×` : '—', sub: statusLabel,            color: ratioColor   },
+    { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}Ã—` : 'â€”', sub: statusLabel,            color: ratioColor   },
   ];
 
   // Capitulation zones
@@ -126,7 +126,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
             Hash Ribbons
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Miner capitulation · 30d vs 60d {maLabel} MA{range !== 'All' ? ` · ${range}` : ''}
+            Miner capitulation Â· 30d vs 60d {maLabel} MA{range !== 'All' ? ` Â· ${range}` : ''}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {[
@@ -170,7 +170,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -215,7 +215,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
             yAxisId="ribbon"
             orientation="right"
             domain={[0, 2.5]}
-            tickFormatter={(v: number) => `${v.toFixed(1)}×`}
+            tickFormatter={(v: number) => `${v.toFixed(1)}Ã—`}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             tickLine={false}
             axisLine={false}
@@ -292,7 +292,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

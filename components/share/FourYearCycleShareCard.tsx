@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart,
@@ -99,7 +99,7 @@ export function FourYearCycleShareCard({ payload }: { payload: FourYearCycleShar
             Bitcoin 4-Year Cycle
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Halving-driven cycle epochs · log scale
+            Halving-driven cycle epochs Â· log scale
           </p>
           {/* Legend */}
           <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
@@ -131,7 +131,7 @@ export function FourYearCycleShareCard({ payload }: { payload: FourYearCycleShar
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -245,7 +245,7 @@ export function FourYearCycleShareCard({ payload }: { payload: FourYearCycleShar
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

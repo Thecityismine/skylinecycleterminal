@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Area, Line, XAxis, YAxis,
@@ -49,18 +49,18 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtPct(v: number | null): string {
-  return v == null ? '—' : `${v.toFixed(2)}%`;
+  return v == null ? 'â€”' : `${v.toFixed(2)}%`;
 }
 
 function fmtPp(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return `${v >= 0 ? '+' : ''}${v.toFixed(2)} pp`;
 }
 
@@ -82,7 +82,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
   const stats = [
     { label: 'BTC Price',           value: fmtUSD(btcClose), sub: 'Latest close',          color: '#E6EDF3'    },
     { label: 'Exchange Reserve',    value: fmtPct(exchPct),  sub: '% of circulating supply', color: '#F7931A'  },
-    { label: '30D Change',          value: fmtPp(change30d), sub: change30d != null ? (change30d < 0 ? 'Coins leaving exchanges' : 'Coins entering exchanges') : '—', color: changeColor },
+    { label: '30D Change',          value: fmtPp(change30d), sub: change30d != null ? (change30d < 0 ? 'Coins leaving exchanges' : 'Coins entering exchanges') : 'â€”', color: changeColor },
     { label: 'Distribution Score',  value: `${scoreScore}/100`, sub: scoreLabel,              color: scoreColor },
   ];
 
@@ -138,7 +138,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
             Bitcoin HODL Wave
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Exchange reserve · long-term holder accumulation signal
+            Exchange reserve Â· long-term holder accumulation signal
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -190,7 +190,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -283,7 +283,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
             allowDataOverflow
           />
 
-          {/* BTC price — behind area */}
+          {/* BTC price â€” behind area */}
           {showPrice && (
             <Line yAxisId="price" type="monotone" dataKey="btcClose" stroke="rgba(230,237,243,0.6)" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />
           )}
@@ -309,7 +309,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

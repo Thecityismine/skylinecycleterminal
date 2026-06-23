@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Line, XAxis, YAxis,
@@ -45,19 +45,19 @@ const HALVINGS = [
 ];
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtPct(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}% vs fair`;
 }
 
 function fmtYrs(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   if (Math.abs(v) < 0.1) return '< 0.1y';
   return `Lead: ${v >= 0 ? '+' : ''}${v.toFixed(1)}y`;
 }
@@ -97,8 +97,8 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
   const stats = [
     { label: 'BTC Price',       value: fmtUSD(price), sub: 'Latest close',     color: '#F7F9FC'   },
     { label: 'Fair Value',      value: fmtUSD(fair),  sub: fmtPct(pctVsFair),  color: '#38BDF8'   },
-    { label: 'Floor (×0.42)',   value: fmtUSD(floor), sub: fmtYrs(leadFloor),  color: '#818CF8'   },
-    { label: 'Ceiling (×4.27)', value: fmtUSD(ceil),  sub: fmtYrs(leadCeil),   color: '#F472B6'   },
+    { label: 'Floor (Ã—0.42)',   value: fmtUSD(floor), sub: fmtYrs(leadFloor),  color: '#818CF8'   },
+    { label: 'Ceiling (Ã—4.27)', value: fmtUSD(ceil),  sub: fmtYrs(leadCeil),   color: '#F472B6'   },
   ];
 
   return (
@@ -128,14 +128,14 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             Bitcoin Power Law
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            log₁₀(P) = 5.82 × log₁₀(days) − 16.73 · Log scale{range !== 'All' ? ` · ${range}` : ''}
+            logâ‚â‚€(P) = 5.82 Ã— logâ‚â‚€(days) âˆ’ 16.73 Â· Log scale{range !== 'All' ? ` Â· ${range}` : ''}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {[
               { color: 'rgba(247,249,252,0.9)', label: 'BTC Price'       },
-              { color: '#F472B6',              label: 'Ceiling (×4.27)' },
+              { color: '#F472B6',              label: 'Ceiling (Ã—4.27)' },
               { color: '#38BDF8',              label: 'Fair Value'       },
-              { color: '#818CF8',              label: 'Floor (×0.42)'   },
+              { color: '#818CF8',              label: 'Floor (Ã—0.42)'   },
             ].map((l) => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />
@@ -170,7 +170,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -240,7 +240,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             allowDataOverflow
           />
 
-          {/* Ceiling — pink */}
+          {/* Ceiling â€” pink */}
           <Line
             type="monotone"
             dataKey="ceil"
@@ -251,7 +251,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             connectNulls
           />
 
-          {/* Fair Value — cyan */}
+          {/* Fair Value â€” cyan */}
           <Line
             type="monotone"
             dataKey="fair"
@@ -262,7 +262,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             connectNulls
           />
 
-          {/* Floor — indigo */}
+          {/* Floor â€” indigo */}
           <Line
             type="monotone"
             dataKey="floor"
@@ -273,7 +273,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             connectNulls
           />
 
-          {/* BTC Price — white on top */}
+          {/* BTC Price â€” white on top */}
           <Line
             type="monotone"
             dataKey="price"
@@ -294,7 +294,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

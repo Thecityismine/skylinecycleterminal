@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Area, Line, XAxis, YAxis,
@@ -47,7 +47,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtP(v: number | null): string {
-  return v == null ? '—' : fmtPrice(v);
+  return v == null ? 'â€”' : fmtPrice(v);
 }
 
 const ZONE_SUB: Record<Zone, string> = {
@@ -105,8 +105,8 @@ export function WeeklySMAShareCard({ payload }: { payload: WeeklySMASharePayload
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
             50W & 200W simple moving averages
-            {' · '}{rangeLabel === 'All' ? 'Full history' : rangeLabel}
-            {logScale ? ' · Log scale' : ''}
+            {' Â· '}{rangeLabel === 'All' ? 'Full history' : rangeLabel}
+            {logScale ? ' Â· Log scale' : ''}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {[
@@ -148,7 +148,7 @@ export function WeeklySMAShareCard({ payload }: { payload: WeeklySMASharePayload
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -248,7 +248,7 @@ export function WeeklySMAShareCard({ payload }: { payload: WeeklySMASharePayload
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

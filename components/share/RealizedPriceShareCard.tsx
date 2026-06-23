@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart,
@@ -39,12 +39,12 @@ export const REALIZED_PRICE_CARD_CHART_RECT = {
 };
 
 function fmtFull(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
 function fmtPct(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 }
 
@@ -75,8 +75,8 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
   const stats = [
     { label: 'BTC Price',          value: fmtFull(currentPrice), sub: 'Latest close',            color: '#F7931A'      },
     { label: secondaryLabel,       value: fmtFull(ma200w),       sub: 'Long-term trend floor',   color: secondaryColor },
-    { label: 'Price / 200W MA',    value: ratio != null ? `${ratio.toFixed(2)}×` : '—',          sub: zoneLabel,       color: zoneColor      },
-    { label: 'Premium to MA',      value: fmtPct(premium),       sub: premium != null && premium < 0 ? 'Below MA — historic buy' : premium != null && premium < 100 ? 'Low risk zone' : 'Elevated premium', color: premium == null ? '#8B949E' : premium < 0 ? '#3B82F6' : premium < 100 ? '#35D07F' : premium < 300 ? '#E6B450' : '#FF5C5C' },
+    { label: 'Price / 200W MA',    value: ratio != null ? `${ratio.toFixed(2)}Ã—` : 'â€”',          sub: zoneLabel,       color: zoneColor      },
+    { label: 'Premium to MA',      value: fmtPct(premium),       sub: premium != null && premium < 0 ? 'Below MA â€” historic buy' : premium != null && premium < 100 ? 'Low risk zone' : 'Elevated premium', color: premium == null ? '#8B949E' : premium < 0 ? '#3B82F6' : premium < 100 ? '#35D07F' : premium < 300 ? '#E6B450' : '#FF5C5C' },
   ];
 
   // Downsample for rendering consistency
@@ -112,7 +112,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
             BTC Price vs 200-Week MA
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            The Bitcoin Investor Tool · No weekly close has ever broken below the 200W MA
+            The Bitcoin Investor Tool Â· No weekly close has ever broken below the 200W MA
           </p>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -148,7 +148,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -194,7 +194,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
             width={58}
           />
 
-          {/* 200W MA — drawn first so BTC sits on top */}
+          {/* 200W MA â€” drawn first so BTC sits on top */}
           <Line type="monotone" dataKey="realized" stroke={secondaryColor} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
 
           {/* BTC price */}
@@ -220,7 +220,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart,
@@ -63,12 +63,12 @@ function fmtY(v: number): string {
 }
 
 function fmtFull(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
 function fmtPct(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 }
 
@@ -115,7 +115,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
   const stats = [
     { label: 'BTC Price',        value: fmtFull(latestClose),  sub: 'Weekly close',             color: '#F7931A'  },
     { label: '100-Week MA',      value: fmtFull(latestMA100),  sub: 'Medium-term trend',        color: '#EAB84D'  },
-    { label: 'Distance 100W',    value: fmtPct(distancePct),   sub: distancePct == null ? '—' : distancePct > 5 ? 'Above trend' : distancePct < -5 ? 'Below trend' : 'Testing zone', color: distanceColor },
+    { label: 'Distance 100W',    value: fmtPct(distancePct),   sub: distancePct == null ? 'â€”' : distancePct > 5 ? 'Above trend' : distancePct < -5 ? 'Below trend' : 'Testing zone', color: distanceColor },
     { label: 'Trend Score',      value: `${trendScoreNum}/100`, sub: trendLabel,                color: trendColor  },
   ];
 
@@ -153,7 +153,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
             100-Week Moving Average
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Medium-term trend · 50W / 100W / 200W MAs · Log scale
+            Medium-term trend Â· 50W / 100W / 200W MAs Â· Log scale
           </p>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             {legend.map((l) => (
@@ -172,7 +172,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
           <p style={{ fontSize: 11, color: '#8B949E', margin: '3px 0 0' }}>{dateStr}</p>
           {slope != null && (
             <p style={{ fontSize: 10, color: slopeColor, margin: '2px 0 0' }}>
-              Slope: {fmtPct(slope)} — {slopeText}
+              Slope: {fmtPct(slope)} â€” {slopeText}
             </p>
           )}
         </div>
@@ -185,7 +185,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -275,7 +275,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

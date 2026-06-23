@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Line, XAxis, YAxis, CartesianGrid,
@@ -32,7 +32,7 @@ export const BTC_M2_CARD_CHART_RECT = {
 };
 
 function fmt(v: number | null, d = 2): string {
-  return v == null ? '—' : v.toFixed(d);
+  return v == null ? 'â€”' : v.toFixed(d);
 }
 
 export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
@@ -56,9 +56,9 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
   }
 
   const stats = [
-    { label: 'Current Ratio',  value: fmt(ratio),  sub: 'BTC price ÷ M2 (×1000)',    color: '#F7F9FC' },
-    { label: '200 EMA',        value: fmt(ema200), sub: ratio != null && ema200 != null ? (ratio > ema200 ? '↑ Price above' : '↓ Price below') : '—', color: '#35D07F' },
-    { label: '400 EMA',        value: fmt(ema400), sub: ratio != null && ema400 != null ? (ratio > ema400 ? '↑ Price above' : '↓ Price below') : '—', color: '#FF5C5C' },
+    { label: 'Current Ratio',  value: fmt(ratio),  sub: 'BTC price Ã· M2 (Ã—1000)',    color: '#F7F9FC' },
+    { label: '200 EMA',        value: fmt(ema200), sub: ratio != null && ema200 != null ? (ratio > ema200 ? 'â†‘ Price above' : 'â†“ Price below') : 'â€”', color: '#35D07F' },
+    { label: '400 EMA',        value: fmt(ema400), sub: ratio != null && ema400 != null ? (ratio > ema400 ? 'â†‘ Price above' : 'â†“ Price below') : 'â€”', color: '#FF5C5C' },
     { label: '52-Week SMA',    value: fmt(sma52),  sub: '1-year simple average',       color: '#E6B450' },
   ];
 
@@ -91,7 +91,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             BTC / M2 Money Supply
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Weekly BTC price ÷ US M2 · strips out monetary expansion{logScale ? ' · Log scale' : ''}
+            Weekly BTC price Ã· US M2 Â· strips out monetary expansion{logScale ? ' Â· Log scale' : ''}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {[
@@ -140,7 +140,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -192,7 +192,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             width={52}
           />
 
-          {/* 400 EMA — red */}
+          {/* 400 EMA â€” red */}
           <Line
             type="monotone"
             dataKey="ema400"
@@ -203,7 +203,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             connectNulls={false}
           />
 
-          {/* 200 EMA — green */}
+          {/* 200 EMA â€” green */}
           <Line
             type="monotone"
             dataKey="ema200"
@@ -214,7 +214,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             connectNulls={false}
           />
 
-          {/* 52 SMA — dashed yellow */}
+          {/* 52 SMA â€” dashed yellow */}
           <Line
             type="monotone"
             dataKey="sma52"
@@ -226,7 +226,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             connectNulls={false}
           />
 
-          {/* BTC/M2 ratio — white on top */}
+          {/* BTC/M2 ratio â€” white on top */}
           <Line
             type="monotone"
             dataKey="ratio"
@@ -246,7 +246,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

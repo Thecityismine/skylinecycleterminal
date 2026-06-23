@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Line, XAxis, YAxis,
@@ -44,7 +44,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
@@ -69,8 +69,8 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
   const stats = [
     { label: 'BTC Price',         value: fmtUSD(btcClose),  sub: 'Current price',                   color: '#E6EDF3'   },
     { label: 'Confluence Score',  value: `${confluenceScore.toFixed(1)} / 4`, sub: regimeLabel,      color: regimeColor },
-    { label: 'MVRV Ratio',        value: mvrv  != null ? mvrv.toFixed(2)  : '—', sub: mvrv != null  ? (mvrv < 1.0 ? 'Supply at loss' : mvrv < 1.5 ? 'Near cost basis' : 'Profitable') : '—', color: mvrvColor },
-    { label: 'HR Ratio 30/60D',   value: hrRatio != null ? hrRatio.toFixed(3) : '—', sub: hrRatio != null ? (hrRatio < 1.0 ? 'Miner capitulation' : 'Miners healthy') : '—', color: hrColor },
+    { label: 'MVRV Ratio',        value: mvrv  != null ? mvrv.toFixed(2)  : 'â€”', sub: mvrv != null  ? (mvrv < 1.0 ? 'Supply at loss' : mvrv < 1.5 ? 'Near cost basis' : 'Profitable') : 'â€”', color: mvrvColor },
+    { label: 'HR Ratio 30/60D',   value: hrRatio != null ? hrRatio.toFixed(3) : 'â€”', sub: hrRatio != null ? (hrRatio < 1.0 ? 'Miner capitulation' : 'Miners healthy') : 'â€”', color: hrColor },
   ];
 
   // Y-axis domain
@@ -114,7 +114,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
             Bear-Market Bottom Confluence
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            MVRV · Hash Ribbon · 2Y MA · Exchange Flow — signal alignment model
+            MVRV Â· Hash Ribbon Â· 2Y MA Â· Exchange Flow â€” signal alignment model
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -159,7 +159,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -261,7 +261,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

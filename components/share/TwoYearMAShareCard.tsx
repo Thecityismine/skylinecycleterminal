@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart,
@@ -49,7 +49,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtFull(n: number | null): string {
-  if (n == null || n === 0) return '—';
+  if (n == null || n === 0) return 'â€”';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
@@ -65,8 +65,8 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
   const stats = [
     { label: 'BTC Price',        value: fmtFull(latestPrice), sub: 'Latest close',             color: '#F7F9FC'  },
     { label: '2-Year MA',        value: fmtFull(latestMA),    sub: '730-day simple MA',         color: '#F7931A'  },
-    { label: '2Y MA × 5',        value: fmtFull(latestMA5),   sub: 'Historical top band',       color: '#FF5C5C'  },
-    { label: 'Current Multiple', value: multiplier != null ? `${multiplier.toFixed(2)}×` : '—', sub: zoneLabel, color: zoneColor },
+    { label: '2Y MA Ã— 5',        value: fmtFull(latestMA5),   sub: 'Historical top band',       color: '#FF5C5C'  },
+    { label: 'Current Multiple', value: multiplier != null ? `${multiplier.toFixed(2)}Ã—` : 'â€”', sub: zoneLabel, color: zoneColor },
   ];
 
   return (
@@ -96,7 +96,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
             2-Year Moving Average
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Accumulate below 2YMA · Distribute above 2YMA×5 · Log scale
+            Accumulate below 2YMA Â· Distribute above 2YMAÃ—5 Â· Log scale
           </p>
           {/* Legend */}
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
@@ -110,7 +110,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 16, height: 0, borderTop: '2px dashed #FF5C5C', display: 'inline-block' }} />
-              <span style={{ fontSize: 10, color: '#FF5C5C' }}>2Y MA ×5</span>
+              <span style={{ fontSize: 10, color: '#FF5C5C' }}>2Y MA Ã—5</span>
             </span>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -206,7 +206,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

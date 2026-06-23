@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis,
@@ -53,14 +53,14 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmt3(v: number | null): string {
-  return v == null ? '—' : v.toFixed(3);
+  return v == null ? 'â€”' : v.toFixed(3);
 }
 
 export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
@@ -80,8 +80,8 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
   const stats = [
     { label: 'BTC Price',        value: fmtUSD(btcClose), sub: 'Latest close',          color: '#E6EDF3'    },
     { label: 'MVRV Ratio',       value: fmt3(rawSopr),    sub: (rawSopr ?? 0) >= 1 ? 'Above break-even' : 'Below break-even', color: devColor },
-    { label: 'MVRV Deviation',   value: soprDev != null ? `${soprDev >= 0 ? '+' : ''}${soprDev.toFixed(3)}` : '—',
-                                  sub: soprDev != null ? (soprDev >= 0 ? 'Net profit territory' : 'Net loss territory') : '—', color: devColor },
+    { label: 'MVRV Deviation',   value: soprDev != null ? `${soprDev >= 0 ? '+' : ''}${soprDev.toFixed(3)}` : 'â€”',
+                                  sub: soprDev != null ? (soprDev >= 0 ? 'Net profit territory' : 'Net loss territory') : 'â€”', color: devColor },
     { label: '90D Average',      value: fmt3(sma90),      sub: 'Trend baseline',         color: '#3B82F6'    },
   ];
 
@@ -132,7 +132,7 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
             Bitcoin SOPR
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            MVRV Deviation · profit/loss behavior of coins on-chain
+            MVRV Deviation Â· profit/loss behavior of coins on-chain
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -186,7 +186,7 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -317,7 +317,7 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

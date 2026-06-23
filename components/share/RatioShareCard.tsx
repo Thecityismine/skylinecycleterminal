@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   AreaChart,
@@ -65,12 +65,12 @@ function fmtRatio(v: number): string {
 }
 
 function fmtR(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return fmtRatio(v);
 }
 
 function fmtPct(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 }
 
@@ -124,7 +124,7 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
             {ratioLabel}
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
-            Relative strength · {ratioDesc}
+            Relative strength Â· {ratioDesc}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 16, height: 2, backgroundColor: col.stroke, display: 'inline-block', borderRadius: 1 }} />
@@ -157,7 +157,7 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -229,7 +229,7 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

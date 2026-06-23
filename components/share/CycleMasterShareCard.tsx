@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart, Line, Area, XAxis, YAxis,
@@ -44,7 +44,7 @@ const HALVINGS = [
 ];
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;
   return `$${v.toFixed(0)}`;
@@ -64,7 +64,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
 
   const resolvedScoreColor = scoreColor ?? '#94A3B8';
 
-  const mvrvSub = mvrv == null ? '—'
+  const mvrvSub = mvrv == null ? 'â€”'
     : mvrv < 1.0 ? 'Below cost basis'
     : mvrv < 2.0 ? 'Accumulation zone'
     : mvrv < 3.5 ? 'Expansion / elevated'
@@ -72,9 +72,9 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
 
   const stats = [
     { label: 'BTC Price',      value: fmtUSD(price),                               sub: 'Current market price',  color: '#F7931A'          },
-    { label: 'MVRV Ratio',     value: mvrv != null ? `${mvrv.toFixed(2)}×` : '—', sub: mvrvSub,                 color: '#A78BFA'          },
+    { label: 'MVRV Ratio',     value: mvrv != null ? `${mvrv.toFixed(2)}Ã—` : 'â€”', sub: mvrvSub,                 color: '#A78BFA'          },
     { label: 'Realized Price', value: fmtUSD(realized),                            sub: 'Avg on-chain cost basis', color: '#3B82F6'         },
-    { label: 'Cycle Score',    value: score != null ? `${score.toFixed(0)} / 100` : '—', sub: scoreLabel ?? '—', color: resolvedScoreColor },
+    { label: 'Cycle Score',    value: score != null ? `${score.toFixed(0)} / 100` : 'â€”', sub: scoreLabel ?? 'â€”', color: resolvedScoreColor },
   ];
 
   // Compute year ticks from data
@@ -120,7 +120,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
             Bitcoin Cycle Master
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            On-chain valuation · Terminal · Transferred · Realized · Balance{range !== 'All' ? ` · ${range}` : ''}{logScale ? ' · Log' : ''}
+            On-chain valuation Â· Terminal Â· Transferred Â· Realized Â· Balance{range !== 'All' ? ` Â· ${range}` : ''}{logScale ? ' Â· Log' : ''}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             {[
@@ -163,7 +163,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -250,7 +250,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>

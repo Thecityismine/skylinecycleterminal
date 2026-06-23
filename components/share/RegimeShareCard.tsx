@@ -162,7 +162,7 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
         gap:           0,
         borderTop:     '1px solid #21262D',
         borderBottom:  '1px solid #21262D',
-        marginBottom:  8,
+        marginTop:     8,
       }}>
         {stats.map((s, i) => (
           <div

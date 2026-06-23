@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import type { HACandle } from '@/components/charts/HeikinAshiChart';
@@ -62,31 +62,31 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
   const stats = [
     {
       label: 'Monthly HA',
-      value: isSignal ? '▲ Signal' : isGreen ? '▲ Green' : '▼ Red',
-      sub:   latest ? `${latest.month}${latest.partial ? ' · partial' : ''}` : '—',
+      value: isSignal ? 'â–² Signal' : isGreen ? 'â–² Green' : 'â–¼ Red',
+      sub:   latest ? `${latest.month}${latest.partial ? ' Â· partial' : ''}` : 'â€”',
       color: statusColor,
     },
     {
       label: 'Real Close',
-      value: latest ? fmtPrice(latest.realClose) : '—',
+      value: latest ? fmtPrice(latest.realClose) : 'â€”',
       sub:   'Latest monthly close',
       color: '#F7F9FC',
     },
     {
       label: 'Last Signal',
-      value: lastSig?.month ?? '—',
+      value: lastSig?.month ?? 'â€”',
       sub:   lastSig ? `After ${lastSig.redStreakBefore} red months` : 'No signal on record',
       color: GREEN,
     },
     {
       label: 'Since Signal',
-      value: signalGain != null ? `${signalGain >= 0 ? '+' : ''}${signalGain.toFixed(0)}%` : '—',
+      value: signalGain != null ? `${signalGain >= 0 ? '+' : ''}${signalGain.toFixed(0)}%` : 'â€”',
       sub:   'Return from last bear-end',
       color: signalGain != null ? (signalGain >= 0 ? GREEN : RED) : '#F7F9FC',
     },
   ];
 
-  // ─── SVG chart math ───────────────────────────────────────────────────────
+  // â”€â”€â”€ SVG chart math â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const innerW = CHART_W - PL - PR;
   const innerH = CHART_H - PT - PB;
   const n      = candles.length;
@@ -140,17 +140,17 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
             Monthly Heikin-Ashi
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            BTC monthly HA candles · Log scale · Bear market end signals
+            BTC monthly HA candles Â· Log scale Â· Bear market end signals
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {[
               { color: GREEN, label: 'Bullish HA'       },
               { color: RED,   label: 'Bearish HA'       },
-              { color: GREEN, label: '▲ Bear-End Signal', isTriangle: true },
+              { color: GREEN, label: 'â–² Bear-End Signal', isTriangle: true },
             ].map((l) => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 {l.isTriangle ? (
-                  <span style={{ fontSize: 12, color: l.color, lineHeight: 1 }}>▲</span>
+                  <span style={{ fontSize: 12, color: l.color, lineHeight: 1 }}>â–²</span>
                 ) : (
                   <span style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
                 )}
@@ -179,7 +179,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
         display:             'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
-        marginBottom:        GAP,
+        marginTop:           GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
@@ -270,7 +270,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
         justifyContent: 'flex-end',
       }}>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
-          Generated from Skyline Cycle Terminal · Not financial advice
+          Generated from Skyline Cycle Terminal Â· Not financial advice
         </span>
       </div>
     </div>
