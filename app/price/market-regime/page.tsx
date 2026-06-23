@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from 'react';
+import { ImageDown } from 'lucide-react';
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { RegimeChart } from '@/components/charts/RegimeChart';
+import { RegimeShareModal } from '@/components/share/RegimeShareModal';
 import type { RegimeResult, RegimeZone } from '@/lib/indicators/regimeHelpers';
 import { REGIME_COLOR, REGIME_LABEL, fmtDate, fmtReturn } from '@/lib/indicators/regimeHelpers';
 
@@ -49,7 +51,8 @@ function RegimeTableRow({ z, isOngoing }: { z: RegimeZone; isOngoing: boolean })
 
 export default function MarketRegimePage() {
   const { data, loading } = useApiData<RegimeResult>('/api/price/regime');
-  const [showMA, setShowMA] = useState(true);
+  const [showMA,         setShowMA]         = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const cur   = data?.current;
   const zones = data?.zones ?? [];
@@ -68,6 +71,7 @@ export default function MarketRegimePage() {
     .reverse();
 
   return (
+    <>
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="BTC Market Regime"
@@ -140,6 +144,30 @@ export default function MarketRegimePage() {
             >
               200 DMA
             </button>
+            <button
+              onClick={() => setShowShareModal(true)}
+              disabled={!data}
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all border"
+              style={{
+                backgroundColor: 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           'var(--sct-muted)',
+                cursor:          !data ? 'not-allowed' : 'pointer',
+                opacity:         !data ? 0.4 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!data) return;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#F7931A';
+                (e.currentTarget as HTMLButtonElement).style.color = '#F7931A';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--sct-border)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--sct-muted)';
+              }}
+            >
+              <ImageDown size={12} />
+              Share Card
+            </button>
             <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--sct-muted)' }}>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(53,208,127,0.35)' }} />
@@ -203,5 +231,19 @@ export default function MarketRegimePage() {
         )}
       </div>
     </div>
+
+    {showShareModal && data && (
+      <RegimeShareModal
+        payload={{
+          points:      data.points,
+          zones:       data.zones,
+          current:     data.current,
+          showMA,
+          generatedAt: new Date().toISOString(),
+        }}
+        onClose={() => setShowShareModal(false)}
+      />
+    )}
+    </>
   );
 }
