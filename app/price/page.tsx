@@ -1,10 +1,12 @@
 ﻿"use client";
 
 import { useState, useMemo } from 'react';
+import { ImageDown } from 'lucide-react';
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { PriceStructureChart, RSIPanel, MACDPanel } from '@/components/charts/PriceStructureChart';
+import { PriceShareModal } from '@/components/share/PriceShareModal';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -98,10 +100,11 @@ function downsample<T>(arr: T[], max = 800): T[] {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function PricePage() {
-  const [asset,     setAsset]     = useState<'btc' | 'eth'>('btc');
-  const [timeframe, setTimeframe] = useState<Timeframe>('All');
-  const [overlays,  setOverlays]  = useState<Set<string>>(new Set(['200 DMA', 'Halvings']));
-  const [logScale,  setLogScale]  = useState(true);
+  const [asset,          setAsset]          = useState<'btc' | 'eth'>('btc');
+  const [timeframe,      setTimeframe]      = useState<Timeframe>('All');
+  const [overlays,       setOverlays]       = useState<Set<string>>(new Set(['200 DMA', 'Halvings']));
+  const [logScale,       setLogScale]       = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: priceData, loading } = useApiData<{ prices: PricePoint[] }>(
     `/api/price?asset=${asset}&start=2010-01-01`
@@ -164,6 +167,7 @@ export default function PricePage() {
   const priceChange = latest && first ? ((latest.price - first.price) / first.price) * 100 : null;
 
   return (
+    <>
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Price Structure"
@@ -217,6 +221,31 @@ export default function PricePage() {
             }}
           >
             LOG
+          </button>
+          <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--sct-border)' }} />
+          <button
+            onClick={() => setShowShareModal(true)}
+            disabled={!displayed.length}
+            className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all border"
+            style={{
+              backgroundColor: 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           'var(--sct-muted)',
+              cursor:          !displayed.length ? 'not-allowed' : 'pointer',
+              opacity:         !displayed.length ? 0.4 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!displayed.length) return;
+              (e.currentTarget as HTMLButtonElement).style.borderColor = '#F7931A';
+              (e.currentTarget as HTMLButtonElement).style.color = '#F7931A';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--sct-border)';
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--sct-muted)';
+            }}
+          >
+            <ImageDown size={12} />
+            Share Card
           </button>
         </div>
       </div>
@@ -277,5 +306,22 @@ export default function PricePage() {
       }
 
     </div>
+
+    {showShareModal && displayed.length > 0 && (
+      <PriceShareModal
+        payload={{
+          data:        displayed,
+          overlays:    Array.from(overlays),
+          halvings:    halvingsInRange,
+          logScale,
+          asset,
+          timeframe,
+          priceChange,
+          generatedAt: new Date().toISOString(),
+        }}
+        onClose={() => setShowShareModal(false)}
+      />
+    )}
+    </>
   );
 }
