@@ -129,6 +129,11 @@ const nav: (NavItem | NavSection)[] = [
       { label: "RKLB",       href: "/equities/RKLB",   icon: TrendingDown },
       { label: "COIN",       href: "/equities/COIN",   icon: TrendingDown },
       { label: "MSTR",       href: "/equities/MSTR",   icon: TrendingDown },
+      { label: "STRK",       href: "/equities/STRK",   icon: TrendingDown },
+      { label: "STRF",       href: "/equities/STRF",   icon: TrendingDown },
+      { label: "MSTY",       href: "/equities/MSTY",   icon: TrendingDown },
+      { label: "MSTU",       href: "/equities/MSTU",   icon: TrendingDown },
+      { label: "MSTZ",       href: "/equities/MSTZ",   icon: TrendingDown },
     ],
   },
   {

@@ -1,5 +1,5 @@
-export type StockType = 'equity' | 'etf' | 'btc_proxy';
-export type StockGroup = 'btc' | 'mining' | 'ai' | 'ai_pure' | 'space' | 'tech' | 'health' | 'macro';
+export type StockType = 'equity' | 'etf' | 'btc_proxy' | 'preferred';
+export type StockGroup = 'saylor' | 'btc' | 'mining' | 'ai' | 'ai_pure' | 'space' | 'tech' | 'health' | 'macro';
 
 export type WatchlistItem = {
   ticker:  string;
@@ -11,8 +11,17 @@ export type WatchlistItem = {
 };
 
 export const WATCHLIST: WatchlistItem[] = [
-  // ── BTC-Adjacent (treasuries, exchanges, fintech) ──────────────────────────
-  { ticker: 'MSTR',  name: 'MicroStrategy',     sector: 'BTC Treasury',           group: 'btc',     type: 'btc_proxy', color: '#F7931A' },
+  // ── Saylor / Strategy Ecosystem ───────────────────────────────────────────
+  { ticker: 'MSTR',  name: 'Strategy',           sector: 'BTC Treasury',           group: 'saylor',  type: 'btc_proxy', color: '#F7931A' },
+  { ticker: 'STRK',  name: 'Strategy Strike',    sector: 'Preferred · 8% Yield',  group: 'saylor',  type: 'preferred', color: '#FBBF24' },
+  { ticker: 'STRF',  name: 'Strategy Strife',    sector: 'Preferred · 10% Yield', group: 'saylor',  type: 'preferred', color: '#FDE68A' },
+  { ticker: 'MSTY',  name: 'YieldMax MSTR',      sector: 'Covered Call Income',   group: 'saylor',  type: 'etf',       color: '#A855F7' },
+  { ticker: 'MSTU',  name: 'T-Rex 2X Long MSTR', sector: '2× Leveraged Long',     group: 'saylor',  type: 'etf',       color: '#35D07F' },
+  { ticker: 'MSTX',  name: 'Defiance 2X MSTR',  sector: '2× Leveraged Long',     group: 'saylor',  type: 'etf',       color: '#22D3EE' },
+  { ticker: 'MSTZ',  name: 'T-Rex 2X Inverse',   sector: '2× Leveraged Short',    group: 'saylor',  type: 'etf',       color: '#FF5C5C' },
+  { ticker: 'SMST',  name: 'ProShares UltraShort', sector: '2× Leveraged Short',  group: 'saylor',  type: 'etf',       color: '#F87171' },
+
+  // ── BTC-Adjacent (exchanges, fintech) ─────────────────────────────────────
   { ticker: 'COIN',  name: 'Coinbase',           sector: 'Crypto Exchange',        group: 'btc',     type: 'equity',    color: '#0052FF' },
   { ticker: 'HOOD',    name: 'Robinhood',          sector: 'Crypto / Brokerage',     group: 'btc',     type: 'equity',    color: '#00C805' },
   { ticker: 'SQ',     name: 'Block',              sector: 'BTC Treasury / Fintech', group: 'btc',     type: 'equity',    color: '#00D64F' },
@@ -72,6 +81,7 @@ export const WATCHLIST: WatchlistItem[] = [
 ];
 
 export const GROUP_LABELS: Record<StockGroup, string> = {
+  saylor:   'Saylor Ecosystem',
   btc:      'BTC-Adjacent',
   mining:   'Bitcoin Mining',
   ai:       'AI · Semiconductors',
@@ -82,7 +92,7 @@ export const GROUP_LABELS: Record<StockGroup, string> = {
   macro:    'Macro · ETFs',
 };
 
-export const GROUP_ORDER: StockGroup[] = ['btc', 'mining', 'ai', 'ai_pure', 'space', 'tech', 'health', 'macro'];
+export const GROUP_ORDER: StockGroup[] = ['saylor', 'btc', 'mining', 'ai', 'ai_pure', 'space', 'tech', 'health', 'macro'];
 
 export function getStock(ticker: string): WatchlistItem | undefined {
   return WATCHLIST.find((s) => s.ticker === ticker.toUpperCase());

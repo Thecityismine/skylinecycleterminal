@@ -106,7 +106,7 @@ function StockCard({ ticker, color, signalFilter }: { ticker: string; color: str
             label={`Trend: ${scores.trendLabel}`}
             color={scores.trend < 45 ? '#35D07F' : scores.trend < 70 ? '#E6B450' : '#FF5C5C'}
           />
-          {data?.type !== 'etf' && (
+          {data?.type !== 'etf' && data?.type !== 'preferred' && (
             <>
               <ScorePill
                 score={scores.valuation}

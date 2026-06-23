@@ -199,7 +199,7 @@ export default function EquityDetailPage() {
                 {loading ? '…' : (fund?.name ?? ticker)}
               </h1>
               <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-                {ticker} · {data?.sector ?? '—'} · {data?.type === 'etf' ? 'ETF' : data?.type === 'btc_proxy' ? 'BTC Proxy' : 'Equity'}
+                {ticker} · {data?.sector ?? '—'} · {data?.type === 'etf' ? 'ETF' : data?.type === 'preferred' ? 'Preferred Share' : data?.type === 'btc_proxy' ? 'BTC Proxy' : 'Equity'}
               </p>
             </div>
           </div>
@@ -373,15 +373,15 @@ export default function EquityDetailPage() {
             <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
               Valuation
             </p>
-            {scores && data?.type !== 'etf' && (
+            {scores && data?.type !== 'etf' && data?.type !== 'preferred' && (
               <ScoreRing score={scores.valuation} label="Valuation"
                 color={scores.valuation < 45 ? '#35D07F' : scores.valuation < 70 ? '#E6B450' : '#FF5C5C'} />
             )}
           </div>
 
-          {data?.type === 'etf' ? (
+          {data?.type === 'etf' || data?.type === 'preferred' ? (
             <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-              ETF — fundamental valuation metrics are not applicable.
+              {data?.type === 'preferred' ? 'Preferred share — income instrument; fundamental valuation metrics are not applicable.' : 'ETF — fundamental valuation metrics are not applicable.'}
             </p>
           ) : (
             <div>
@@ -417,7 +417,7 @@ export default function EquityDetailPage() {
             </div>
           )}
 
-          {scores && data?.type !== 'etf' && (
+          {scores && data?.type !== 'etf' && data?.type !== 'preferred' && (
             <div className="rounded-lg p-3 text-xs space-y-1"
               style={{ backgroundColor: 'var(--sct-panel)' }}>
               <p className="font-semibold"
@@ -438,15 +438,15 @@ export default function EquityDetailPage() {
             <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
               Business Quality
             </p>
-            {scores && data?.type !== 'etf' && (
+            {scores && data?.type !== 'etf' && data?.type !== 'preferred' && (
               <ScoreRing score={scores.quality} label="Quality"
                 color={scores.quality >= 65 ? '#35D07F' : scores.quality >= 45 ? '#E6B450' : '#FF5C5C'} />
             )}
           </div>
 
-          {data?.type === 'etf' ? (
+          {data?.type === 'etf' || data?.type === 'preferred' ? (
             <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-              ETF — business quality metrics are not applicable.
+              {data?.type === 'preferred' ? 'Preferred share — business quality metrics are not applicable.' : 'ETF — business quality metrics are not applicable.'}
             </p>
           ) : (
             <div>
@@ -481,7 +481,7 @@ export default function EquityDetailPage() {
             </div>
           )}
 
-          {scores && data?.type !== 'etf' && (
+          {scores && data?.type !== 'etf' && data?.type !== 'preferred' && (
             <div className="rounded-lg p-3 text-xs space-y-1"
               style={{ backgroundColor: 'var(--sct-panel)' }}>
               <p className="font-semibold"
@@ -497,7 +497,7 @@ export default function EquityDetailPage() {
       <div className="grid md:grid-cols-2 gap-5">
 
         {/* 4-box matrix */}
-        {data?.type !== 'etf' && (
+        {data?.type !== 'etf' && data?.type !== 'preferred' && (
           <div className="rounded-xl border p-5 space-y-4"
             style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
             <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
@@ -536,7 +536,7 @@ export default function EquityDetailPage() {
                   <p className="text-xl font-mono font-bold" style={{ color: scores.trend < 45 ? '#35D07F' : scores.trend < 70 ? '#E6B450' : '#FF5C5C' }}>{scores.trend}</p>
                   <p className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>Trend</p>
                 </div>
-                {data?.type !== 'etf' && (
+                {data?.type !== 'etf' && data?.type !== 'preferred' && (
                   <>
                     <div className="text-center">
                       <p className="text-xl font-mono font-bold" style={{ color: scores.valuation < 45 ? '#35D07F' : scores.valuation < 70 ? '#E6B450' : '#FF5C5C' }}>{scores.valuation}</p>
