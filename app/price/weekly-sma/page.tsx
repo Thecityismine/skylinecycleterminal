@@ -6,6 +6,8 @@ import { WeeklySMAChart } from '@/components/charts/WeeklySMAChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import type { WeeklySMAData, WeeklySMAResult, Zone } from '@/lib/api/weeklySMA';
 import { ZONE_COLOR, ZONE_LABEL, ZONE_FILL } from '@/lib/api/weeklySMA';
+import { WeeklySMAShareModal } from '@/components/share/WeeklySMAShareModal';
+import type { WeeklySMASharePayload } from '@/components/share/WeeklySMAShareCard';
 
 const ASSETS = [
   { key: 'btc' as const, label: 'Bitcoin',  ticker: 'BTC', color: '#F7931A' },
@@ -266,6 +268,24 @@ export default function WeeklySMAPage() {
             >
               Log
             </button>
+
+            {/* Share card */}
+            {!loading && filteredPoints.length > 0 && (
+              <WeeklySMAShareModal payload={{
+                points:       filteredPoints,
+                segments:     filteredSegments,
+                asset:        activeAsset,
+                assetLabel:   assetCfg.label,
+                assetColor:   assetCfg.color,
+                logScale,
+                rangeLabel:   RANGES[rangeIdx].label,
+                currentPrice: cur?.price ?? null,
+                ma50w:        cur?.ma50w ?? null,
+                ma200w:       cur?.ma200w ?? null,
+                zone,
+                generatedAt:  new Date().toISOString(),
+              } satisfies WeeklySMASharePayload} />
+            )}
           </div>
         </div>
 
