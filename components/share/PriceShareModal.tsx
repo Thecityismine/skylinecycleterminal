@@ -65,7 +65,7 @@ export function PriceShareModal({ payload, onClose }: Props) {
     } catch {
       setState('idle');
     }
-  }, []);
+  }, [logoSrc]);
 
   const handleDownload = useCallback(() => {
     if (!dataUrl) return;

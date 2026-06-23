@@ -69,7 +69,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
       console.error('Share card export failed', err);
       setState('idle');
     }
-  }, []);
+  }, [logoSrc]);
 
   const handleDownload = useCallback(() => {
     if (!dataUrl) return;
