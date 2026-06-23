@@ -29,13 +29,20 @@ function processDataUrl(dataUrl: string, resolve: (v: string) => void): void {
   img.onerror = () => resolve('');
   img.onload  = () => {
     try {
-      const canvas  = document.createElement('canvas');
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx     = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
+      // Cap at 800px wide — prevents iOS Safari canvas memory exhaustion on
+      // high-res logos while still producing enough detail for the watermark.
+      const MAX_W = 800;
+      const scale = Math.min(1, MAX_W / (img.naturalWidth || MAX_W));
+      const w     = Math.max(1, Math.round(img.naturalWidth  * scale));
+      const h     = Math.max(1, Math.round(img.naturalHeight * scale));
 
-      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const canvas  = document.createElement('canvas');
+      canvas.width  = w;
+      canvas.height = h;
+      const ctx     = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const { data } = ctx.getImageData(0, 0, w, h);
 
       for (let i = 0; i < data.length; i += 4) {
         const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
@@ -54,9 +61,9 @@ function processDataUrl(dataUrl: string, resolve: (v: string) => void): void {
       }
 
       const out  = document.createElement('canvas');
-      out.width  = canvas.width;
-      out.height = canvas.height;
-      out.getContext('2d')!.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
+      out.width  = w;
+      out.height = h;
+      out.getContext('2d')!.putImageData(new ImageData(data, w, h), 0, 0);
       resolve(out.toDataURL('image/png'));
     } catch {
       resolve('');

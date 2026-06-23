@@ -14,9 +14,9 @@ export async function exportShareCard(node: HTMLElement): Promise<string> {
   });
 }
 
-// Composites a pre-processed logo (transparent white pixels) onto a captured
-// card PNG via plain canvas drawImage — works identically on all browsers
-// including mobile Safari, where <img> inside SVG foreignObject is unreliable.
+// Composites a watermark onto a captured card PNG via plain canvas drawImage.
+// Always produces SOME watermark: logo if available, ctx.fillText otherwise.
+// Canvas 2D ops work identically on all browsers including mobile Safari.
 export function compositeWatermark(
   cardDataUrl: string,
   logoDataUrl: string,
@@ -34,27 +34,51 @@ export function compositeWatermark(
     card.onload = () => {
       ctx.drawImage(card, 0, 0, W, H);
 
-      const logo = new Image();
-      logo.onload = () => {
-        const logoW = 320 * EXPORT_SCALE;
-        const logoH = Math.round((logo.naturalHeight / logo.naturalWidth) * logoW);
-        ctx.globalAlpha = 0.13;
-        ctx.drawImage(
-          logo,
-          Math.round((W - logoW) / 2),
-          Math.round((H - logoH) / 2),
-          logoW,
-          logoH,
-        );
-        ctx.globalAlpha = 1;
+      if (logoDataUrl) {
+        const logo = new Image();
+        logo.onload = () => {
+          const logoW = 320 * EXPORT_SCALE;
+          const logoH = Math.round((logo.naturalHeight / logo.naturalWidth) * logoW);
+          ctx.globalAlpha = 0.13;
+          ctx.drawImage(
+            logo,
+            Math.round((W - logoW) / 2),
+            Math.round((H - logoH) / 2),
+            logoW,
+            logoH,
+          );
+          ctx.globalAlpha = 1;
+          resolve(canvas.toDataURL('image/png'));
+        };
+        // Logo load failed — fall through to text watermark
+        logo.onerror = () => {
+          drawTextWatermark(ctx, W, H);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        logo.src = logoDataUrl;
+      } else {
+        // processLogoForWatermark returned '' — use text watermark
+        drawTextWatermark(ctx, W, H);
         resolve(canvas.toDataURL('image/png'));
-      };
-      logo.onerror = () => resolve(cardDataUrl);
-      logo.src = logoDataUrl;
+      }
     };
     card.onerror = () => resolve(cardDataUrl);
     card.src = cardDataUrl;
   });
+}
+
+// ctx.fillText watermark — zero external dependencies, works on every browser.
+function drawTextWatermark(ctx: CanvasRenderingContext2D, W: number, H: number): void {
+  ctx.save();
+  ctx.globalAlpha = 0.09;
+  ctx.fillStyle   = '#FFFFFF';
+  ctx.textAlign   = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `900 ${Math.round(W * 0.074)}px Arial, Helvetica, sans-serif`;
+  ctx.fillText('SKYLINE', W / 2, H / 2 - Math.round(H * 0.044));
+  ctx.font = `700 ${Math.round(W * 0.019)}px Arial, Helvetica, sans-serif`;
+  ctx.fillText('CYCLE  TERMINAL', W / 2, H / 2 + Math.round(H * 0.055));
+  ctx.restore();
 }
 
 export function downloadPng(dataUrl: string, fileName: string): void {
