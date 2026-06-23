@@ -121,9 +121,11 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
       }}>
         <div>
           <p style={{ fontSize: 18, fontWeight: 700, color: '#F7F9FC', margin: 0 }}>
-            {ratioLabel} — Relative Strength
+            {ratioLabel}
           </p>
-          <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>{ratioDesc}</p>
+          <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 12px' }}>
+            Relative strength · {ratioDesc}
+          </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 16, height: 2, backgroundColor: col.stroke, display: 'inline-block', borderRadius: 1 }} />
             <span style={{ fontSize: 10, color: col.stroke }}>{ratioLabel}</span>
@@ -224,10 +226,11 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
       }}>
-        <span style={{ fontSize: 10, color: '#484F58' }}>skylinecycleterminal.com</span>
-        <span style={{ fontSize: 10, color: '#484F58' }}>Not financial advice</span>
+        <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
+          Generated from Skyline Cycle Terminal · Not financial advice
+        </span>
       </div>
     </div>
   );

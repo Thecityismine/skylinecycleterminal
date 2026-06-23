@@ -272,10 +272,11 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
         flex:           '1 1 auto',
         display:        'flex',
         alignItems:     'flex-end',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
       }}>
-        <span style={{ fontSize: 10, color: '#484F58' }}>skylinecycleterminal.com</span>
-        <span style={{ fontSize: 10, color: '#484F58' }}>Not financial advice</span>
+        <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
+          Generated from Skyline Cycle Terminal · Not financial advice
+        </span>
       </div>
     </div>
   );
