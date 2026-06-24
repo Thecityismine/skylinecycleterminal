@@ -15,6 +15,7 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'MSTR',  name: 'Strategy',           sector: 'BTC Treasury',           group: 'saylor',  type: 'btc_proxy', color: '#F7931A' },
   { ticker: 'STRK',  name: 'Strategy Strike',    sector: 'Preferred · 8% Yield',  group: 'saylor',  type: 'preferred', color: '#FBBF24' },
   { ticker: 'STRF',  name: 'Strategy Strife',    sector: 'Preferred · 10% Yield', group: 'saylor',  type: 'preferred', color: '#FDE68A' },
+  { ticker: 'STRC',  name: 'Strategy Strife C',  sector: 'Preferred · Convertible', group: 'saylor', type: 'preferred', color: '#FCD34D' },
   { ticker: 'MSTY',  name: 'YieldMax MSTR',      sector: 'Covered Call Income',   group: 'saylor',  type: 'etf',       color: '#A855F7' },
   { ticker: 'MSTU',  name: 'T-Rex 2X Long MSTR', sector: '2× Leveraged Long',     group: 'saylor',  type: 'etf',       color: '#35D07F' },
   { ticker: 'MSTX',  name: 'Defiance 2X MSTR',  sector: '2× Leveraged Long',     group: 'saylor',  type: 'etf',       color: '#22D3EE' },
