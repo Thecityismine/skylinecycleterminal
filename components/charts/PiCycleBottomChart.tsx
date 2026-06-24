@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import {
   ComposedChart, Area, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, ReferenceArea,
+  ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
@@ -146,6 +146,12 @@ export function PiCycleBottomChart({
               strokeOpacity={0}
             />
           ))}
+
+          {/* Neon blue border lines at each zone edge */}
+          {zones.flatMap((z, i) => [
+            <ReferenceLine key={`zl-${i}`} x={z.x1} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
+            <ReferenceLine key={`zr-${i}`} x={z.x2} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
+          ])}
 
           {/* BTC Price */}
           <Area
