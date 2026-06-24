@@ -240,22 +240,20 @@ export default function EquityDetailPage() {
       <div className="rounded-xl border p-5 space-y-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-1">
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Weekly Price · 50W &amp; 200W SMA
+          <div className="flex items-center gap-4">
+            <p className="text-sm font-semibold shrink-0" style={{ color: 'var(--sct-text)' }}>
+              Weekly Price
             </p>
-            <div className="flex gap-4">
-              {[
-                { color, label: 'Price' },
-                { color: '#D4A853', label: '50W SMA' },
-                { color: '#5B7DD8', label: '200W SMA' },
-              ].map(({ color: c, label }) => (
-                <span key={label} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--sct-muted)' }}>
-                  <span className="w-4 h-0.5 inline-block" style={{ backgroundColor: c }} />
-                  {label}
-                </span>
-              ))}
-            </div>
+            {[
+              { color, label: 'Price' },
+              { color: '#D4A853', label: '50W SMA' },
+              { color: '#5B7DD8', label: '200W SMA' },
+            ].map(({ color: c, label }) => (
+              <span key={label} className="flex items-center gap-1.5 text-xs whitespace-nowrap" style={{ color: 'var(--sct-muted)' }}>
+                <span className="w-4 h-0.5 inline-block shrink-0" style={{ backgroundColor: c }} />
+                {label}
+              </span>
+            ))}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
