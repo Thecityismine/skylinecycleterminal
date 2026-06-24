@@ -74,6 +74,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Moving Averages",  href: "/price?view=ma",            icon: LineChart,         exact: true },
       { label: "Ratio Charts",    href: "/price/ratios",             icon: BarChart2 },
       { label: "Weekly SMA",        href: "/price/weekly-sma",         icon: TrendingUp },
+      { label: "Golden/Death Cross", href: "/price/golden-death-cross", icon: TrendingUp },
       { label: "Heikin-Ashi",      href: "/price/heikin-ashi",        icon: BarChart2 },
       { label: "Fear & Greed",      href: "/price/fear-greed",         icon: Activity },
       { label: "Drawdown / ATH",   href: "/price/drawdown",           icon: TrendingDown },
