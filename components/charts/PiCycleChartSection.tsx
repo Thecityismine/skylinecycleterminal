@@ -1,12 +1,19 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { PiCycleBottomChart } from '@/components/charts/PiCycleBottomChart';
 import type { PiBottomPoint, Range } from '@/components/charts/PiCycleBottomChart';
 import { PiCycleShareModal } from '@/components/share/PiCycleShareModal';
 import type { PiCycleSharePayload } from '@/components/share/PiCycleShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
+
+function fmtZoomLabel(domain: ZoomDomain): string {
+  const fmt = (s: string) =>
+    new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  return `${fmt(domain.start)} – ${fmt(domain.end)}`;
+}
 
 type Props = {
   data:             PiBottomPoint[];
@@ -23,7 +30,12 @@ export function PiCycleChartSection({
   data, fetchError, statusLabel, statusColor,
   currentPrice, currentMA150, currentThreshold, ratio,
 }: Props) {
-  const [range, setRange] = useState<Range>('All');
+  const [range,      setRange]      = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain | null>(null);
+
+  const handleZoomChange = useCallback((d: ZoomDomain | null) => {
+    setZoomDomain(d);
+  }, []);
 
   const displayed = useMemo(() => {
     const days = DAYS[range];
@@ -32,16 +44,24 @@ export function PiCycleChartSection({
     return data.filter(d => new Date(d.date + 'T00:00:00').getTime() >= cutoff);
   }, [data, range]);
 
+  // For share: zoom-filter on top of range-filter when zoomed
+  const shareData = useMemo(() => {
+    if (!zoomDomain) return displayed;
+    return displayed.filter(d => d.date >= zoomDomain.start && d.date <= zoomDomain.end);
+  }, [displayed, zoomDomain]);
+
+  const shareRange = zoomDomain ? fmtZoomLabel(zoomDomain) : range;
+
   const sharePayload: PiCycleSharePayload = {
-    data: displayed,
-    range,
+    data:             shareData,
+    range:            shareRange,
     statusLabel,
     statusColor,
     currentPrice,
     currentMA150,
     currentThreshold,
     ratio,
-    generatedAt: new Date().toISOString(),
+    generatedAt:      new Date().toISOString(),
   };
 
   return (
@@ -83,7 +103,11 @@ export function PiCycleChartSection({
           Unable to load price data — CoinMetrics API unreachable
         </div>
       ) : (
-        <PiCycleBottomChart data={data} onRangeChange={setRange} />
+        <PiCycleBottomChart
+          data={data}
+          onRangeChange={(r) => { setRange(r); setZoomDomain(null); }}
+          onZoomChange={handleZoomChange}
+        />
       )}
     </div>
   );

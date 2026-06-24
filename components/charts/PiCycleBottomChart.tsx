@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart, Area, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 export type PiBottomPoint = {
   date:      string;
@@ -31,7 +33,6 @@ function fmtY(v: number): string {
   return `$${v.toFixed(2)}`;
 }
 
-// Custom tooltip
 function Tip({ active, payload, label }: {
   active?: boolean;
   payload?: Array<{ name: string; value: number | null; color: string }>;
@@ -59,11 +60,22 @@ function Tip({ active, payload, label }: {
 export function PiCycleBottomChart({
   data,
   onRangeChange,
+  onZoomChange,
 }: {
-  data: PiBottomPoint[];
+  data:           PiBottomPoint[];
   onRangeChange?: (r: Range) => void;
+  onZoomChange?:  (d: ZoomDomain | null) => void;
 }) {
   const [range, setRange] = useState<Range>('All');
+
+  const {
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+  } = useChartZoom();
+
+  // Notify parent when zoom domain changes
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
 
   const displayed = useMemo(() => {
     const days = DAYS[range];
@@ -72,18 +84,24 @@ export function PiCycleBottomChart({
     return data.filter(d => new Date(d.date + 'T00:00:00').getTime() >= cutoff);
   }, [data, range]);
 
+  // Apply zoom filter on top of range filter
+  const chartData = useMemo(() => {
+    if (!domain) return displayed;
+    return displayed.filter(d => d.date >= domain.start && d.date <= domain.end);
+  }, [displayed, domain]);
+
   const zones = useMemo(() => {
     const out: { x1: string; x2: string }[] = [];
     let start: string | null = null;
-    for (const p of displayed) {
+    for (const p of chartData) {
       if (p.inZone && !start)       { start = p.date; }
       else if (!p.inZone && start)  { out.push({ x1: start, x2: p.date }); start = null; }
     }
-    if (start) out.push({ x1: start, x2: displayed[displayed.length - 1].date });
+    if (start) out.push({ x1: start, x2: chartData[chartData.length - 1].date });
     return out;
-  }, [displayed]);
+  }, [chartData]);
 
-  const prices = displayed.map(d => d.price).filter((v): v is number => v != null && v > 0);
+  const prices = chartData.map(d => d.price).filter((v): v is number => v != null && v > 0);
   const pMin = prices.length ? Math.max(1, Math.min(...prices) * 0.85) : 1;
   const pMax = prices.length ? Math.max(...prices) * 1.15 : 200_000;
 
@@ -91,107 +109,152 @@ export function PiCycleBottomChart({
 
   return (
     <div>
-      {/* Range selector */}
-      <div className="flex gap-2 mb-4">
+      {/* Controls row */}
+      <div className="flex items-center gap-2 mb-4">
         {RANGES.map(r => (
           <button
             key={r}
-            onClick={() => { setRange(r); onRangeChange?.(r); }}
+            onClick={() => { setRange(r); onRangeChange?.(r); reset(); }}
             className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
-              backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+              backgroundColor: range === r && !isZoomed ? 'var(--sct-border)' : 'transparent',
               borderColor:     'var(--sct-border)',
-              color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+              color:           range === r && !isZoomed ? 'var(--sct-text)' : 'var(--sct-muted)',
             }}
           >
             {r}
           </button>
         ))}
+        {isZoomed && (
+          <button
+            onClick={reset}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{
+              backgroundColor: 'rgba(247,147,26,0.12)',
+              borderColor:     '#F7931A',
+              color:           '#F7931A',
+            }}
+          >
+            Reset Zoom
+          </button>
+        )}
+        {!isZoomed && (
+          <span className="text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+            drag to zoom
+          </span>
+        )}
       </div>
 
-      <div style={{ position: 'relative', width: '100%', height: 440 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={displayed} margin={{ top: 8, right: 16, bottom: 0, left: 4 }}>
-          <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
+      <div
+        style={{
+          position:  'relative',
+          width:     '100%',
+          height:    440,
+          cursor:    isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart
+            data={chartData}
+            margin={{ top: 8, right: 16, bottom: 0, left: 4 }}
+            {...chartHandlers}
+          >
+            <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
 
-          <XAxis
-            dataKey="date"
-            tickFormatter={fmtXTick}
-            tick={{ fill: '#4B5563', fontSize: 10, fontFamily: 'monospace' }}
-            tickLine={false}
-            axisLine={{ stroke: '#1E293B' }}
-            minTickGap={80}
-          />
-
-          <YAxis
-            scale="log"
-            domain={[pMin, pMax]}
-            tickFormatter={fmtY}
-            tick={{ fill: '#4B5563', fontSize: 10, fontFamily: 'monospace' }}
-            tickLine={false}
-            axisLine={false}
-            width={68}
-            allowDataOverflow
-          />
-
-          <Tooltip content={<Tip />} cursor={{ stroke: '#1E293B', strokeWidth: 1 }} />
-
-          {/* Bottom zone shading (150d MA below 471d×0.745) */}
-          {zones.map((z, i) => (
-            <ReferenceArea
-              key={i}
-              x1={z.x1}
-              x2={z.x2}
-              fill="rgba(59,130,246,0.08)"
-              strokeOpacity={0}
+            <XAxis
+              dataKey="date"
+              tickFormatter={fmtXTick}
+              tick={{ fill: '#4B5563', fontSize: 10, fontFamily: 'monospace' }}
+              tickLine={false}
+              axisLine={{ stroke: '#1E293B' }}
+              minTickGap={80}
             />
-          ))}
 
-          {/* Neon blue border lines at each zone edge */}
-          {zones.flatMap((z, i) => [
-            <ReferenceLine key={`zl-${i}`} x={z.x1} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
-            <ReferenceLine key={`zr-${i}`} x={z.x2} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
-          ])}
+            <YAxis
+              scale="log"
+              domain={[pMin, pMax]}
+              tickFormatter={fmtY}
+              tick={{ fill: '#4B5563', fontSize: 10, fontFamily: 'monospace' }}
+              tickLine={false}
+              axisLine={false}
+              width={68}
+              allowDataOverflow
+            />
 
-          {/* BTC Price */}
-          <Area
-            type="monotone"
-            dataKey="price"
-            name="BTC Price"
-            stroke="rgba(247,249,252,0.75)"
-            strokeWidth={1.5}
-            fill="rgba(247,249,252,0.03)"
-            dot={false}
-            isAnimationActive={false}
-            connectNulls
-          />
+            <Tooltip
+              content={<Tip />}
+              cursor={isSelecting ? false : { stroke: '#1E293B', strokeWidth: 1 }}
+            />
 
-          {/* 471d MA × 0.745 — the signal threshold */}
-          <Line
-            type="monotone"
-            dataKey="threshold"
-            name="471d × 0.745"
-            stroke="#3B82F6"
-            strokeWidth={1.8}
-            dot={false}
-            isAnimationActive={false}
-            connectNulls
-          />
+            {/* Drag-to-zoom selection rectangle */}
+            {selectionArea && (
+              <ReferenceArea
+                x1={selectionArea.x1}
+                x2={selectionArea.x2}
+                fill="rgba(255,255,255,0.06)"
+                stroke="rgba(255,255,255,0.25)"
+                strokeWidth={1}
+              />
+            )}
 
-          {/* 150-day MA */}
-          <Line
-            type="monotone"
-            dataKey="ma150"
-            name="150d MA"
-            stroke="#E6B450"
-            strokeWidth={1.8}
-            dot={false}
-            isAnimationActive={false}
-            connectNulls
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
-      <ChartWatermark />
+            {/* Bottom zone shading */}
+            {zones.map((z, i) => (
+              <ReferenceArea
+                key={i}
+                x1={z.x1}
+                x2={z.x2}
+                fill="rgba(59,130,246,0.08)"
+                strokeOpacity={0}
+              />
+            ))}
+
+            {/* Neon blue border lines at each zone edge */}
+            {zones.flatMap((z, i) => [
+              <ReferenceLine key={`zl-${i}`} x={z.x1} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
+              <ReferenceLine key={`zr-${i}`} x={z.x2} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
+            ])}
+
+            {/* BTC Price */}
+            <Area
+              type="monotone"
+              dataKey="price"
+              name="BTC Price"
+              stroke="rgba(247,249,252,0.75)"
+              strokeWidth={1.5}
+              fill="rgba(247,249,252,0.03)"
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+
+            {/* 471d × 0.745 — the signal threshold */}
+            <Line
+              type="monotone"
+              dataKey="threshold"
+              name="471d × 0.745"
+              stroke="#3B82F6"
+              strokeWidth={1.8}
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+
+            {/* 150-day MA */}
+            <Line
+              type="monotone"
+              dataKey="ma150"
+              name="150d MA"
+              stroke="#E6B450"
+              strokeWidth={1.8}
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+        <ChartWatermark />
       </div>
     </div>
   );
