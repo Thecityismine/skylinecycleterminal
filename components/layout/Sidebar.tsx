@@ -59,6 +59,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Halving Cycles",    href: "/price/halving-cycles",  icon: CalendarDays },
       { label: "Halving Windows",   href: "/price/halving-windows", icon: Crosshair },
       { label: "Benner Cycle",      href: "/price/benner-cycle",    icon: History },
+      { label: "Cycle Comparison",  href: "/price/cycle-comparison", icon: Layers },
     ],
   },
   {
