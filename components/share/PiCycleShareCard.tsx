@@ -2,7 +2,7 @@
 
 import {
   ComposedChart, Area, Line, XAxis, YAxis,
-  CartesianGrid, ReferenceArea,
+  CartesianGrid, ReferenceArea, ReferenceLine,
 } from 'recharts';
 import type { PiBottomPoint } from '@/components/charts/PiCycleBottomChart';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
@@ -200,6 +200,12 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
               strokeOpacity={0}
             />
           ))}
+
+          {/* Neon blue border lines at each zone edge */}
+          {zones.flatMap((z, i) => [
+            <ReferenceLine key={`zl-${i}`} x={z.x1} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
+            <ReferenceLine key={`zr-${i}`} x={z.x2} stroke="#60A5FA" strokeWidth={1} strokeOpacity={0.75} />,
+          ])}
 
           {/* BTC Price */}
           <Area
