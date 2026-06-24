@@ -40,30 +40,31 @@ export type GoldenDeathCrossSharePayload = {
   generatedAt:    string;
 };
 
-// ── Layout constants ────────────────────────────────────────────────────────
-const PAD      = 28;
-const HEADER_H = 72;
-const STATS_H  = 58;
-const GAP      = 6;
-const SPREAD_H = 76;
-const FOOTER_H = 28;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD * 2 - HEADER_H - STATS_H - GAP * 2 - SPREAD_H - FOOTER_H;
+// ── Layout — mirrors Altseason card pattern ──────────────────────────────────
+const PAD      = 32;
+const HEADER_H = 82;
+const FOOTER_H = 30;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD * 2 - HEADER_H - FOOTER_H;
 const CHART_W  = SHARE_CARD_WIDTH  - PAD * 2;
 
 export const GOLDEN_DEATH_CROSS_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H, w: CHART_W, h: CHART_H,
 };
 
 // ── Colors ───────────────────────────────────────────────────────────────────
+const PRICE = '#F5F7FA';
 const GOLD  = '#EAB84D';
 const BLUE  = '#5B84FF';
 const GREEN = '#35D07F';
 const RED   = '#F85149';
-const BG    = '#0D1117';
-const CARD  = '#161B22';
 const MUTED = '#8B949E';
 const TEXT  = '#E6EDF3';
 const BORD  = '#21262D';
+const MONO  = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+
+const YEAR_TICKS = Array.from({ length: 22 }, (_, i) =>
+  new Date(`${2010 + i}-01-01T00:00:00Z`).getTime()
+);
 
 function fmtP(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
@@ -71,42 +72,45 @@ function fmtP(v: number): string {
   return `$${v.toFixed(0)}`;
 }
 
-const YEAR_TICKS = Array.from({ length: 22 }, (_, i) =>
-  new Date(`${2010 + i}-01-01T00:00:00Z`).getTime()
-);
-
-// ── Neon dots layer ──────────────────────────────────────────────────────────
-function CardCrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs }: any) {
+// ── Neon cross dots ──────────────────────────────────────────────────────────
+function CardCrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs, offset }: any) {
   if (!xAxisMap || !yAxisMap) return null;
   const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
   const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
   if (!xAxis?.scale || !yAxis?.scale) return null;
 
+  const chartBottom = (offset?.top ?? 0) + (offset?.height ?? 0);
   const dots: React.ReactElement[] = [];
+
   for (const ev of crossEvents as CrossEvent[]) {
     if (ev.ts < (startTs as number)) continue;
-    const cx = xAxis.scale(ev.ts);
-    const cy = yAxis.scale((ev.ma50 + ev.ma200) / 2);
+    const cx  = xAxis.scale(ev.ts);
+    const cy  = yAxis.scale((ev.ma50 + ev.ma200) / 2);
     if (!isFinite(cx) || !isFinite(cy)) continue;
-    const color = ev.type === 'golden' ? GREEN : RED;
-    const fid   = ev.type === 'golden' ? 'gdc-glow-g' : 'gdc-glow-r';
+
+    const isGolden = ev.type === 'golden';
+    const color    = isGolden ? GREEN : RED;
+    const fid      = isGolden ? 'gdc-card-glow-g' : 'gdc-card-glow-r';
+
     dots.push(
       <g key={`${ev.type}-${ev.ts}`}>
-        <circle cx={cx} cy={cy} r={18} fill={color} opacity={0.05} />
-        <circle cx={cx} cy={cy} r={10} fill={color} opacity={0.15} />
-        <circle cx={cx} cy={cy} r={5}  fill={color} opacity={0.95} filter={`url(#${fid})`} />
+        <line x1={cx} y1={cy} x2={cx} y2={chartBottom} stroke={color} strokeWidth={1} strokeDasharray="3 4" opacity={0.25} />
+        <circle cx={cx} cy={cy} r={18} fill={color} opacity={0.08} />
+        <circle cx={cx} cy={cy} r={11} fill={color} opacity={0.18} />
+        <circle cx={cx} cy={cy} r={5}  fill={color} opacity={1}    filter={`url(#${fid})`} />
       </g>
     );
   }
+
   return (
     <g>
       <defs>
-        <filter id="gdc-glow-g" x="-150%" y="-150%" width="400%" height="400%">
-          <feGaussianBlur stdDeviation="3" result="b" />
+        <filter id="gdc-card-glow-g" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="4" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
-        <filter id="gdc-glow-r" x="-150%" y="-150%" width="400%" height="400%">
-          <feGaussianBlur stdDeviation="3" result="b" />
+        <filter id="gdc-card-glow-r" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="4" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
@@ -115,166 +119,165 @@ function CardCrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs }: any) {
   );
 }
 
-// ── Spread bar layer ─────────────────────────────────────────────────────────
-function SpreadBars({ xAxisMap, yAxisMap, data }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
-
-  const visible = (data as ChartPoint[]).filter((p) => p.spread !== null);
-  if (visible.length < 2) return null;
-
-  const barW = Math.max(2, (xAxis.scale(visible[visible.length - 1].ts) - xAxis.scale(visible[0].ts)) / (visible.length - 1) * 0.9);
-  const zero = yAxis.scale(0);
-
-  return (
-    <g>
-      {visible.map((p) => {
-        const x  = xAxis.scale(p.ts) - barW / 2;
-        const y1 = zero;
-        const y2 = yAxis.scale(p.spread!);
-        const fill = (p.spread ?? 0) >= 0 ? 'rgba(53,208,127,0.55)' : 'rgba(248,81,73,0.55)';
-        return (
-          <rect
-            key={p.ts}
-            x={x}
-            y={Math.min(y1, y2)}
-            width={barW}
-            height={Math.abs(y2 - y1)}
-            fill={fill}
-          />
-        );
-      })}
-      {/* zero line */}
-      <line x1={xAxis.scale(visible[0].ts)} y1={zero} x2={xAxis.scale(visible[visible.length - 1].ts)} y2={zero} stroke="rgba(255,255,255,0.25)" strokeWidth={1} />
-    </g>
-  );
-}
-
-// ── Stat box ─────────────────────────────────────────────────────────────────
-function StatBox({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, background: CARD, border: `1px solid ${BORD}`, borderRadius: 6, padding: '8px 14px', flex: 1 }}>
-      <span style={{ fontSize: 9, color: MUTED, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</span>
-      <span style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: color ?? TEXT }}>{value}</span>
-      {sub && <span style={{ fontSize: 9, color: MUTED }}>{sub}</span>}
-    </div>
-  );
-}
-
-// ── Main card component ───────────────────────────────────────────────────────
+// ── Card ─────────────────────────────────────────────────────────────────────
 export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCrossSharePayload }) {
   const {
     chartPoints, crossEvents, startTs,
     price, ma50, ma200, spread,
-    regime, confidence, daysSinceCross, lastCrossType, lastCrossDate,
-    logScale, generatedAt,
+    regime, confidence, daysSinceCross, lastCrossType,
+    logScale, rangeLabel, generatedAt,
   } = payload;
 
-  const ri          = REGIMES[regime];
-  const visible     = chartPoints.filter((p) => p.ts >= startTs);
-  const yearTicks   = YEAR_TICKS.filter((t) => t >= startTs);
+  const ri        = REGIMES[regime];
+  const visible   = chartPoints.filter((p) => p.ts >= startTs);
+  const yearTicks = YEAR_TICKS.filter((t) => t >= startTs);
 
-  const spreadColor = (spread ?? 0) >= 0 ? GREEN : RED;
-  const regimeColor = ri.color;
+  const spreadColor   = (spread ?? 0) >= 0 ? GREEN : RED;
+  const spreadFmt     = spread !== null ? `${spread > 0 ? '+' : ''}${spread.toFixed(1)}%` : '—';
+  const confidenceColor = confidence >= 65 ? GREEN : confidence >= 40 ? '#E6B450' : RED;
+
+  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
 
   return (
     <div style={{
-      width: SHARE_CARD_WIDTH, height: SHARE_CARD_HEIGHT,
-      background: BG, display: 'flex', flexDirection: 'column',
-      padding: PAD, boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif',
+      width:           SHARE_CARD_WIDTH,
+      height:          SHARE_CARD_HEIGHT,
+      backgroundColor: '#0D1117',
+      position:        'relative',
+      overflow:        'hidden',
+      color:           TEXT,
+      fontFamily:      MONO,
+      display:         'flex',
+      flexDirection:   'column',
+      padding:         PAD,
+      boxSizing:       'border-box',
     }}>
-      {/* Header */}
-      <div style={{ height: HEADER_H, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: TEXT, letterSpacing: -0.5 }}>BTC Golden / Death Cross</span>
-          <span style={{
-            fontSize: 10, fontWeight: 600, background: regimeColor + '22',
-            color: regimeColor, border: `1px solid ${regimeColor}55`,
-            borderRadius: 999, padding: '2px 10px',
-          }}>{ri.shortLabel}</span>
+
+      {/* ── Header — two column, mirrors Altseason ── */}
+      <div style={{
+        height:         HEADER_H,
+        flex:           `0 0 ${HEADER_H}px`,
+        display:        'flex',
+        justifyContent: 'space-between',
+        alignItems:     'flex-start',
+      }}>
+
+        {/* Left: branding + title + stat pills */}
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            Skyline Cycle Terminal
+          </div>
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
+            BTC Golden / Death Cross · {rangeLabel}
+          </div>
+
+          {/* Stat pills row */}
+          <div style={{ display: 'flex', gap: 20, marginTop: 10, alignItems: 'center' }}>
+            {/* Price */}
+            <div>
+              <span style={{ fontSize: 22, fontWeight: 700, color: PRICE }}>{fmtP(price)}</span>
+              <span style={{ fontSize: 11, color: MUTED, marginLeft: 5 }}>BTC</span>
+            </div>
+            {/* Regime badge */}
+            <span style={{
+              fontSize: 10, fontWeight: 600, color: ri.color,
+              backgroundColor: ri.color + '20', padding: '2px 8px', borderRadius: 4,
+            }}>
+              {ri.shortLabel}
+            </span>
+            {/* MA values */}
+            <div style={{ fontSize: 10, color: MUTED }}>
+              <span style={{ color: GOLD, fontWeight: 600 }}>50D</span>{' '}
+              {ma50 ? fmtP(ma50) : '—'}
+            </div>
+            <div style={{ fontSize: 10, color: MUTED }}>
+              <span style={{ color: BLUE, fontWeight: 600 }}>200D</span>{' '}
+              {ma200 ? fmtP(ma200) : '—'}
+            </div>
+            <div style={{ fontSize: 10, color: MUTED }}>
+              <span style={{ color: spreadColor, fontWeight: 600 }}>Spread</span>{' '}
+              <span style={{ color: spreadColor }}>{spreadFmt}</span>
+            </div>
+            <div style={{ fontSize: 10, color: MUTED }}>
+              <span style={{ color: confidenceColor, fontWeight: 600 }}>Conf.</span>{' '}
+              <span style={{ color: confidenceColor }}>{confidence}/100</span>
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 11, color: MUTED }}>
-          <span>50D / 200D Moving Averages</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 20, height: 2, background: GOLD, display: 'inline-block', borderRadius: 1 }} />
-            50D MA
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 20, height: 2, background: BLUE, display: 'inline-block', borderRadius: 1 }} />
-            200D MA
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: GREEN, display: 'inline-block' }} />
-            Golden
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: RED, display: 'inline-block' }} />
-            Death
-          </span>
-          <span style={{ marginLeft: 'auto' }}>{generatedAt}</span>
+
+        {/* Right: live dot + date + legend */}
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: GREEN, display: 'inline-block' }} />
+            <span style={{ fontSize: 10, color: GREEN, letterSpacing: '0.12em' }}>LIVE DATA</span>
+          </div>
+          <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>{dateStr}</div>
+
+          {/* Line legend */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 10, alignItems: 'flex-end' }}>
+            {[
+              { color: PRICE, label: 'BTC Price', line: true },
+              { color: GOLD,  label: logScale ? '50D MA' : '50D MA', line: true },
+              { color: BLUE,  label: '200D MA',  line: true },
+              { color: GREEN, label: 'Golden Cross', line: false },
+              { color: RED,   label: 'Death Cross',  line: false },
+            ].map(({ color, label, line }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                {line
+                  ? <span style={{ width: 14, height: 2, backgroundColor: color, display: 'inline-block', borderRadius: 1 }} />
+                  : <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: color, display: 'inline-block' }} />
+                }
+                <span style={{ fontSize: 9, color: MUTED }}>{label}</span>
+              </div>
+            ))}
+            {daysSinceCross !== null && (
+              <div style={{ fontSize: 8, color: MUTED, marginTop: 2 }}>
+                {daysSinceCross}d since last {lastCrossType} cross
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ height: STATS_H, display: 'flex', gap: 8, marginBottom: GAP }}>
-        <StatBox label="BTC Price"   value={fmtP(price)}               color="#F5F7FA" />
-        <StatBox label="50D MA"      value={ma50  ? fmtP(ma50)  : '—'} color={GOLD}   sub="Short-term trend" />
-        <StatBox label="200D MA"     value={ma200 ? fmtP(ma200) : '—'} color={BLUE}   sub="Long-term floor"  />
-        <StatBox
-          label="MA Spread"
-          value={spread !== null ? `${spread > 0 ? '+' : ''}${spread.toFixed(1)}%` : '—'}
-          color={spreadColor}
-          sub="(50D − 200D) / 200D"
-        />
-        <StatBox
-          label="Confidence"
-          value={`${confidence}/100`}
-          color={confidence >= 65 ? GREEN : confidence >= 40 ? '#E6B450' : RED}
-          sub={lastCrossDate ? `Last cross: ${lastCrossDate}` : undefined}
-        />
-      </div>
-
-      {/* Main price chart */}
-      <div style={{ height: CHART_H, marginBottom: GAP }}>
+      {/* ── Chart ── */}
+      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto' }}>
         <ComposedChart
           width={CHART_W}
           height={CHART_H}
           data={visible}
-          margin={{ top: 8, right: 12, bottom: 4, left: 8 }}
+          margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+
           <XAxis
-            dataKey="ts" type="number" scale="time"
-            domain={['dataMin', 'dataMax']} ticks={yearTicks}
+            dataKey="ts"
+            type="number"
+            scale="time"
+            domain={['dataMin', 'dataMax']}
+            ticks={yearTicks}
             tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
-            tick={{ fill: MUTED, fontSize: 10 }}
-            axisLine={{ stroke: BORD }} tickLine={false}
+            tick={{ fill: MUTED, fontSize: 9, fontFamily: MONO }}
+            axisLine={{ stroke: BORD }}
+            tickLine={false}
           />
           <YAxis
             scale={logScale ? 'log' : 'linear'}
-            domain={['auto', 'auto']} allowDataOverflow
+            domain={['auto', 'auto']}
+            allowDataOverflow
             tickFormatter={fmtP}
-            tick={{ fill: MUTED, fontSize: 10 }}
-            axisLine={{ stroke: BORD }} tickLine={false} width={60}
+            tick={{ fill: MUTED, fontSize: 9, fontFamily: MONO }}
+            axisLine={{ stroke: BORD }}
+            tickLine={false}
+            width={56}
           />
-          <Area
-            type="monotone" dataKey="price"
-            stroke="#F5F7FA" strokeWidth={1.5}
-            fill="rgba(245,247,250,0.03)"
-            dot={false} isAnimationActive={false} connectNulls
-          />
-          <Line
-            type="monotone" dataKey="ma200"
-            stroke={BLUE} strokeWidth={2}
-            dot={false} isAnimationActive={false} connectNulls
-          />
-          <Line
-            type="monotone" dataKey="ma50"
-            stroke={GOLD} strokeWidth={2}
-            dot={false} isAnimationActive={false} connectNulls
-          />
+
+          {/* 200D first, then 50D, then price on top */}
+          <Line type="monotone" dataKey="ma200" stroke={BLUE}  strokeWidth={2} strokeOpacity={0.9} dot={false} isAnimationActive={false} connectNulls />
+          <Line type="monotone" dataKey="ma50"  stroke={GOLD}  strokeWidth={2} strokeOpacity={0.9} dot={false} isAnimationActive={false} connectNulls />
+          <Area type="monotone" dataKey="price" stroke={PRICE} strokeWidth={2.5} fill="rgba(245,247,250,0.03)" dot={false} isAnimationActive={false} connectNulls />
+
           <Customized
             component={(props: any) => (
               <CardCrossDotsLayer {...props} crossEvents={crossEvents} startTs={startTs} />
@@ -283,43 +286,15 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
         </ComposedChart>
       </div>
 
-      {/* MA Spread chart */}
-      <div style={{ height: SPREAD_H, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <span style={{ fontSize: 9, color: MUTED, textTransform: 'uppercase', letterSpacing: 1 }}>MA Spread (50D − 200D) / 200D × 100</span>
-        <div style={{ flex: 1 }}>
-          <ComposedChart
-            width={CHART_W}
-            height={SPREAD_H - 14}
-            data={visible}
-            margin={{ top: 2, right: 12, bottom: 2, left: 8 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
-            <XAxis
-              dataKey="ts" type="number" scale="time"
-              domain={['dataMin', 'dataMax']} ticks={yearTicks}
-              tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
-              tick={{ fill: MUTED, fontSize: 9 }}
-              axisLine={{ stroke: BORD }} tickLine={false}
-            />
-            <YAxis
-              tickFormatter={(v) => `${v.toFixed(0)}%`}
-              tick={{ fill: MUTED, fontSize: 9 }}
-              axisLine={{ stroke: BORD }} tickLine={false} width={36}
-            />
-            <Customized component={(props: any) => <SpreadBars {...props} data={visible} />} />
-          </ComposedChart>
-        </div>
-      </div>
-
-      {/* Footer */}
+      {/* ── Footer ── */}
       <div style={{
-        height: FOOTER_H, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        borderTop: `1px solid ${BORD}`, paddingTop: 6, marginTop: 4,
+        flex:           '1 1 auto',
+        display:        'flex',
+        alignItems:     'flex-end',
+        justifyContent: 'flex-end',
       }}>
-        <span style={{ fontSize: 9, color: MUTED }}>skyline-cycle-terminal.com · Data: CoinMetrics Community</span>
-        <span style={{ fontSize: 9, color: MUTED }}>
-          Confidence: {confidence}/100
-          {daysSinceCross !== null ? ` · ${daysSinceCross}d since last ${lastCrossType} cross` : ''}
+        <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
+          Generated from Skyline Cycle Terminal · Not financial advice
         </span>
       </div>
     </div>
