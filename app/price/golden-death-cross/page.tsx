@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus, ImageDown } from 'lucide-react';
 import { BTCGoldenDeathCrossChart } from '@/components/charts/BTCGoldenDeathCrossChart';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 import { MASpreadChart } from '@/components/charts/MASpreadChart';
 import { GoldenDeathCrossShareModal } from '@/components/share/GoldenDeathCrossShareModal';
 import { REGIMES } from '@/lib/indicators/goldenDeathCross';
@@ -298,17 +299,12 @@ export default function GoldenDeathCrossPage() {
   };
 
   return (
-    <div className="space-y-4 p-4 md:p-6 max-w-[1200px]">
+    <div className="max-w-[1400px] mx-auto space-y-6">
 
-      {/* Page title */}
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--sct-text)' }}>
-          BTC Golden / Death Cross
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--sct-muted)' }}>
-          50-day and 200-day moving average crossover signals — daily or weekly timeframe
-        </p>
-      </div>
+      <PageHeader
+        title="BTC Golden / Death Cross"
+        subtitle="50-day and 200-day moving average crossover signals — daily or weekly timeframe"
+      />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
