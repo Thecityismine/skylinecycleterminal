@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus, Share2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ImageDown } from 'lucide-react';
 import { BTCGoldenDeathCrossChart } from '@/components/charts/BTCGoldenDeathCrossChart';
 import { MASpreadChart } from '@/components/charts/MASpreadChart';
 import { GoldenDeathCrossShareModal } from '@/components/share/GoldenDeathCrossShareModal';
@@ -228,7 +228,7 @@ export default function GoldenDeathCrossPage() {
   const [timeframe, setTimeframe] = useState<TimeframeKey>('daily');
   const [logScale,  setLogScale]  = useState(true);
   const [showHalv,  setShowHalv]  = useState(true);
-  const [shareOpen, setShareOpen] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const rangeMs = useMemo(() => {
     const r = RANGES.find((x) => x.key === range)!;
@@ -411,15 +411,27 @@ export default function GoldenDeathCrossPage() {
 
           {/* Share button */}
           <button
-            onClick={() => setShareOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all"
+            onClick={() => setShowShareModal(true)}
+            disabled={!chartPoints.length}
+            className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all border"
             style={{
-              backgroundColor: 'var(--sct-secondary)',
-              color:           'var(--sct-text)',
-              border:          '1px solid var(--sct-border)',
+              backgroundColor: 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           'var(--sct-muted)',
+              cursor:          !chartPoints.length ? 'not-allowed' : 'pointer',
+              opacity:         !chartPoints.length ? 0.4 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!chartPoints.length) return;
+              (e.currentTarget as HTMLButtonElement).style.borderColor = '#F7931A';
+              (e.currentTarget as HTMLButtonElement).style.color = '#F7931A';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--sct-border)';
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--sct-muted)';
             }}
           >
-            <Share2 size={11} />
+            <ImageDown size={12} />
             Share Card
           </button>
         </div>
@@ -573,10 +585,10 @@ export default function GoldenDeathCrossPage() {
       </div>
 
       {/* Share modal */}
-      {shareOpen && (
+      {showShareModal && (
         <GoldenDeathCrossShareModal
           payload={sharePayload}
-          onClose={() => setShareOpen(false)}
+          onClose={() => setShowShareModal(false)}
         />
       )}
     </div>
