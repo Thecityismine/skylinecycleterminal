@@ -103,6 +103,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "MARKET STRUCTURE",
     items: [
+      { label: "Altcoin Season",     href: "/altseason",                  icon: Waves },
       { label: "BTC Dominance",      href: "/dominance",                  icon: PieChart,  exact: true },
       { label: "ETH Dominance",      href: "/dominance?asset=eth",        icon: PieChart,  exact: true },
       { label: "Total Market Cap",   href: "/dominance?view=total",       icon: BarChart2, exact: true },
