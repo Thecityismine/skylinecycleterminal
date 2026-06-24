@@ -101,11 +101,11 @@ function RangeButton({ active, onClick, label }: { active: boolean; onClick: () 
   return (
     <button
       onClick={onClick}
-      className="px-2.5 py-1 rounded text-xs font-medium border transition-all"
+      className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
       style={{
-        backgroundColor: active ? 'var(--sct-secondary)' : 'transparent',
-        borderColor:     active ? 'var(--sct-secondary)' : 'var(--sct-border)',
-        color:           active ? '#000' : 'var(--sct-muted)',
+        backgroundColor: active ? 'var(--sct-border)' : 'transparent',
+        borderColor:     'var(--sct-border)',
+        color:           active ? 'var(--sct-text)' : 'var(--sct-muted)',
       }}
     >
       {label}
@@ -117,11 +117,11 @@ function ToggleButton({ active, onClick, label }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="px-2.5 py-1 rounded text-xs font-medium border transition-all"
+      className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
       style={{
-        backgroundColor: active ? 'var(--sct-secondary)' : 'transparent',
-        borderColor:     active ? 'var(--sct-secondary)' : 'var(--sct-border)',
-        color:           active ? '#000' : 'var(--sct-muted)',
+        backgroundColor: active ? 'var(--sct-border)' : 'transparent',
+        borderColor:     'var(--sct-border)',
+        color:           active ? 'var(--sct-text)' : 'var(--sct-muted)',
       }}
     >
       {label}
@@ -386,11 +386,11 @@ export default function GoldenDeathCrossPage() {
           {/* Log toggle */}
           <button
             onClick={() => setLogScale((v) => !v)}
-            className="px-2.5 py-1 rounded text-xs font-medium border transition-all"
+            className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
             style={{
-              backgroundColor: logScale ? 'var(--sct-secondary)' : 'transparent',
-              borderColor:     logScale ? 'var(--sct-secondary)' : 'var(--sct-border)',
-              color:           logScale ? '#000' : 'var(--sct-muted)',
+              backgroundColor: logScale ? 'var(--sct-border)' : 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           logScale ? 'var(--sct-text)' : 'var(--sct-muted)',
             }}
           >
             Log
@@ -399,11 +399,11 @@ export default function GoldenDeathCrossPage() {
           {/* Halvings toggle */}
           <button
             onClick={() => setShowHalv((v) => !v)}
-            className="px-2.5 py-1 rounded text-xs font-medium border transition-all"
+            className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
             style={{
-              backgroundColor: showHalv ? 'var(--sct-secondary)' : 'transparent',
-              borderColor:     showHalv ? 'var(--sct-secondary)' : 'var(--sct-border)',
-              color:           showHalv ? '#000' : 'var(--sct-muted)',
+              backgroundColor: showHalv ? 'var(--sct-border)' : 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           showHalv ? 'var(--sct-text)' : 'var(--sct-muted)',
             }}
           >
             Halvings
