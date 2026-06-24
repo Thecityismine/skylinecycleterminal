@@ -357,6 +357,10 @@ export default function GoldenDeathCrossPage() {
           {/* Legend */}
           <div className="flex items-center gap-3 ml-2">
             <span className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--sct-muted)' }}>
+              <span style={{ width: 16, height: 2, background: '#F5F7FA', display: 'inline-block', borderRadius: 1 }} />
+              BTC Price
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--sct-muted)' }}>
               <span style={{ width: 16, height: 2, background: '#EAB84D', display: 'inline-block', borderRadius: 1 }} />
               {timeframe === 'daily' ? '50D MA' : '10W MA'}
             </span>
@@ -444,6 +448,7 @@ export default function GoldenDeathCrossPage() {
             logScale={logScale}
             startTs={startTs}
             showHalvings={showHalv}
+            regime={current.regime}
           />
         </div>
 

@@ -86,7 +86,7 @@ function CardCrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs }: any) {
   for (const ev of crossEvents as CrossEvent[]) {
     if (ev.ts < (startTs as number)) continue;
     const cx = xAxis.scale(ev.ts);
-    const cy = yAxis.scale(ev.price);
+    const cy = yAxis.scale((ev.ma50 + ev.ma200) / 2);
     if (!isFinite(cx) || !isFinite(cy)) continue;
     const color = ev.type === 'golden' ? GREEN : RED;
     const fid   = ev.type === 'golden' ? 'gdc-glow-g' : 'gdc-glow-r';
@@ -219,7 +219,7 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
 
       {/* Stats */}
       <div style={{ height: STATS_H, display: 'flex', gap: 8, marginBottom: GAP }}>
-        <StatBox label="BTC Price"   value={fmtP(price)}               color="#F7931A" />
+        <StatBox label="BTC Price"   value={fmtP(price)}               color="#F5F7FA" />
         <StatBox label="50D MA"      value={ma50  ? fmtP(ma50)  : '—'} color={GOLD}   sub="Short-term trend" />
         <StatBox label="200D MA"     value={ma200 ? fmtP(ma200) : '—'} color={BLUE}   sub="Long-term floor"  />
         <StatBox
@@ -261,8 +261,8 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
           />
           <Area
             type="monotone" dataKey="price"
-            stroke="#F7931A" strokeWidth={1.5}
-            fill="rgba(247,147,26,0.05)"
+            stroke="#F5F7FA" strokeWidth={1.5}
+            fill="rgba(245,247,250,0.03)"
             dot={false} isAnimationActive={false} connectNulls
           />
           <Line

@@ -13,7 +13,7 @@ import {
   Customized,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
-import type { CrossEvent } from '@/lib/indicators/goldenDeathCross';
+import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
 
 type ChartPoint = { time: string; ts: number; price: number; ma50: number | null; ma200: number | null };
 
@@ -23,9 +23,12 @@ type Props = {
   logScale:     boolean;
   startTs:      number;
   showHalvings: boolean;
+  regime?:      CrossRegime;
   chartId?:     string;
 };
 
+// BTC price = off-white hero; MAs = colored structure; crosses = neon events
+const PRICE = '#F5F7FA';
 const GOLD  = '#EAB84D';
 const BLUE  = '#5B84FF';
 const GREEN = '#35D07F';
@@ -58,38 +61,56 @@ function CustomTooltip({ active, payload }: any) {
       style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', minWidth: 180 }}
     >
       <p className="text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>{d.time}</p>
-      <p className="text-sm font-mono font-bold" style={{ color: '#F7931A' }}>{fmtPrice(d.price)}</p>
+      <p className="text-sm font-mono font-bold" style={{ color: PRICE }}>{fmtPrice(d.price)}</p>
       {d.ma50  && <p className="text-xs font-mono" style={{ color: GOLD  }}>50D MA:  {fmtPrice(d.ma50)}</p>}
       {d.ma200 && <p className="text-xs font-mono" style={{ color: BLUE  }}>200D MA: {fmtPrice(d.ma200)}</p>}
     </div>
   );
 }
 
-function CrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs, chartId }: any) {
+// Dots are placed at the actual MA crossover point: (ma50 + ma200) / 2
+// A vertical guide line drops from the dot to the x-axis for timeline alignment
+function CrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs, chartId, offset }: any) {
   if (!xAxisMap || !yAxisMap) return null;
   const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
   const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
   if (!xAxis?.scale || !yAxis?.scale) return null;
 
-  const gId = `glow-cross-${chartId ?? 'main'}`;
-  const rId = `glow-death-${chartId ?? 'main'}`;
+  const gId = `gdc-glow-g-${chartId ?? 'main'}`;
+  const rId = `gdc-glow-r-${chartId ?? 'main'}`;
 
-  const dots: React.ReactElement[] = [];
+  // Bottom of the chart area (where x-axis sits)
+  const chartBottom = (offset?.top ?? 0) + (offset?.height ?? 0);
+
+  const elements: React.ReactElement[] = [];
 
   for (const ev of crossEvents as CrossEvent[]) {
     if (ev.ts < (startTs as number)) continue;
     const cx = xAxis.scale(ev.ts);
-    const cy = yAxis.scale(ev.price);
+    // Place dot at the MA intersection midpoint, not at BTC price
+    const crossY = (ev.ma50 + ev.ma200) / 2;
+    const cy = yAxis.scale(crossY);
     if (!isFinite(cx) || !isFinite(cy)) continue;
 
-    const color = ev.type === 'golden' ? GREEN : RED;
-    const fId   = ev.type === 'golden' ? gId   : rId;
+    const isGolden = ev.type === 'golden';
+    const color    = isGolden ? GREEN : RED;
+    const fId      = isGolden ? gId   : rId;
 
-    dots.push(
+    elements.push(
       <g key={`${ev.type}-${ev.ts}`}>
-        <circle cx={cx} cy={cy} r={22} fill={color} opacity={0.05} />
-        <circle cx={cx} cy={cy} r={13} fill={color} opacity={0.14} />
-        <circle cx={cx} cy={cy} r={6}  fill={color} opacity={0.95} filter={`url(#${fId})`} />
+        {/* Vertical guide line from crossover point to x-axis */}
+        <line
+          x1={cx} y1={cy}
+          x2={cx} y2={chartBottom}
+          stroke={color}
+          strokeWidth={1}
+          strokeDasharray="3 4"
+          opacity={0.3}
+        />
+        {/* 3-layer neon glow dot */}
+        <circle cx={cx} cy={cy} r={18} fill={color} opacity={0.08} />
+        <circle cx={cx} cy={cy} r={11} fill={color} opacity={0.18} />
+        <circle cx={cx} cy={cy} r={5}  fill={color} opacity={1}    filter={`url(#${fId})`} />
       </g>
     );
   }
@@ -97,22 +118,29 @@ function CrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs, chartId }: a
   return (
     <g>
       <defs>
-        <filter id={gId} x="-150%" y="-150%" width="400%" height="400%">
-          <feGaussianBlur stdDeviation="3.5" result="blur" />
+        <filter id={gId} x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
-        <filter id={rId} x="-150%" y="-150%" width="400%" height="400%">
-          <feGaussianBlur stdDeviation="3.5" result="blur" />
+        <filter id={rId} x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
-      {dots}
+      {elements}
     </g>
   );
 }
 
+function regimeTint(regime?: CrossRegime): string {
+  if (!regime) return 'transparent';
+  if (regime.startsWith('golden')) return 'rgba(53,208,127,0.025)';
+  if (regime.startsWith('death'))  return 'rgba(248,81,73,0.025)';
+  return 'transparent';
+}
+
 export function BTCGoldenDeathCrossChart({
-  data, crossEvents, logScale, startTs, showHalvings, chartId = 'main',
+  data, crossEvents, logScale, startTs, showHalvings, regime, chartId = 'main',
 }: Props) {
   if (!data.length) return null;
 
@@ -120,19 +148,20 @@ export function BTCGoldenDeathCrossChart({
   const yearTicks = YEAR_TICKS.filter((t) => t >= startTs);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', background: regimeTint(regime) }}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={visible} margin={{ top: 12, right: 16, bottom: 4, left: 8 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
+          {/* Softer grid — supporting element, not noticed */}
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
 
           {showHalvings && HALVINGS.filter((h) => h.ts >= startTs).map((h) => (
             <ReferenceLine
               key={h.label}
               x={h.ts}
-              stroke="rgba(255,200,50,0.40)"
-              strokeDasharray="4 3"
+              stroke="rgba(234,184,77,0.35)"
+              strokeDasharray="6 6"
               strokeWidth={1}
-              label={{ value: h.label, position: 'insideTopRight', fontSize: 9, fill: 'rgba(255,200,50,0.6)' }}
+              label={{ value: h.label, position: 'insideTopRight', fontSize: 9, fill: 'rgba(234,184,77,0.5)' }}
             />
           ))}
 
@@ -160,44 +189,51 @@ export function BTCGoldenDeathCrossChart({
 
           <Tooltip content={<CustomTooltip />} />
 
-          {/* BTC price */}
-          <Area
-            type="monotone"
-            dataKey="price"
-            stroke="#F7931A"
-            strokeWidth={1.5}
-            fill="rgba(247,147,26,0.05)"
-            dot={false}
-            isAnimationActive={false}
-            connectNulls
-          />
-
-          {/* 200D MA — blue, draw behind 50D */}
+          {/* 200D MA — structural blue, drawn first so MA50 and price sit above */}
           <Line
             type="monotone"
             dataKey="ma200"
             stroke={BLUE}
             strokeWidth={2}
+            strokeOpacity={0.9}
             dot={false}
             isAnimationActive={false}
             connectNulls
           />
 
-          {/* 50D MA — gold */}
+          {/* 50D MA — gold trend line */}
           <Line
             type="monotone"
             dataKey="ma50"
             stroke={GOLD}
             strokeWidth={2}
+            strokeOpacity={0.9}
             dot={false}
             isAnimationActive={false}
             connectNulls
           />
 
-          {/* Neon cross markers */}
+          {/* BTC price — off-white hero line, drawn last so it sits on top */}
+          <Area
+            type="monotone"
+            dataKey="price"
+            stroke={PRICE}
+            strokeWidth={2.5}
+            fill="rgba(245,247,250,0.03)"
+            dot={false}
+            isAnimationActive={false}
+            connectNulls
+          />
+
+          {/* Neon cross markers at MA intersection point */}
           <Customized
             component={(props: any) => (
-              <CrossDotsLayer {...props} crossEvents={crossEvents} startTs={startTs} chartId={chartId} />
+              <CrossDotsLayer
+                {...props}
+                crossEvents={crossEvents}
+                startTs={startTs}
+                chartId={chartId}
+              />
             )}
           />
         </ComposedChart>
