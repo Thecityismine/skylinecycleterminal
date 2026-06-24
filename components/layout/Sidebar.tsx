@@ -102,10 +102,11 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "MARKET STRUCTURE",
     items: [
-      { label: "BTC Dominance",    href: "/dominance",             icon: PieChart,  exact: true },
-      { label: "ETH Dominance",    href: "/dominance?asset=eth",   icon: PieChart,  exact: true },
-      { label: "Total Market Cap", href: "/dominance?view=total",  icon: BarChart2, exact: true },
-      { label: "Cross-Asset Map",  href: "/cross-asset",            icon: Scale },
+      { label: "BTC Dominance",      href: "/dominance",                  icon: PieChart,  exact: true },
+      { label: "ETH Dominance",      href: "/dominance?asset=eth",        icon: PieChart,  exact: true },
+      { label: "Total Market Cap",   href: "/dominance?view=total",       icon: BarChart2, exact: true },
+      { label: "Stablecoin Dom.",    href: "/dominance/stablecoins",      icon: CircleDollarSign },
+      { label: "Cross-Asset Map",    href: "/cross-asset",                icon: Scale },
     ],
   },
   {
