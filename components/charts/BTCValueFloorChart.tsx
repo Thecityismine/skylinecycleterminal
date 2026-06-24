@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart,
   Line,
@@ -11,15 +11,19 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts';
 import type { ValueFloorPoint } from '@/lib/indicators/valueFloors';
 import { HALVINGS_CVDD, FLOOR_EVENTS } from '@/lib/indicators/valueFloors';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:           ValueFloorPoint[];
   range?:           'all' | '8y' | '4y';
   onVisibleChange?: (visible: Record<string, boolean>) => void;
+  onZoomChange?:    (d: ZoomDomain<number> | null) => void;
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -77,7 +81,7 @@ const FLOOR_LINES = [
   { key: 'powerLaw',      label: 'Power Law',      color: '#E6B450', width: 1,   dash: '4 4' },
 ];
 
-export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: Props) {
+export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZoomChange }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>({
     btcPrice:      true,
     realizedPrice: true,
@@ -96,6 +100,14 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: P
       return next;
     });
 
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
   if (!points.length) return null;
 
   // Date range filter
@@ -104,8 +116,13 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: P
     :                  Date.now() - 4 * 365.25 * 86_400_000;
   const filtered = cutoff ? points.filter((p) => p.ts >= cutoff) : points;
 
+  const chartData = useMemo(() => {
+    if (!domain) return filtered;
+    return filtered.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [filtered, domain]);
+
   // Y-axis domain (log)
-  const allPrices = filtered.flatMap((p) => [
+  const allPrices = chartData.flatMap((p) => [
     p.btcClose,
     p.realizedPrice,
     p.ma200w,
@@ -134,7 +151,14 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: P
   );
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
       {/* Toggles */}
       <div className="flex items-center gap-1.5 mb-3 flex-wrap">
         {toggleBtn('btcPrice',      'BTC Price',      '#E6EDF3')}
@@ -148,8 +172,19 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: P
       </div>
 
       <ResponsiveContainer width="100%" height="90%">
-        <ComposedChart data={filtered} margin={{ top: 8, right: 8, bottom: 0, left: 4 }}>
+        <ComposedChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 4 }} {...chartHandlers}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {/* Halvings */}
           {visible.halvings && HALVINGS_CVDD
@@ -213,7 +248,7 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange }: P
             allowDataOverflow
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
           {/* Value zone — subtle fill between realizedPrice and price */}
           {visible.valueZone && visible.realizedPrice && (

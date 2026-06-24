@@ -1,17 +1,17 @@
 "use client";
 import { useState, useCallback } from 'react';
 
-export type ZoomDomain = { start: string; end: string };
+export type ZoomDomain<T = string> = { start: T; end: T };
 
-export function useChartZoom() {
+export function useChartZoom<T extends string | number = string>() {
   const [selecting, setSelecting] = useState(false);
-  const [anchor,    setAnchor]    = useState<string | null>(null);
-  const [cursor,    setCursor]    = useState<string | null>(null);
-  const [domain,    setDomain]    = useState<ZoomDomain | null>(null);
+  const [anchor,    setAnchor]    = useState<T | null>(null);
+  const [cursor,    setCursor]    = useState<T | null>(null);
+  const [domain,    setDomain]    = useState<ZoomDomain<T> | null>(null);
 
   const onMouseDown = useCallback((e: any) => {
-    const label = e?.activeLabel as string | undefined;
-    if (!label) return;
+    const label = e?.activeLabel as T | undefined;
+    if (label == null) return;
     setAnchor(label);
     setCursor(label);
     setSelecting(true);
@@ -19,19 +19,19 @@ export function useChartZoom() {
 
   const onMouseMove = useCallback((e: any) => {
     if (!selecting) return;
-    const label = e?.activeLabel as string | undefined;
-    if (label) setCursor(label);
+    const label = e?.activeLabel as T | undefined;
+    if (label != null) setCursor(label);
   }, [selecting]);
 
   const onMouseUp = useCallback(() => {
-    if (!selecting || !anchor || !cursor || anchor === cursor) {
+    if (!selecting || anchor == null || cursor == null || anchor === cursor) {
       setSelecting(false);
       setAnchor(null);
       setCursor(null);
       return;
     }
     const [start, end] = anchor < cursor ? [anchor, cursor] : [cursor, anchor];
-    setDomain({ start, end });
+    setDomain({ start, end } as ZoomDomain<T>);
     setSelecting(false);
     setAnchor(null);
     setCursor(null);
@@ -46,8 +46,8 @@ export function useChartZoom() {
   }, []);
 
   const selectionArea =
-    selecting && anchor && cursor && anchor !== cursor
-      ? { x1: anchor < cursor ? anchor : cursor, x2: anchor < cursor ? cursor : anchor }
+    selecting && anchor != null && cursor != null && anchor !== cursor
+      ? { x1: anchor < cursor ? anchor : cursor, x2: anchor < cursor ? cursor : anchor } as { x1: T; x2: T }
       : null;
 
   return {

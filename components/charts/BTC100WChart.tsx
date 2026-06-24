@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import type { WeeklyPoint, RegimeSegment } from '@/lib/indicators/weeklyMA';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -79,9 +81,10 @@ type Props = {
   points:  WeeklyPoint[];
   regimes: RegimeSegment[];
   onVisibilityChange?: (v: VisibilityState) => void;
+  onZoomChange?: (d: ZoomDomain<string> | null) => void;
 };
 
-export function BTC100WChart({ points, regimes, onVisibilityChange }: Props) {
+export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange }: Props) {
   const [show50,      setShow50]      = useState(true);
   const [show100,     setShow100]     = useState(true);
   const [show200,     setShow200]     = useState(true);
@@ -89,7 +92,21 @@ export function BTC100WChart({ points, regimes, onVisibilityChange }: Props) {
 
   const visible: Visible = { ma50: show50, ma100: show100, ma200: show200 };
 
-  const prices   = points.map((p) => p.close).filter((v) => v > 0);
+  const {
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+  } = useChartZoom<string>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
+  // Apply zoom filter
+  const chartData = useMemo(() => {
+    if (!domain) return points;
+    return points.filter(d => d.time >= domain.start && d.time <= domain.end);
+  }, [points, domain]);
+
+  const prices   = chartData.map((p) => p.close).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.4) : 0.01;
   const pMax     = prices.length ? Math.max(...prices) * 2.5  : 1_000_000;
   const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
@@ -166,11 +183,31 @@ export function BTC100WChart({ points, regimes, onVisibilityChange }: Props) {
             ))}
           </span>
         )}
+
+        {/* Zoom controls */}
+        {isZoomed && (
+          <button onClick={reset} className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
+            Reset Zoom
+          </button>
+        )}
+        {!isZoomed && (
+          <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+            drag to zoom
+          </span>
+        )}
       </div>
 
-      <div style={{ position: 'relative', width: '100%', height: 480 }}>
+      <div
+        style={{
+          position: 'relative', width: '100%', height: 480,
+          cursor: isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={points} margin={{ top: 8, right: 16, bottom: 0, left: 4 }}>
+        <ComposedChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 4 }} {...chartHandlers}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
 
           {/* ── Regime shading ──────────────────────────────────────────── */}
@@ -185,6 +222,17 @@ export function BTC100WChart({ points, regimes, onVisibilityChange }: Props) {
               ifOverflow="hidden"
             />
           ))}
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {/* ── Halving markers ─────────────────────────────────────────── */}
           {HALVINGS.map((h) => (
@@ -233,7 +281,7 @@ export function BTC100WChart({ points, regimes, onVisibilityChange }: Props) {
               const d = (payload[0] as any).payload as WeeklyPoint;
               return <ChartTip d={d} visible={visible} />;
             }}
-            cursor={{ stroke: '#334155', strokeWidth: 1 }}
+            cursor={isSelecting ? false : { stroke: '#334155', strokeWidth: 1 }}
           />
 
           {/* ── MAs — drawn bottom to top so price is always on top ─────── */}

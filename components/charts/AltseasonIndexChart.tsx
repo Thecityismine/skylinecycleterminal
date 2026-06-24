@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart,
   Line,
@@ -14,6 +15,8 @@ import {
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import type { SignalDot } from '@/lib/indicators/altseasonIndex';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type ChartPoint = { time: string; ts: number; score: number; btcPrice: number | null };
 
@@ -21,6 +24,7 @@ type Props = {
   data:       ChartPoint[];
   signalDots: SignalDot[];
   startTs:    number;
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
 
 // Zone palette
@@ -131,21 +135,54 @@ function SignalDotsLayer({ xAxisMap, yAxisMap, signalDots, startTs }: any) {
   return <g>{elements}</g>;
 }
 
-export function AltseasonIndexChart({ data, signalDots, startTs }: Props) {
+export function AltseasonIndexChart({ data, signalDots, startTs, onZoomChange }: Props) {
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
   if (!data.length) return null;
 
   const visible = data.filter((d) => d.ts >= startTs);
-  const withPrice = visible.filter((d) => d.btcPrice != null);
+
+  const chartData = useMemo(() => {
+    if (!domain) return visible;
+    return visible.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [visible, domain]);
+
+  const withPrice = chartData.filter((d) => d.btcPrice != null);
   const btcMin = withPrice.length > 0 ? Math.min(...withPrice.map((d) => d.btcPrice!)) * 0.9 : 1000;
   const btcMax = withPrice.length > 0 ? Math.max(...withPrice.map((d) => d.btcPrice!)) * 1.1 : 200000;
 
   const monthTicks = MONTH_TICKS.filter((t) => t >= startTs);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={visible} margin={{ top: 12, right: 64, bottom: 4, left: 8 }}>
+        <ComposedChart data={chartData} margin={{ top: 12, right: 64, bottom: 4, left: 8 }} {...chartHandlers}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              yAxisId="score"
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {/* Zone background bands */}
           {ZONES.map((z) => (
@@ -214,7 +251,7 @@ export function AltseasonIndexChart({ data, signalDots, startTs }: Props) {
             width={60}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
           {/* BTC price — muted background */}
           <Line

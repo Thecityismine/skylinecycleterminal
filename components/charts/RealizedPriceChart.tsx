@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, ReferenceLine,
+  ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,9 +102,14 @@ export function RealizedPriceChart({
 }) {
   const [period, setPeriod] = useState<string>('3Y');
 
+  const {
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+  } = useChartZoom<string>();
+
   function handlePeriodChange(p: string) {
     setPeriod(p);
     onPeriodChange?.(p);
+    reset();
   }
 
   const filtered = useMemo(() => {
@@ -118,6 +125,11 @@ export function RealizedPriceChart({
     const step = Math.floor(filtered.length / 500);
     return filtered.filter((_, i) => i % step === 0 || i === filtered.length - 1);
   }, [filtered]);
+
+  const chartData = useMemo(() => {
+    if (!domain) return sampled;
+    return sampled.filter(d => d.time >= domain.start && d.time <= domain.end);
+  }, [sampled, domain]);
 
   return (
     <div
@@ -142,29 +154,47 @@ export function RealizedPriceChart({
         {/* Share button + period selector */}
         <div className="flex items-center gap-2">
           {shareButton}
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1">
           {PERIODS.map((p) => (
             <button
               key={p.label}
               onClick={() => handlePeriodChange(p.label)}
               className="px-3 py-1 text-xs font-mono rounded transition-all duration-150"
               style={{
-                backgroundColor: period === p.label ? 'var(--sct-border)' : 'transparent',
-                color: period === p.label ? 'var(--sct-text)' : 'var(--sct-muted)',
-                border: `1px solid ${period === p.label ? 'var(--sct-border)' : 'transparent'}`,
+                backgroundColor: period === p.label && !isZoomed ? 'var(--sct-border)' : 'transparent',
+                color: period === p.label && !isZoomed ? 'var(--sct-text)' : 'var(--sct-muted)',
+                border: `1px solid ${period === p.label && !isZoomed ? 'var(--sct-border)' : 'transparent'}`,
               }}
             >
               {p.label}
             </button>
           ))}
+          {isZoomed && (
+            <button onClick={reset} className="px-3 py-1 rounded text-xs font-mono border transition-all"
+              style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
+              Reset Zoom
+            </button>
+          )}
+          {!isZoomed && (
+            <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+              drag to zoom
+            </span>
+          )}
           </div>
         </div>
       </div>
 
       {/* Chart */}
-      <div style={{ position: 'relative', width: '100%', height: 420 }}>
+      <div
+        style={{
+          position: 'relative', width: '100%', height: 420,
+          cursor: isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={sampled} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <ComposedChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }} {...chartHandlers}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.6} />
 
           <XAxis
@@ -186,8 +216,19 @@ export function RealizedPriceChart({
 
           <Tooltip
             content={<ChartTooltip realizedAvailable={realizedAvailable} secondaryLabel={secondaryLabel} secondaryColor={secondaryColor} />}
-            cursor={{ stroke: '#1E293B', strokeWidth: 1 }}
+            cursor={isSelecting ? false : { stroke: '#1E293B', strokeWidth: 1 }}
           />
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {/* Secondary line (200W MA or Realized Price) — drawn first so BTC sits on top */}
           {realizedAvailable && (
@@ -213,9 +254,9 @@ export function RealizedPriceChart({
           />
 
           {/* Horizontal reference line at current secondary value */}
-          {realizedAvailable && sampled.at(-1)?.realized != null && (
+          {realizedAvailable && chartData.at(-1)?.realized != null && (
             <ReferenceLine
-              y={sampled.at(-1)!.realized!}
+              y={chartData.at(-1)!.realized!}
               stroke={secondaryColor}
               strokeDasharray="4 4"
               strokeOpacity={0.4}

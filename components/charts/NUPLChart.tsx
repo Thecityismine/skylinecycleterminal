@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart, Line, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
@@ -7,11 +8,16 @@ import {
 import type { NUPLPoint } from '@/lib/indicators/nupl';
 import { nuplSignal } from '@/lib/indicators/nupl';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 // NUPLPoint includes price but NOT ma730 (computed server-side, not passed individually)
 // We render price in top panel, nupl in bottom panel
 
-type Props = { data: NUPLPoint[] };
+type Props = {
+  data: NUPLPoint[];
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
+};
 
 const YEAR_TICKS = Array.from({ length: 15 }, (_, i) =>
   new Date(`${2011 + i}-01-01`).getTime(),
@@ -80,25 +86,54 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function NUPLChart({ data }: Props) {
+export function NUPLChart({ data, onZoomChange }: Props) {
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
   if (!data.length) return null;
 
+  const chartData = useMemo(() => {
+    if (!domain) return data;
+    return data.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [data, domain]);
+
   return (
-    <div className="flex flex-col gap-1">
+    <div
+      className="flex flex-col gap-1"
+      style={{ cursor: isSelecting ? 'crosshair' : 'default', userSelect: 'none' }}
+      onMouseLeave={cancel}
+    >
       {/* Top panel — BTC price log scale */}
       <div style={{ position: 'relative', height: 160 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }} {...chartHandlers}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
             {HALVINGS.map((h) => (
               <ReferenceLine key={h.ts} x={h.ts} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 5" />
             ))}
+
+            {/* Drag-to-zoom selection rectangle */}
+            {selectionArea && (
+              <ReferenceArea
+                x1={selectionArea.x1}
+                x2={selectionArea.x2}
+                fill="rgba(255,255,255,0.06)"
+                stroke="rgba(255,255,255,0.25)"
+                strokeWidth={1}
+              />
+            )}
+
             <XAxis dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']}
               ticks={YEAR_TICKS} tick={false} tickLine={false} axisLine={false} />
             <YAxis scale="log" domain={[100, 'auto']} tickFormatter={fmtPrice}
               tick={{ fill: 'var(--sct-muted)', fontSize: 10 }}
               axisLine={{ stroke: 'var(--sct-border)' }} tickLine={false} width={52} />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
             <Area type="monotone" dataKey="price" stroke="rgba(247,249,252,0.85)"
               strokeWidth={1.5} fill="rgba(247,249,252,0.04)"
               dot={false} isAnimationActive={false} connectNulls />
@@ -110,12 +145,23 @@ export function NUPLChart({ data }: Props) {
       {/* Bottom panel — NUPL */}
       <div style={{ position: 'relative', height: 220 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 4, right: 12, bottom: 0, left: 0 }} {...chartHandlers}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
 
             {NUPL_BANDS.map((b) => (
               <ReferenceArea key={b.y1} y1={b.y1} y2={b.y2} fill={b.fill} stroke="none" />
             ))}
+
+            {/* Drag-to-zoom selection rectangle */}
+            {selectionArea && (
+              <ReferenceArea
+                x1={selectionArea.x1}
+                x2={selectionArea.x2}
+                fill="rgba(255,255,255,0.06)"
+                stroke="rgba(255,255,255,0.25)"
+                strokeWidth={1}
+              />
+            )}
 
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.25)" strokeDasharray="4 4" />
 
@@ -134,7 +180,7 @@ export function NUPLChart({ data }: Props) {
               tick={{ fill: 'var(--sct-muted)', fontSize: 10 }}
               axisLine={{ stroke: 'var(--sct-border)' }} tickLine={false} width={52} />
 
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
             <Line type="monotone" dataKey="nupl" stroke="#A855F7"
               strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />

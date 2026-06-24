@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart, Line, Area, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, ReferenceLine,
+  ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import type { CycleMasterPoint } from '@/lib/indicators/cycleMaster';
 import { scoreCycleMaster } from '@/lib/indicators/cycleMaster';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 // ─── Types & constants ────────────────────────────────────────────────────────
 
@@ -16,6 +18,7 @@ type Props = {
   logScale?: boolean;
   onRangeChange?: (r: Range) => void;
   onLogChange?:   (log: boolean) => void;
+  onZoomChange?:  (d: ZoomDomain<number> | null) => void;
 };
 
 export type Range = '4Y' | '8Y' | 'All';
@@ -99,9 +102,17 @@ function ChartTip({
 
 // ─── Chart ────────────────────────────────────────────────────────────────────
 
-export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogChange }: Props) {
+export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogChange, onZoomChange }: Props) {
   const [range, setRange] = useState<Range>('All');
   const [log, setLog]     = useState(logScale);
+
+  const {
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
 
   const displayed = useMemo(() => {
     const days = DAYS[range];
@@ -110,8 +121,13 @@ export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogCh
     return data.filter((d) => d.ts >= cutoff);
   }, [data, range]);
 
+  const chartData = useMemo(() => {
+    if (!domain) return displayed;
+    return displayed.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [displayed, domain]);
+
   // Compute domain for log scale
-  const prices = displayed.map((d) => d.price).filter((v): v is number => v > 0);
+  const prices = chartData.map((d) => d.price).filter((v): v is number => v > 0);
   const pMin   = log && prices.length ? Math.max(0.1, Math.min(...prices) * 0.5) : 'auto';
   const pMax   = prices.length ? Math.max(...prices) * 2.5 : 'auto';
 
@@ -125,33 +141,44 @@ export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogCh
   const yearTicks = useMemo(() => {
     const seen = new Set<number>();
     const out: number[] = [];
-    for (const d of displayed) {
+    for (const d of chartData) {
       const yr = new Date(d.ts).getUTCFullYear();
       if (!seen.has(yr)) { seen.add(yr); out.push(d.ts); }
     }
     return out;
-  }, [displayed]);
+  }, [chartData]);
 
   return (
     <div>
       {/* Controls row */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         {/* Range buttons */}
-        <div className="flex gap-1.5">
+        <div className="flex items-center gap-1.5">
           {RANGES.map((r) => (
             <button
               key={r}
-              onClick={() => { setRange(r); onRangeChange?.(r); }}
+              onClick={() => { setRange(r); onRangeChange?.(r); reset(); }}
               className="px-3 py-1 rounded text-xs font-mono border transition-all"
               style={{
-                backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+                backgroundColor: range === r && !isZoomed ? 'var(--sct-border)' : 'transparent',
                 borderColor:     'var(--sct-border)',
-                color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+                color:           range === r && !isZoomed ? 'var(--sct-text)' : 'var(--sct-muted)',
               }}
             >
               {r}
             </button>
           ))}
+          {isZoomed && (
+            <button onClick={reset} className="px-3 py-1 rounded text-xs font-mono border transition-all"
+              style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
+              Reset Zoom
+            </button>
+          )}
+          {!isZoomed && (
+            <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+              drag to zoom
+            </span>
+          )}
         </div>
 
         {/* Legend + log toggle */}
@@ -183,14 +210,33 @@ export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogCh
       </div>
 
       {/* Chart area */}
-      <div style={{ position: 'relative', width: '100%', height: 480 }}>
+      <div
+        style={{
+          position: 'relative', width: '100%', height: 480,
+          cursor: isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            data={displayed}
+            data={chartData}
             syncId="cycle-master"
             margin={{ top: 8, right: 12, bottom: 0, left: 4 }}
+            {...chartHandlers}
           >
             <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
+
+            {/* Drag-to-zoom selection rectangle */}
+            {selectionArea && (
+              <ReferenceArea
+                x1={selectionArea.x1}
+                x2={selectionArea.x2}
+                fill="rgba(255,255,255,0.06)"
+                stroke="rgba(255,255,255,0.25)"
+                strokeWidth={1}
+              />
+            )}
 
             <XAxis
               dataKey="ts"
@@ -218,7 +264,7 @@ export function CycleMasterChart({ data, logScale = true, onRangeChange, onLogCh
 
             <Tooltip
               content={<ChartTip />}
-              cursor={{ stroke: '#1E293B', strokeWidth: 1 }}
+              cursor={isSelecting ? false : { stroke: '#1E293B', strokeWidth: 1 }}
             />
 
             {/* Shaded areas — drawn before lines so lines sit on top */}

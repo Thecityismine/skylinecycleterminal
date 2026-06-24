@@ -1,16 +1,20 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
 } from "recharts";
 import type { DrawdownPoint } from "@/lib/indicators/drawdownFromATH";
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   data:         DrawdownPoint[];
   showHalvings: boolean;
   showCycles:   boolean;
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
 
 // Vertical halving markers
@@ -73,12 +77,43 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function BTCDrawdownChart({ data, showHalvings, showCycles }: Props) {
+export function BTCDrawdownChart({ data, showHalvings, showCycles, onZoomChange }: Props) {
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
+  const chartData = useMemo(() => {
+    if (!domain) return data;
+    return data.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [data, domain]);
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 4 }}>
+      <ComposedChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 4 }} {...chartHandlers}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
+
+        {/* Drag-to-zoom selection rectangle */}
+        {selectionArea && (
+          <ReferenceArea
+            x1={selectionArea.x1}
+            x2={selectionArea.x2}
+            fill="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth={1}
+          />
+        )}
 
         {/* Zone bands — background color by depth */}
         <ReferenceArea y1={0}    y2={-15}  fill="rgba(53,208,127,0.05)"  stroke="none" ifOverflow="hidden" />
@@ -154,7 +189,7 @@ export function BTCDrawdownChart({ data, showHalvings, showCycles }: Props) {
           padding={{ top: 0, bottom: 0 }}
         />
 
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
         {/* Drawdown area — BTC orange fill + line */}
         <Area

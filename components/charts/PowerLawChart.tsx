@@ -1,13 +1,19 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, ReferenceLine,
+  ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
 } from "recharts";
 import type { PowerLawPoint } from "@/lib/indicators/powerLaw";
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
-type Props = { data: PowerLawPoint[] };
+type Props = {
+  data: PowerLawPoint[];
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
+};
 
 const HALVINGS = [
   { date: '2012-11-28', label: 'H1' },
@@ -66,14 +72,45 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function PowerLawChart({ data }: Props) {
+export function PowerLawChart({ data, onZoomChange }: Props) {
   const halvingTs = HALVINGS.map(h => new Date(h.date + 'T00:00:00Z').getTime());
 
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
+  const chartData = useMemo(() => {
+    if (!domain) return data;
+    return data.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [data, domain]);
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
+      <ComposedChart data={chartData} margin={{ top: 12, right: 16, bottom: 0, left: 8 }} {...chartHandlers}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
+
+        {/* Drag-to-zoom selection rectangle */}
+        {selectionArea && (
+          <ReferenceArea
+            x1={selectionArea.x1}
+            x2={selectionArea.x2}
+            fill="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth={1}
+          />
+        )}
 
         {halvingTs.map((ts, i) => (
           <ReferenceLine
@@ -116,7 +153,7 @@ export function PowerLawChart({ data }: Props) {
           allowDataOverflow
         />
 
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
         {/* Ceiling — pink/red */}
         <Line

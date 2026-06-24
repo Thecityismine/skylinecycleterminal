@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart, Area, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea,
@@ -7,12 +8,15 @@ import {
 import type { WeeklyPoint, ZoneSegment, Zone } from '@/lib/api/weeklySMA';
 import { ZONE_FILL, ZONE_COLOR, ZONE_LABEL } from '@/lib/api/weeklySMA';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:   WeeklyPoint[];
   segments: ZoneSegment[];
   logScale: boolean;
   asset:    'btc' | 'eth';
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
 
 function fmtPrice(v: number): string {
@@ -85,18 +89,49 @@ const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
   new Date(`${2011 + i}-01-01T00:00:00Z`).getTime(),
 );
 
-export function WeeklySMAChart({ points, segments, logScale }: Props) {
+export function WeeklySMAChart({ points, segments, logScale, onZoomChange }: Props) {
+  const {
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
   if (!points.length) return null;
+
+  const chartData = useMemo(() => {
+    if (!domain) return points;
+    return points.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [points, domain]);
 
   const yDomain: [number | string, number | string] = logScale
     ? ['auto', 'auto']
     : ['auto', 'auto'];
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={points} margin={{ top: 12, right: 16, bottom: 4, left: 8 }}>
+      <ComposedChart data={chartData} margin={{ top: 12, right: 16, bottom: 4, left: 8 }} {...chartHandlers}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
+
+        {/* Drag-to-zoom selection rectangle */}
+        {selectionArea && (
+          <ReferenceArea
+            x1={selectionArea.x1}
+            x2={selectionArea.x2}
+            fill="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth={1}
+          />
+        )}
 
         {/* Zone background fills */}
         {segments.map((seg, i) => (
@@ -131,7 +166,7 @@ export function WeeklySMAChart({ points, segments, logScale }: Props) {
           width={60}
         />
 
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
         {/* Price area — subtle fill */}
         <Area

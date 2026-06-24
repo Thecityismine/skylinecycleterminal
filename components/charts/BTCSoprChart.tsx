@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
@@ -8,6 +8,8 @@ import {
 import type { SoprPoint } from '@/lib/indicators/sopr';
 import { SOPR_REGIME_BANDS } from '@/lib/indicators/sopr';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -88,18 +90,32 @@ type Props = {
   onShowSma30Change?:   (v: boolean) => void;
   onShowSma90Change?:   (v: boolean) => void;
   onShowShadingChange?: (v: boolean) => void;
+  onZoomChange?:        (d: ZoomDomain<string> | null) => void;
 };
 
-export function BTCSoprChart({ points, onShowPriceChange, onShowSma30Change, onShowSma90Change, onShowShadingChange }: Props) {
+export function BTCSoprChart({ points, onShowPriceChange, onShowSma30Change, onShowSma90Change, onShowShadingChange, onZoomChange }: Props) {
   const [showPrice,   setShowPrice]   = useState(true);
   const [showSma30,   setShowSma30]   = useState(false);
   const [showSma90,   setShowSma90]   = useState(true);
   const [showShading, setShowShading] = useState(true);
 
+  const {
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+  } = useChartZoom<string>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
   const dates    = useMemo(() => points.map((p) => p.time), [points]);
   const xTicks   = useMemo(() => dates.filter((d) => xTick(d) !== ''), [dates]);
 
-  const prices   = useMemo(() => points.map((p) => p.btcClose).filter((v) => v > 0), [points]);
+  const chartData = useMemo(() => {
+    if (!domain) return points;
+    return points.filter(d => d.time >= domain.start && d.time <= domain.end);
+  }, [points, domain]);
+
+  const prices   = useMemo(() => chartData.map((p) => p.btcClose).filter((v) => v > 0), [chartData]);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.5) : 0.01;
   const pMax     = prices.length ? Math.max(...prices) * 2.0 : 1_000_000;
   const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
@@ -150,13 +166,45 @@ export function BTCSoprChart({ points, onShowPriceChange, onShowSma30Change, onS
             {t.label}
           </button>
         ))}
+
+        {/* Zoom controls */}
+        {isZoomed && (
+          <button onClick={reset} className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
+            Reset Zoom
+          </button>
+        )}
+        {!isZoomed && (
+          <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+            drag to zoom
+          </span>
+        )}
       </div>
 
       {/* Chart */}
-      <div style={{ position: 'relative', width: '100%', height: 500 }}>
+      <div
+        style={{
+          position: 'relative', width: '100%', height: 500,
+          cursor: isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={points} margin={{ top: 8, right: 72, bottom: 0, left: 4 }}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 72, bottom: 0, left: 4 }} {...chartHandlers}>
             <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
+
+            {/* Drag-to-zoom selection rectangle */}
+            {selectionArea && (
+              <ReferenceArea
+                yAxisId="sopr"
+                x1={selectionArea.x1}
+                x2={selectionArea.x2}
+                fill="rgba(255,255,255,0.06)"
+                stroke="rgba(255,255,255,0.25)"
+                strokeWidth={1}
+              />
+            )}
 
             {/* Regime background bands */}
             {showShading && SOPR_REGIME_BANDS.map((b, i) => (
@@ -238,12 +286,12 @@ export function BTCSoprChart({ points, onShowPriceChange, onShowSma30Change, onS
                 const d = (payload[0] as any).payload as SoprPoint;
                 return <SoprTip d={d} showSma30={showSma30} showSma90={showSma90} showPrice={showPrice} />;
               }}
-              cursor={{ stroke: '#334155', strokeWidth: 1 }}
+              cursor={isSelecting ? false : { stroke: '#334155', strokeWidth: 1 }}
             />
 
             {/* MVRV deviation bars */}
             <Bar yAxisId="sopr" dataKey="soprDeviation" isAnimationActive={false} maxBarSize={2}>
-              {points.map((p, i) => (
+              {chartData.map((p, i) => (
                 <Cell
                   key={i}
                   fill={p.soprDeviation >= 0 ? '#35D07F' : '#F85149'}

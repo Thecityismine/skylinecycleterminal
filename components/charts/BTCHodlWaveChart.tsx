@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart,
   Area,
@@ -11,10 +11,13 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts';
 import type { HodlWavePoint } from '@/lib/indicators/exchangeReserve';
 import { HALVINGS_WITH_EXCHANGE, HODL_CYCLE_EVENTS } from '@/lib/indicators/exchangeReserve';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:                HodlWavePoint[];
@@ -24,6 +27,7 @@ type Props = {
   onShow90dChange?:      (v: boolean) => void;
   onShowHalvingsChange?: (v: boolean) => void;
   onShowEventsChange?:   (v: boolean) => void;
+  onZoomChange?:         (d: ZoomDomain<number> | null) => void;
 };
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
@@ -87,12 +91,20 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onShow30dChange, onShow90dChange, onShowHalvingsChange, onShowEventsChange }: Props) {
+export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onShow30dChange, onShow90dChange, onShowHalvingsChange, onShowEventsChange, onZoomChange }: Props) {
   const [showPrice,    setShowPrice]    = useState(true);
   const [show30d,      setShow30d]      = useState(false);
   const [show90d,      setShow90d]      = useState(true);
   const [showHalvings, setShowHalvings] = useState(true);
   const [showEvents,   setShowEvents]   = useState(true);
+
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
 
   if (!points.length) return null;
 
@@ -105,12 +117,18 @@ export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onS
     ? points.filter((p) => new Date(p.time + 'T00:00:00').getTime() >= cutoff)
     : points;
 
-  const prices   = filtered.map((p) => p.btcClose).filter((v) => v > 0);
+  const chartData = useMemo(() => {
+    if (!domain) return filtered;
+    return filtered.filter(p => new Date(p.time + 'T00:00:00').getTime() >= domain.start &&
+                                new Date(p.time + 'T00:00:00').getTime() <= domain.end);
+  }, [filtered, domain]);
+
+  const prices   = chartData.map((p) => p.btcClose).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(1, Math.min(...prices) * 0.6) : 1;
   const pMax     = prices.length ? Math.max(...prices) * 2.5 : 200_000;
   const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
 
-  const exchPcts   = filtered.map((p) => p.exchPct).filter((v) => v > 0);
+  const exchPcts   = chartData.map((p) => p.exchPct).filter((v) => v > 0);
   const yMin       = exchPcts.length ? Math.max(0, Math.min(...exchPcts) * 0.85) : 5;
   const yMax       = exchPcts.length ? Math.max(...exchPcts) * 1.15 : 30;
 
@@ -132,7 +150,14 @@ export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onS
   );
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
       {/* Toggles */}
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -148,8 +173,20 @@ export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onS
       </div>
 
       <ResponsiveContainer width="100%" height="90%">
-        <ComposedChart data={filtered} margin={{ top: 8, right: 68, bottom: 0, left: 4 }}>
+        <ComposedChart data={chartData} margin={{ top: 8, right: 68, bottom: 0, left: 4 }} {...chartHandlers}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              yAxisId="exch"
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {/* Halvings */}
           {showHalvings && HALVINGS_WITH_EXCHANGE
@@ -229,7 +266,7 @@ export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onS
             allowDataOverflow
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
           {/* BTC price — drawn first, sits behind exchange line */}
           {showPrice && (

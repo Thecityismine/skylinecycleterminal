@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart,
   Area,
@@ -10,10 +11,13 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   ReferenceLine,
+  ReferenceArea,
   Customized,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type ChartPoint = { time: string; ts: number; price: number; ma50: number | null; ma200: number | null };
 
@@ -25,6 +29,7 @@ type Props = {
   showHalvings: boolean;
   regime?:      CrossRegime;
   chartId?:     string;
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
 
 // BTC price = off-white hero; MAs = colored structure; crosses = neon events
@@ -140,19 +145,51 @@ function regimeTint(regime?: CrossRegime): string {
 }
 
 export function BTCGoldenDeathCrossChart({
-  data, crossEvents, logScale, startTs, showHalvings, regime, chartId = 'main',
+  data, crossEvents, logScale, startTs, showHalvings, regime, chartId = 'main', onZoomChange,
 }: Props) {
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
   if (!data.length) return null;
 
   const visible   = data.filter((p) => p.ts >= startTs);
   const yearTicks = YEAR_TICKS.filter((t) => t >= startTs);
 
+  const chartData = useMemo(() => {
+    if (!domain) return visible;
+    return visible.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [visible, domain]);
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', background: regimeTint(regime) }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        background: regimeTint(regime),
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={visible} margin={{ top: 12, right: 16, bottom: 4, left: 8 }}>
+        <ComposedChart data={chartData} margin={{ top: 12, right: 16, bottom: 4, left: 8 }} {...chartHandlers}>
           {/* Softer grid — supporting element, not noticed */}
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {showHalvings && HALVINGS.filter((h) => h.ts >= startTs).map((h) => (
             <ReferenceLine
@@ -187,7 +224,7 @@ export function BTCGoldenDeathCrossChart({
             width={64}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
           {/* 200D MA — structural blue, drawn first so MA50 and price sit above */}
           <Line

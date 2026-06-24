@@ -1,11 +1,14 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart, Area, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
+  CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceArea,
 } from 'recharts';
 import type { StablecoinDominancePoint } from '@/lib/indicators/stablecoinDominance';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 function fmtDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -25,10 +28,25 @@ type Props = {
   data:      StablecoinDominancePoint[];
   logBTC?:   boolean;
   startTs?:  number;
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
 
-export function StablecoinDominanceChart({ data, logBTC = true, startTs }: Props) {
-  const filtered = startTs ? data.filter((p) => p.ts >= startTs) : data;
+export function StablecoinDominanceChart({ data, logBTC = true, startTs, onZoomChange }: Props) {
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
+  const base = startTs ? data.filter((p) => p.ts >= startTs) : data;
+
+  const filtered = useMemo(() => {
+    if (!domain) return base;
+    return base.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [base, domain]);
+
   if (!filtered.length) return null;
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -72,9 +90,16 @@ export function StablecoinDominanceChart({ data, logBTC = true, startTs }: Props
   const domMax    = Math.max(...domValues) * 1.15;
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={filtered} margin={{ top: 8, right: 56, bottom: 0, left: 0 }}>
+        <ComposedChart data={filtered} margin={{ top: 8, right: 56, bottom: 0, left: 0 }} {...chartHandlers}>
           <defs>
             <linearGradient id="stable-dom-fill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor="#4DA3FF" stopOpacity={0.20} />
@@ -83,6 +108,18 @@ export function StablecoinDominanceChart({ data, logBTC = true, startTs }: Props
           </defs>
 
           <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
+
+          {/* Drag-to-zoom selection rectangle */}
+          {selectionArea && (
+            <ReferenceArea
+              yAxisId="dom"
+              x1={selectionArea.x1}
+              x2={selectionArea.x2}
+              fill="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1}
+            />
+          )}
 
           {/* Horizontal risk-zone references */}
           <ReferenceLine yAxisId="dom" y={6}  stroke="rgba(53,208,127,0.25)"  strokeDasharray="4 4" strokeWidth={1} />
@@ -116,7 +153,7 @@ export function StablecoinDominanceChart({ data, logBTC = true, startTs }: Props
             tickLine={false} axisLine={false} width={52}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
           {/* BTC price — thin muted background line */}
           <Line yAxisId="btc" type="monotone" dataKey="btcPrice"

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useEffect } from 'react';
 import {
   ComposedChart,
   Line,
@@ -18,8 +19,13 @@ import {
 } from "@/lib/indicators/cycleHelpers";
 import type { CyclePoint } from "@/lib/indicators/cycleHelpers";
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
-type Props = { data: CyclePoint[] };
+type Props = {
+  data: CyclePoint[];
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
+};
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
 
@@ -59,17 +65,48 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function FourYearCycleChart({ data }: Props) {
+export function FourYearCycleChart({ data, onZoomChange }: Props) {
   const halvingTs = HALVINGS.map((h) => ({
     ...h,
     ts: new Date(h.date).getTime(),
   }));
 
+  const {
+    domain, isSelecting, selectionArea, cancel, chartHandlers,
+  } = useChartZoom<number>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
+
+  const chartData = useMemo(() => {
+    if (!domain) return data;
+    return data.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [data, domain]);
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        cursor: isSelecting ? 'crosshair' : 'default',
+        userSelect: 'none',
+      }}
+      onMouseLeave={cancel}
+    >
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
+      <ComposedChart data={chartData} margin={{ top: 12, right: 16, bottom: 0, left: 8 }} {...chartHandlers}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
+
+        {/* Drag-to-zoom selection rectangle */}
+        {selectionArea && (
+          <ReferenceArea
+            x1={selectionArea.x1}
+            x2={selectionArea.x2}
+            fill="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth={1}
+          />
+        )}
 
         {/* Pre-cycle zone (before first halving) */}
         <ReferenceArea
@@ -138,7 +175,7 @@ export function FourYearCycleChart({ data }: Props) {
           width={64}
         />
 
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
 
         <Line
           type="monotone"
