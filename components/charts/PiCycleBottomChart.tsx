@@ -139,7 +139,7 @@ export function PiCycleBottomChart({
           </button>
         )}
         {!isZoomed && (
-          <span className="text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+          <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
             drag to zoom
           </span>
         )}
