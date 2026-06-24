@@ -148,3 +148,39 @@ export async function fetchMacroData(): Promise<MacroResponse> {
     fetchedAt:        new Date().toISOString(),
   };
 }
+
+// Fetches FRED series from startDate ascending — returns [] if key not set (graceful)
+async function fredGetFrom(seriesId: string, startDate: string): Promise<MacroDataPoint[]> {
+  const key = process.env.FRED_API_KEY?.trim();
+  if (!key) return [];
+  const url =
+    `https://api.stlouisfed.org/fred/series/observations` +
+    `?series_id=${seriesId}&api_key=${key}&file_type=json` +
+    `&observation_start=${startDate}&sort_order=asc`;
+  const res = await fetch(url, {
+    next: { revalidate: 86400 },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return (json.observations as Array<{ date: string; value: string }>)
+    .filter((o) => o.value !== '.' && o.value !== '')
+    .map((o) => ({ date: o.date, value: Number(o.value) }));
+}
+
+export type LiquiditySeriesData = {
+  dxy:        MacroDataPoint[];   // DTWEXBGS daily
+  realYield:  MacroDataPoint[];   // DFII10 daily (10Y TIPS real yield)
+  m2:         MacroDataPoint[];   // WM2NS weekly
+  fedBalance: MacroDataPoint[];   // WALCL weekly (Fed total assets)
+};
+
+export async function fetchLiquiditySeriesData(startDate = '2018-01-01'): Promise<LiquiditySeriesData> {
+  const [dxy, realYield, m2, fedBalance] = await Promise.all([
+    fredGetFrom('DTWEXBGS', startDate),
+    fredGetFrom('DFII10',   startDate),
+    fredGetFrom('WM2NS',    startDate),
+    fredGetFrom('WALCL',    startDate),
+  ]);
+  return { dxy, realYield, m2, fedBalance };
+}

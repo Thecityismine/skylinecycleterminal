@@ -121,6 +121,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Fed Funds Rate",   href: "/macro?chart=fed",     icon: Landmark,   exact: true },
       { label: "CPI / Inflation",  href: "/macro?chart=cpi",     icon: TrendingUp, exact: true },
       { label: "M2 Liquidity",     href: "/macro?chart=m2",      icon: Waves,      exact: true },
+      { label: "Liquidity Regime", href: "/macro/liquidity-regime", icon: Radar },
       { label: "10Y Yield",        href: "/macro?chart=yield",   icon: LineChart,  exact: true },
     ],
   },
