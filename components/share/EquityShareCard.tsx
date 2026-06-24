@@ -272,7 +272,7 @@ export function EquityShareCard({ payload }: { payload: EquitySharePayload }) {
         alignItems:     'flex-end',
         justifyContent: 'space-between',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'nowrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 14, height: 2, backgroundColor: color, display: 'inline-block', borderRadius: 1 }} />
             <span style={{ fontSize: 10, color: '#8B949E' }}>{ticker} Price</span>
