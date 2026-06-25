@@ -34,6 +34,7 @@ import {
   Flame,
   Lock,
   Crosshair,
+  ArrowLeftRight,
 } from "lucide-react";
 
 type NavItem = {
@@ -105,6 +106,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "MARKET STRUCTURE",
     items: [
+      { label: "ETF Flows",          href: "/etf-flows",                  icon: ArrowLeftRight },
       { label: "Altcoin Season",     href: "/altseason",                  icon: Waves },
       { label: "BTC Dominance",      href: "/dominance",                  icon: PieChart,  exact: true },
       { label: "ETH Dominance",      href: "/dominance?asset=eth",        icon: PieChart,  exact: true },
