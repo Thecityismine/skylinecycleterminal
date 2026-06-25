@@ -9,6 +9,7 @@ import { EtfFlowChartSection } from '@/components/charts/EtfFlowChartSection';
 import { PageHeader }   from '@/components/dashboard/PageHeader';
 import { StatCard }     from '@/components/dashboard/StatCard';
 
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────

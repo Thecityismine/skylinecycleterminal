@@ -142,21 +142,25 @@ function parseFarside(html: string): Omit<EtfDailyFlow, 'btcClose'>[] {
 const FARSIDE_URL = 'https://farside.co.uk/bitcoin-etf-flow-all-data/';
 const FARSIDE_ENC = encodeURIComponent(FARSIDE_URL);
 
-// Internal Edge-runtime proxy (runs on Cloudflare network, avoids AWS-IP blocks)
-const EDGE_PROXY_URL = '/api/farside-proxy';
+// When the ETF page runs in Edge Runtime (Cloudflare network), it fetches Farside
+// directly. Cloudflare-to-Cloudflare requests bypass the WAF block that affects
+// AWS Lambda IPs. Browser-like headers are sent as a second layer of defence.
+const BROWSER_HEADERS: Record<string, string> = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Upgrade-Insecure-Requests': '1',
+};
 
-// External CORS proxy fallbacks
+// External CORS proxy fallbacks (tried if direct Farside fetch fails)
 const CORS_PROXIES = [
   `https://api.allorigins.win/get?url=${FARSIDE_ENC}`,
   `https://corsproxy.io/?url=${FARSIDE_ENC}`,
 ];
-
-const BROWSER_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'Cache-Control': 'no-cache',
-};
 
 async function tryFetch(url: string, timeout = 8000): Promise<string | null> {
   try {
@@ -168,7 +172,7 @@ async function tryFetch(url: string, timeout = 8000): Promise<string | null> {
     if (!res.ok) return null;
     const text = await res.text();
     // allorigins.win wraps HTML in JSON { contents, status }
-    if (text.startsWith('{') && text.includes('"contents"')) {
+    if (text.trimStart().startsWith('{') && text.includes('"contents"')) {
       const json = JSON.parse(text) as { contents?: string; status?: { http_code?: number } };
       if (json.status?.http_code && json.status.http_code !== 200) return null;
       return json.contents ?? null;
@@ -180,11 +184,11 @@ async function tryFetch(url: string, timeout = 8000): Promise<string | null> {
 }
 
 async function fetchFarsideHtml(): Promise<string> {
-  // 1. Try internal Edge proxy (same Cloudflare network as Farside's WAF)
-  const fromEdge = await tryFetch(EDGE_PROXY_URL, 12000);
-  if (fromEdge && fromEdge.length > 5000 && fromEdge.includes('IBIT')) return fromEdge;
+  // 1. Direct fetch (works when running on Edge/Cloudflare; blocked from AWS Lambda)
+  const direct = await tryFetch(FARSIDE_URL, 10000);
+  if (direct && direct.length > 5000 && direct.includes('IBIT')) return direct;
 
-  // 2. Try external CORS proxies in sequence
+  // 2. External CORS proxies as fallback
   for (const proxy of CORS_PROXIES) {
     const html = await tryFetch(proxy, 8000);
     if (html && html.length > 5000 && html.includes('IBIT')) return html;
