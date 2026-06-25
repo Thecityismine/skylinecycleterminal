@@ -58,12 +58,12 @@ function CustomTooltip({
 
   const get = (name: string) => payload.find(p => p.name === name)?.value ?? null;
 
-  const close = get('close');
-  const ma50w = show50W ? get('ma50w') : null;
-  const ma200w = show200W ? get('ma200w') : null;
-  const gsRatio = get('goldSilverRatio');
-  const dxy = showDXY ? get('dxy') : null;
-  const realYield = showRealYield ? get('realYield') : null;
+  const close      = get('close');
+  const ma50w      = show50W ? get('ma50w') : null;
+  const ma200w     = show200W ? get('ma200w') : null;
+  const gsRatio    = get('goldSilverRatio');
+  const dxy        = showDXY ? get('dxy') : null;
+  const realYield  = showRealYield ? get('realYield') : null;
 
   const date = new Date(label + 'T00:00:00').toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -145,136 +145,222 @@ function buildZones(data: MetalWeeklyPoint[]): Zone[] {
 export function PreciousMetalChart({ data, metal, show50W, show200W, showDXY, showRealYield }: Props) {
   const zones = buildZones(data);
   const config = METAL_CONFIG[metal];
+  // Only enable dual-axis when an overlay is actually active — a declared but
+  // data-less yAxisId axis causes Recharts to silently fail to render.
   const showOverlay = showDXY || showRealYield;
+
+  if (data.length === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' }}>
+        <p style={{ color: 'var(--sct-muted)', fontSize: 13 }}>No data available</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <ChartWatermark />
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={data}
-          margin={{ top: 8, right: showOverlay ? 72 : 16, bottom: 0, left: 4 }}
-        >
-          <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.6} vertical={false} />
+        {showOverlay ? (
+          /* ── Dual-axis mode: price (left) + macro overlay (right) ── */
+          <ComposedChart
+            data={data}
+            margin={{ top: 8, right: 72, bottom: 0, left: 4 }}
+          >
+            <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.6} vertical={false} />
 
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatDateTick}
-            minTickGap={100}
-            tick={{ fill: '#4B5563', fontSize: 10 }}
-          />
-
-          <YAxis
-            yAxisId="price"
-            tickFormatter={fmtPrice}
-            width={64}
-            domain={['auto', 'auto']}
-            tick={{ fill: '#4B5563', fontSize: 10 }}
-          />
-
-          <YAxis
-            yAxisId="overlay"
-            orientation="right"
-            hide={!showOverlay}
-            domain={['auto', 'auto']}
-            width={52}
-            tick={{ fill: '#4B5563', fontSize: 10 }}
-          />
-
-          {/* Regime background zones */}
-          {zones.map((zone, i) => (
-            <ReferenceArea
-              key={i}
-              x1={zone.start}
-              x2={zone.end}
-              yAxisId="price"
-              fill={REGIME_FILL[zone.regime]}
-              strokeOpacity={0}
+            <XAxis
+              dataKey="date"
+              tickFormatter={formatDateTick}
+              minTickGap={100}
+              tick={{ fill: '#4B5563', fontSize: 10 }}
             />
-          ))}
 
-          {/* Price area */}
-          <Area
-            yAxisId="price"
-            type="monotone"
-            dataKey="close"
-            stroke={config.accent}
-            strokeWidth={2}
-            fill={config.accent + '10'}
-            dot={false}
-            isAnimationActive={false}
-            connectNulls
-          />
-
-          {/* 50W MA */}
-          {show50W && (
-            <Line
+            <YAxis
               yAxisId="price"
-              type="monotone"
-              dataKey="ma50w"
-              stroke="#EAB84D"
-              strokeWidth={1.5}
-              dot={false}
-              isAnimationActive={false}
-              connectNulls
+              tickFormatter={fmtPrice}
+              width={64}
+              domain={['auto', 'auto']}
+              tick={{ fill: '#4B5563', fontSize: 10 }}
             />
-          )}
 
-          {/* 200W MA */}
-          {show200W && (
-            <Line
-              yAxisId="price"
-              type="monotone"
-              dataKey="ma200w"
-              stroke="#5B84FF"
-              strokeWidth={1.5}
-              dot={false}
-              isAnimationActive={false}
-              connectNulls
-            />
-          )}
-
-          {/* DXY overlay */}
-          {showDXY && (
-            <Line
+            <YAxis
               yAxisId="overlay"
-              type="monotone"
-              dataKey="dxy"
-              stroke="rgba(230,237,243,0.40)"
-              strokeWidth={1}
-              dot={false}
-              isAnimationActive={false}
-              connectNulls
+              orientation="right"
+              domain={['auto', 'auto']}
+              width={52}
+              tick={{ fill: '#4B5563', fontSize: 10 }}
             />
-          )}
 
-          {/* Real yield overlay */}
-          {showRealYield && (
-            <Line
-              yAxisId="overlay"
-              type="monotone"
-              dataKey="realYield"
-              stroke="rgba(248,81,73,0.50)"
-              strokeWidth={1}
-              dot={false}
-              isAnimationActive={false}
-              connectNulls
-            />
-          )}
-
-          <Tooltip
-            content={
-              <CustomTooltip
-                metal={metal}
-                show50W={show50W}
-                show200W={show200W}
-                showDXY={showDXY}
-                showRealYield={showRealYield}
+            {zones.map((zone, i) => (
+              <ReferenceArea
+                key={i}
+                x1={zone.start}
+                x2={zone.end}
+                yAxisId="price"
+                fill={REGIME_FILL[zone.regime]}
+                strokeOpacity={0}
               />
-            }
-            cursor={{ stroke: 'rgba(139,148,158,0.2)', strokeWidth: 1 }}
-          />
-        </ComposedChart>
+            ))}
+
+            <Area
+              yAxisId="price"
+              type="monotone"
+              dataKey="close"
+              stroke={config.accent}
+              strokeWidth={2}
+              fill={config.accent + '10'}
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+
+            {show50W && (
+              <Line
+                yAxisId="price"
+                type="monotone"
+                dataKey="ma50w"
+                stroke="#EAB84D"
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
+
+            {show200W && (
+              <Line
+                yAxisId="price"
+                type="monotone"
+                dataKey="ma200w"
+                stroke="#5B84FF"
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
+
+            {showDXY && (
+              <Line
+                yAxisId="overlay"
+                type="monotone"
+                dataKey="dxy"
+                stroke="rgba(230,237,243,0.40)"
+                strokeWidth={1}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
+
+            {showRealYield && (
+              <Line
+                yAxisId="overlay"
+                type="monotone"
+                dataKey="realYield"
+                stroke="rgba(248,81,73,0.50)"
+                strokeWidth={1}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
+
+            <Tooltip
+              content={
+                <CustomTooltip
+                  metal={metal}
+                  show50W={show50W}
+                  show200W={show200W}
+                  showDXY={showDXY}
+                  showRealYield={showRealYield}
+                />
+              }
+              cursor={{ stroke: 'rgba(139,148,158,0.2)', strokeWidth: 1 }}
+            />
+          </ComposedChart>
+        ) : (
+          /* ── Single-axis mode (default): no orphaned yAxisId ── */
+          <ComposedChart
+            data={data}
+            margin={{ top: 8, right: 16, bottom: 0, left: 4 }}
+          >
+            <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.6} vertical={false} />
+
+            <XAxis
+              dataKey="date"
+              tickFormatter={formatDateTick}
+              minTickGap={100}
+              tick={{ fill: '#4B5563', fontSize: 10 }}
+            />
+
+            <YAxis
+              tickFormatter={fmtPrice}
+              width={64}
+              domain={['auto', 'auto']}
+              tick={{ fill: '#4B5563', fontSize: 10 }}
+            />
+
+            {zones.map((zone, i) => (
+              <ReferenceArea
+                key={i}
+                x1={zone.start}
+                x2={zone.end}
+                fill={REGIME_FILL[zone.regime]}
+                strokeOpacity={0}
+              />
+            ))}
+
+            <Area
+              type="monotone"
+              dataKey="close"
+              stroke={config.accent}
+              strokeWidth={2}
+              fill={config.accent + '10'}
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+
+            {show50W && (
+              <Line
+                type="monotone"
+                dataKey="ma50w"
+                stroke="#EAB84D"
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
+
+            {show200W && (
+              <Line
+                type="monotone"
+                dataKey="ma200w"
+                stroke="#5B84FF"
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
+
+            <Tooltip
+              content={
+                <CustomTooltip
+                  metal={metal}
+                  show50W={show50W}
+                  show200W={show200W}
+                  showDXY={showDXY}
+                  showRealYield={showRealYield}
+                />
+              }
+              cursor={{ stroke: 'rgba(139,148,158,0.2)', strokeWidth: 1 }}
+            />
+          </ComposedChart>
+        )}
       </ResponsiveContainer>
     </div>
   );
