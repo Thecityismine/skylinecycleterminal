@@ -12,7 +12,7 @@ import {
   HISTORICAL_CYCLES,
 } from '@/lib/indicators/drawdownFromATH';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

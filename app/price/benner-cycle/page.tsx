@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { BennerCycleChart } from '@/components/charts/BennerCycleChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── All cycle dates ────────────────────────────────────────────────────────
 const PANIC = [1927, 1945, 1965, 1981, 1999, 2019, 2035, 2053];

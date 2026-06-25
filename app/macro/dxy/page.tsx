@@ -6,7 +6,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 import { DXYChartSection } from '@/components/charts/DXYChartSection';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export default async function DXYPage() {
   const [dxyData, btcPrices] = await Promise.all([

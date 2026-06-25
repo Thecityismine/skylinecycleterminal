@@ -11,7 +11,7 @@ import {
   calculateSMA,
 } from '@/lib/indicators/goldenDeathCross';
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 export async function GET() {
   try {

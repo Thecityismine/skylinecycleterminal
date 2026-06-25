@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchOnChainMetrics } from '@/lib/api/coinmetrics';
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 function sma(arr: number[], period: number): (number | null)[] {
   const out: (number | null)[] = [];

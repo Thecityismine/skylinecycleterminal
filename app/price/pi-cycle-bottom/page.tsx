@@ -4,7 +4,7 @@ import { StatCard }              from '@/components/dashboard/StatCard';
 import { PiCycleChartSection }  from '@/components/charts/PiCycleChartSection';
 import type { PiBottomPoint }   from '@/components/charts/PiCycleBottomChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function smaSliding(values: number[], period: number): (number | null)[] {

@@ -56,7 +56,7 @@ export async function fetchMVRV(): Promise<MVRVData | null> {
     try {
       const res = await fetch(base + qs, {
         headers,
-        next: { revalidate: 86400 },
+        next: { revalidate: 3600 },
         signal: AbortSignal.timeout(6000),
       });
 

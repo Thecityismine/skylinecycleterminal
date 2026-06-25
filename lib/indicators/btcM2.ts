@@ -70,7 +70,7 @@ async function fetchM2History(startYear = 2012): Promise<{ date: string; value: 
     `https://api.stlouisfed.org/fred/series/observations` +
     `?series_id=M2SL&api_key=${key}&file_type=json` +
     `&sort_order=asc&observation_start=${startYear}-01-01`;
-  const res = await fetch(url, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(15000) });
+  const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`FRED M2SL HTTP ${res.status}`);
   const json = await res.json();
   return (json.observations as Array<{ date: string; value: string }>)

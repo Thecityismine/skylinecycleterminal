@@ -7,7 +7,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 import { LiquidityRegimeSection } from '@/components/charts/LiquidityRegimeSection';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export default async function LiquidityRegimePage() {
   const [prices, fredData, stablecoinHist] = await Promise.all([

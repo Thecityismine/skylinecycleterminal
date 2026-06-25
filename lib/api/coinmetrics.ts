@@ -21,7 +21,7 @@ async function coinmetricsGet(params: Record<string, string>): Promise<{ data: R
 
   const res = await fetch(url.toString(), {
     headers: { 'Accept': 'application/json' },
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`CoinMetrics HTTP ${res.status}`);

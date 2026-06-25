@@ -40,7 +40,7 @@ async function fredDaily(seriesId: string): Promise<FredPoint[]> {
     `&sort_order=asc&limit=10000`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];

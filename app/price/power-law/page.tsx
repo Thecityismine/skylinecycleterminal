@@ -5,7 +5,7 @@ import { PageHeader }          from '@/components/dashboard/PageHeader';
 import { StatCard }            from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmtUSD(v: number | null): string {
   if (v == null) return '—';

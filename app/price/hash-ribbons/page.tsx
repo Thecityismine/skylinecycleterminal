@@ -4,7 +4,7 @@ import { StatCard }                 from '@/components/dashboard/StatCard';
 import { HashRibbonChartSection }  from '@/components/charts/HashRibbonChartSection';
 import type { HRPoint }            from '@/components/charts/HashRibbonChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function smaSliding(values: (number | null)[], period: number): (number | null)[] {

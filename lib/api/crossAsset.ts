@@ -11,7 +11,7 @@ async function fredSeries(seriesId: string): Promise<SimplePt[]> {
     `&sort_order=desc&limit=5000`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];
@@ -31,7 +31,7 @@ async function yahooSeries(symbol: string): Promise<SimplePt[]> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1wk&range=max`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(20000),
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SkylineTerminal/1.0)' },
     });

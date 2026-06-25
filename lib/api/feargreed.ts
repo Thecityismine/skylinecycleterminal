@@ -34,7 +34,7 @@ export function fgColor(value: number): string {
 
 export async function fetchFearGreedHistory(): Promise<FGPoint[]> {
   const res = await fetch('https://api.alternative.me/fng/?limit=0', {
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`Fear & Greed history HTTP ${res.status}`);

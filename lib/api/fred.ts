@@ -32,7 +32,7 @@ async function fredGet(seriesId: string, limit: number): Promise<MacroDataPoint[
     `&sort_order=desc&limit=${limit}`;
 
   const res = await fetch(url, {
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) {
@@ -158,7 +158,7 @@ export async function fredGetFrom(seriesId: string, startDate: string): Promise<
     `?series_id=${seriesId}&api_key=${key}&file_type=json` +
     `&observation_start=${startDate}&sort_order=asc`;
   const res = await fetch(url, {
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) return [];

@@ -17,7 +17,7 @@ import {
   type SPXPoint,
 } from '@/lib/indicators/recessionRisk';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ── FRED fetch helper ─────────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ async function fredSince(series: string, start: string): Promise<{ date: string;
     `https://api.stlouisfed.org/fred/series/observations` +
     `?series_id=${series}&api_key=${key}&file_type=json` +
     `&sort_order=asc&observation_start=${start}`;
-  const res = await fetch(url, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(20000) });
+  const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(20000) });
   if (!res.ok) throw new Error(`FRED ${series} HTTP ${res.status}`);
   const json = await res.json();
   return (json.observations as Array<{ date: string; value: string }>)

@@ -7,7 +7,7 @@ import { fetchHashrate } from '@/lib/api/mempool';
 import { computeSkylineScore, buildHistoricalContext } from '@/lib/indicators/skylineScore';
 
 // 24-hour CDN cache — on-chain data is published daily with a 1-day lag
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 export async function GET() {
   try {

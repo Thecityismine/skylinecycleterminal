@@ -9,7 +9,7 @@ import { FloorStaircaseChart } from '@/components/charts/FloorStaircaseChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -15,7 +15,7 @@ import { BTCBottomConfluenceChartSection } from '@/components/charts/BTCBottomCo
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@ import { PageHeader }                from '@/components/dashboard/PageHeader';
 import { HeikinAshiChartSection }    from '@/components/charts/HeikinAshiChartSection';
 import type { HACandle }             from '@/components/charts/HeikinAshiChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function fmtUSD(n: number): string {

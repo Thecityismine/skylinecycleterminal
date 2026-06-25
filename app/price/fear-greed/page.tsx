@@ -6,7 +6,7 @@ import { InsightPanel, InsightRow }       from '@/components/dashboard/InsightPa
 import { FearGreedPageClient }            from '@/components/charts/FearGreedPageClient';
 import type { FGCombinedPoint }           from '@/components/charts/FearGreedChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

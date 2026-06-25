@@ -10,7 +10,7 @@ import { BTCSoprChartSection } from '@/components/charts/BTCSoprChartSection';
 import { PageHeader }    from '@/components/dashboard/PageHeader';
 import { StatCard }      from '@/components/dashboard/StatCard';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

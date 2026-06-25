@@ -8,7 +8,7 @@ import {
   computeMedianPath,
 } from '@/lib/indicators/halvingCycleAlign';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmtUSD(n: number): string {
   return new Intl.NumberFormat('en-US', {

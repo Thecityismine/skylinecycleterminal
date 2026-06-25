@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmtPct(v: number | null, decimals = 2): string {
   if (v == null) return '—';

@@ -24,7 +24,7 @@ export async function fetchStablecoinSupply(): Promise<StablecoinData | null> {
   try {
     const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/all', {
       headers: { Accept: 'application/json' },
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(12000),
     });
 
@@ -51,7 +51,7 @@ export async function fetchStablecoinHistory(): Promise<StablecoinHistoryPoint[]
   try {
     const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/all', {
       headers: { Accept: 'application/json' },
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(20000),
     });
 
