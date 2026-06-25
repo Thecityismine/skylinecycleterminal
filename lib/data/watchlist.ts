@@ -1,5 +1,5 @@
 export type StockType = 'equity' | 'etf' | 'btc_proxy' | 'preferred';
-export type StockGroup = 'saylor' | 'btc' | 'mining' | 'ai' | 'ai_pure' | 'space' | 'tech' | 'health' | 'macro';
+export type StockGroup = 'saylor' | 'btc' | 'mining' | 'ai' | 'ai_pure' | 'space' | 'tech' | 'health' | 'macro' | 'banks';
 
 export type WatchlistItem = {
   ticker:  string;
@@ -73,6 +73,18 @@ export const WATCHLIST: WatchlistItem[] = [
   // ── Healthcare / Pharma ─────────────────────────────────────────────────────
   { ticker: 'NVO',   name: 'Novo Nordisk',       sector: 'GLP-1 / Pharma',        group: 'health',  type: 'equity',    color: '#0066CC' },
 
+  // ── Major Banks ─────────────────────────────────────────────────────────────
+  { ticker: 'JPM',  name: 'JPMorgan Chase',    sector: 'Global Banking',         group: 'banks',   type: 'equity',    color: '#003087' },
+  { ticker: 'BAC',  name: 'Bank of America',   sector: 'Global Banking',         group: 'banks',   type: 'equity',    color: '#E31837' },
+  { ticker: 'WFC',  name: 'Wells Fargo',       sector: 'Commercial Banking',     group: 'banks',   type: 'equity',    color: '#D71E28' },
+  { ticker: 'C',    name: 'Citigroup',         sector: 'Global Banking',         group: 'banks',   type: 'equity',    color: '#1F6DB5' },
+  { ticker: 'GS',   name: 'Goldman Sachs',     sector: 'Investment Banking',     group: 'banks',   type: 'equity',    color: '#7399C6' },
+  { ticker: 'MS',   name: 'Morgan Stanley',    sector: 'Investment Banking',     group: 'banks',   type: 'equity',    color: '#003D7B' },
+  { ticker: 'HSBC', name: 'HSBC Holdings',     sector: 'Global Banking',         group: 'banks',   type: 'equity',    color: '#DB0011' },
+  { ticker: 'BCS',  name: 'Barclays',          sector: 'Global Banking',         group: 'banks',   type: 'equity',    color: '#00AEEF' },
+  { ticker: 'DB',   name: 'Deutsche Bank',     sector: 'Global Banking',         group: 'banks',   type: 'equity',    color: '#0018A8' },
+  { ticker: 'UBS',  name: 'UBS Group',         sector: 'Wealth Management',      group: 'banks',   type: 'equity',    color: '#E60000' },
+
   // ── Macro · ETFs ────────────────────────────────────────────────────────────
   { ticker: 'GLD',   name: 'Gold ETF',           sector: 'Commodities',            group: 'macro',   type: 'etf',       color: '#D4A853' },
   { ticker: 'SPY',   name: 'S&P 500 ETF',        sector: 'Index',                  group: 'macro',   type: 'etf',       color: '#53A7FF' },
@@ -91,9 +103,10 @@ export const GROUP_LABELS: Record<StockGroup, string> = {
   tech:     'Mega-Cap Tech',
   health:   'Healthcare · Pharma',
   macro:    'Macro · ETFs',
+  banks:    'Major Banks',
 };
 
-export const GROUP_ORDER: StockGroup[] = ['saylor', 'btc', 'mining', 'ai', 'ai_pure', 'space', 'tech', 'health', 'macro'];
+export const GROUP_ORDER: StockGroup[] = ['saylor', 'btc', 'mining', 'ai', 'ai_pure', 'space', 'tech', 'health', 'macro', 'banks'];
 
 export function getStock(ticker: string): WatchlistItem | undefined {
   return WATCHLIST.find((s) => s.ticker === ticker.toUpperCase());
