@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 import { PreciousMetalChartSection } from '@/components/charts/PreciousMetalChartSection';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export default async function MetalsPage() {
   const [goldDaily, silverMonthly, dxyDailyRaw, realYieldDaily] = await Promise.all([
@@ -44,12 +44,12 @@ export default async function MetalsPage() {
       <InsightPanel title="Methodology">
         <InsightRow
           label="Gold Data"
-          value="FRED GOLDAMGBD228NLBM — London PM fix price in USD per troy ounce. Daily since 1968, downsampled to weekly (last value per ISO week)."
+          value="Yahoo Finance GC=F (Gold Futures) — weekly closing price in USD per troy ounce. Reflects spot-equivalent gold price with high historical coverage."
           stack
         />
         <InsightRow
           label="Silver Data"
-          value="FRED SLVPRUSD — IMF Global Price of Silver in USD per troy ounce. Monthly data, linearly interpolated to weekly for consistent MA computation."
+          value="Yahoo Finance SI=F (Silver Futures) — weekly closing price in USD per troy ounce. Used as a spot-equivalent silver price series."
           stack
         />
         <InsightRow
