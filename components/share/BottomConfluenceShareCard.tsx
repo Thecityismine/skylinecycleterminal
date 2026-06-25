@@ -45,7 +45,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
@@ -70,8 +70,8 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
   const stats = [
     { label: 'BTC Price',         value: fmtUSD(btcClose),  sub: 'Current price',                   color: '#E6EDF3'   },
     { label: 'Confluence Score',  value: `${confluenceScore.toFixed(1)} / 4`, sub: regimeLabel,      color: regimeColor },
-    { label: 'MVRV Ratio',        value: mvrv  != null ? mvrv.toFixed(2)  : 'â€”', sub: mvrv != null  ? (mvrv < 1.0 ? 'Supply at loss' : mvrv < 1.5 ? 'Near cost basis' : 'Profitable') : 'â€”', color: mvrvColor },
-    { label: 'HR Ratio 30/60D',   value: hrRatio != null ? hrRatio.toFixed(3) : 'â€”', sub: hrRatio != null ? (hrRatio < 1.0 ? 'Miner capitulation' : 'Miners healthy') : 'â€”', color: hrColor },
+    { label: 'MVRV Ratio',        value: mvrv  != null ? mvrv.toFixed(2)  : '—', sub: mvrv != null  ? (mvrv < 1.0 ? 'Supply at loss' : mvrv < 1.5 ? 'Near cost basis' : 'Profitable') : '—', color: mvrvColor },
+    { label: 'HR Ratio 30/60D',   value: hrRatio != null ? hrRatio.toFixed(3) : '—', sub: hrRatio != null ? (hrRatio < 1.0 ? 'Miner capitulation' : 'Miners healthy') : '—', color: hrColor },
   ];
 
   // Y-axis domain
@@ -115,7 +115,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
             Bear-Market Bottom Confluence
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            MVRV · Hash Ribbon · 2Y MA · Exchange Flow â€” signal alignment model
+            MVRV · Hash Ribbon · 2Y MA · Exchange Flow — signal alignment model
           </p>
         </div>
 

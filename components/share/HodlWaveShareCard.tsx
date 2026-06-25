@@ -50,18 +50,18 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtPct(v: number | null): string {
-  return v == null ? 'â€”' : `${v.toFixed(2)}%`;
+  return v == null ? '—' : `${v.toFixed(2)}%`;
 }
 
 function fmtPp(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(2)} pp`;
 }
 
@@ -83,7 +83,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
   const stats = [
     { label: 'BTC Price',           value: fmtUSD(btcClose), sub: 'Latest close',          color: '#E6EDF3'    },
     { label: 'Exchange Reserve',    value: fmtPct(exchPct),  sub: '% of circulating supply', color: '#F7931A'  },
-    { label: '30D Change',          value: fmtPp(change30d), sub: change30d != null ? (change30d < 0 ? 'Coins leaving exchanges' : 'Coins entering exchanges') : 'â€”', color: changeColor },
+    { label: '30D Change',          value: fmtPp(change30d), sub: change30d != null ? (change30d < 0 ? 'Coins leaving exchanges' : 'Coins entering exchanges') : '—', color: changeColor },
     { label: 'Distribution Score',  value: `${scoreScore}/100`, sub: scoreLabel,              color: scoreColor },
   ];
 
@@ -260,7 +260,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
             allowDataOverflow
           />
 
-          {/* BTC price â€” behind area */}
+          {/* BTC price — behind area */}
           {showPrice && (
             <Line yAxisId="price" type="monotone" dataKey="btcClose" stroke="rgba(230,237,243,0.6)" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />
           )}

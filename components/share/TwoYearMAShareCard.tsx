@@ -50,7 +50,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtFull(n: number | null): string {
-  if (n == null || n === 0) return 'â€”';
+  if (n == null || n === 0) return '—';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
@@ -67,7 +67,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
     { label: 'BTC Price',        value: fmtFull(latestPrice), sub: 'Latest close',             color: '#F7F9FC'  },
     { label: '2-Year MA',        value: fmtFull(latestMA),    sub: '730-day simple MA',         color: '#F7931A'  },
     { label: '2Y MA Ã— 5',        value: fmtFull(latestMA5),   sub: 'Historical top band',       color: '#FF5C5C'  },
-    { label: 'Current Multiple', value: multiplier != null ? `${multiplier.toFixed(2)}Ã—` : 'â€”', sub: zoneLabel, color: zoneColor },
+    { label: 'Current Multiple', value: multiplier != null ? `${multiplier.toFixed(2)}Ã—` : '—', sub: zoneLabel, color: zoneColor },
   ];
 
   return (

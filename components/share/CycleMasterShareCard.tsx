@@ -45,7 +45,7 @@ const HALVINGS = [
 ];
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;
   return `$${v.toFixed(0)}`;
@@ -65,7 +65,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
 
   const resolvedScoreColor = scoreColor ?? '#94A3B8';
 
-  const mvrvSub = mvrv == null ? 'â€”'
+  const mvrvSub = mvrv == null ? '—'
     : mvrv < 1.0 ? 'Below cost basis'
     : mvrv < 2.0 ? 'Accumulation zone'
     : mvrv < 3.5 ? 'Expansion / elevated'
@@ -73,9 +73,9 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
 
   const stats = [
     { label: 'BTC Price',      value: fmtUSD(price),                               sub: 'Current market price',  color: '#F7931A'          },
-    { label: 'MVRV Ratio',     value: mvrv != null ? `${mvrv.toFixed(2)}Ã—` : 'â€”', sub: mvrvSub,                 color: '#A78BFA'          },
+    { label: 'MVRV Ratio',     value: mvrv != null ? `${mvrv.toFixed(2)}Ã—` : '—', sub: mvrvSub,                 color: '#A78BFA'          },
     { label: 'Realized Price', value: fmtUSD(realized),                            sub: 'Avg on-chain cost basis', color: '#3B82F6'         },
-    { label: 'Cycle Score',    value: score != null ? `${score.toFixed(0)} / 100` : 'â€”', sub: scoreLabel ?? 'â€”', color: resolvedScoreColor },
+    { label: 'Cycle Score',    value: score != null ? `${score.toFixed(0)} / 100` : '—', sub: scoreLabel ?? '—', color: resolvedScoreColor },
   ];
 
   // Compute year ticks from data

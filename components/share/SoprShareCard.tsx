@@ -54,14 +54,14 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmt3(v: number | null): string {
-  return v == null ? 'â€”' : v.toFixed(3);
+  return v == null ? '—' : v.toFixed(3);
 }
 
 export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
@@ -81,8 +81,8 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
   const stats = [
     { label: 'BTC Price',        value: fmtUSD(btcClose), sub: 'Latest close',          color: '#E6EDF3'    },
     { label: 'MVRV Ratio',       value: fmt3(rawSopr),    sub: (rawSopr ?? 0) >= 1 ? 'Above break-even' : 'Below break-even', color: devColor },
-    { label: 'MVRV Deviation',   value: soprDev != null ? `${soprDev >= 0 ? '+' : ''}${soprDev.toFixed(3)}` : 'â€”',
-                                  sub: soprDev != null ? (soprDev >= 0 ? 'Net profit territory' : 'Net loss territory') : 'â€”', color: devColor },
+    { label: 'MVRV Deviation',   value: soprDev != null ? `${soprDev >= 0 ? '+' : ''}${soprDev.toFixed(3)}` : '—',
+                                  sub: soprDev != null ? (soprDev >= 0 ? 'Net profit territory' : 'Net loss territory') : '—', color: devColor },
     { label: '90D Average',      value: fmt3(sma90),      sub: 'Trend baseline',         color: '#3B82F6'    },
   ];
 

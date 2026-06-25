@@ -48,7 +48,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtP(v: number | null): string {
-  return v == null ? 'â€”' : fmtPrice(v);
+  return v == null ? '—' : fmtPrice(v);
 }
 
 const ZONE_SUB: Record<Zone, string> = {

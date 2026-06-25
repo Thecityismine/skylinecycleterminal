@@ -64,24 +64,24 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
     {
       label: 'Monthly HA',
       value: isSignal ? 'â–² Signal' : isGreen ? 'â–² Green' : 'â–¼ Red',
-      sub:   latest ? `${latest.month}${latest.partial ? ' · partial' : ''}` : 'â€”',
+      sub:   latest ? `${latest.month}${latest.partial ? ' · partial' : ''}` : '—',
       color: statusColor,
     },
     {
       label: 'Real Close',
-      value: latest ? fmtPrice(latest.realClose) : 'â€”',
+      value: latest ? fmtPrice(latest.realClose) : '—',
       sub:   'Latest monthly close',
       color: '#F7F9FC',
     },
     {
       label: 'Last Signal',
-      value: lastSig?.month ?? 'â€”',
+      value: lastSig?.month ?? '—',
       sub:   lastSig ? `After ${lastSig.redStreakBefore} red months` : 'No signal on record',
       color: GREEN,
     },
     {
       label: 'Since Signal',
-      value: signalGain != null ? `${signalGain >= 0 ? '+' : ''}${signalGain.toFixed(0)}%` : 'â€”',
+      value: signalGain != null ? `${signalGain >= 0 ? '+' : ''}${signalGain.toFixed(0)}%` : '—',
       sub:   'Return from last bear-end',
       color: signalGain != null ? (signalGain >= 0 ? GREEN : RED) : '#F7F9FC',
     },

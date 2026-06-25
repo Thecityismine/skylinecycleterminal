@@ -52,14 +52,14 @@ function fmtPrice(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtPct(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 }
 
@@ -84,7 +84,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
   const stats = [
     { label: 'BTC Price',       value: fmtUSD(btcClose),       sub: 'Current price',              color: '#E6EDF3'   },
     { label: 'Realized Price',  value: fmtUSD(realizedPrice),   sub: 'Aggregate holder cost basis', color: '#3B82F6'   },
-    { label: 'vs Cost Basis',   value: fmtPct(vsRealizedPct),   sub: vsRealizedPct != null ? (vsRealizedPct < 0 ? 'Below cost basis' : 'Above cost basis') : 'â€”', color: vsColor },
+    { label: 'vs Cost Basis',   value: fmtPct(vsRealizedPct),   sub: vsRealizedPct != null ? (vsRealizedPct < 0 ? 'Below cost basis' : 'Above cost basis') : '—', color: vsColor },
     { label: 'Floor Score',     value: `${scoreScore}/100`,     sub: scoreLabel,                    color: scoreColor  },
   ];
 
@@ -129,7 +129,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
             Bitcoin Value Floor Model
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Realized price · 200W MA · 2Y MA · Power Law â€” long-term cost basis floors
+            Realized price · 200W MA · 2Y MA · Power Law — long-term cost basis floors
           </p>
         </div>
 

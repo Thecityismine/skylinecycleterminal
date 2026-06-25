@@ -46,19 +46,19 @@ const HALVINGS = [
 ];
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtPct(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}% vs fair`;
 }
 
 function fmtYrs(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   if (Math.abs(v) < 0.1) return '< 0.1y';
   return `Lead: ${v >= 0 ? '+' : ''}${v.toFixed(1)}y`;
 }
@@ -229,7 +229,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             allowDataOverflow
           />
 
-          {/* Ceiling â€” pink */}
+          {/* Ceiling — pink */}
           <Line
             type="monotone"
             dataKey="ceil"
@@ -240,7 +240,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             connectNulls
           />
 
-          {/* Fair Value â€” cyan */}
+          {/* Fair Value — cyan */}
           <Line
             type="monotone"
             dataKey="fair"
@@ -251,7 +251,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             connectNulls
           />
 
-          {/* Floor â€” indigo */}
+          {/* Floor — indigo */}
           <Line
             type="monotone"
             dataKey="floor"
@@ -262,7 +262,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             connectNulls
           />
 
-          {/* BTC Price â€” white on top */}
+          {/* BTC Price — white on top */}
           <Line
             type="monotone"
             dataKey="price"

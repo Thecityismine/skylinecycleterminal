@@ -64,12 +64,12 @@ function fmtY(v: number): string {
 }
 
 function fmtFull(n: number | null): string {
-  if (n == null) return 'â€”';
+  if (n == null) return '—';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 }
 
 function fmtPct(n: number | null): string {
-  if (n == null) return 'â€”';
+  if (n == null) return '—';
   return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 }
 
@@ -116,7 +116,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
   const stats = [
     { label: 'BTC Price',        value: fmtFull(latestClose),  sub: 'Weekly close',             color: '#F7931A'  },
     { label: '100-Week MA',      value: fmtFull(latestMA100),  sub: 'Medium-term trend',        color: '#EAB84D'  },
-    { label: 'Distance 100W',    value: fmtPct(distancePct),   sub: distancePct == null ? 'â€”' : distancePct > 5 ? 'Above trend' : distancePct < -5 ? 'Below trend' : 'Testing zone', color: distanceColor },
+    { label: 'Distance 100W',    value: fmtPct(distancePct),   sub: distancePct == null ? '—' : distancePct > 5 ? 'Above trend' : distancePct < -5 ? 'Below trend' : 'Testing zone', color: distanceColor },
     { label: 'Trend Score',      value: `${trendScoreNum}/100`, sub: trendLabel,                color: trendColor  },
   ];
 
@@ -165,7 +165,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
           <p style={{ fontSize: 11, color: '#8B949E', margin: '3px 0 0' }}>{dateStr}</p>
           {slope != null && (
             <p style={{ fontSize: 10, color: slopeColor, margin: '2px 0 0' }}>
-              Slope: {fmtPct(slope)} â€” {slopeText}
+              Slope: {fmtPct(slope)} — {slopeText}
             </p>
           )}
         </div>

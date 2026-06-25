@@ -35,14 +35,14 @@ export const HASH_RIBBON_CARD_CHART_RECT = {
 };
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtHashRate(v: number | null, source: string): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   if (source === 'DiffLast') {
     if (v >= 1e12) return `${(v / 1e12).toFixed(1)} T`;
     if (v >= 1e9)  return `${(v / 1e9).toFixed(1)} B`;
@@ -84,7 +84,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
     { label: 'BTC Price',        value: fmtUSD(currentPrice),                              sub: 'Latest close',                  color: '#F7F9FC'    },
     { label: `30d ${maLabel} MA`, value: fmtHashRate(currentMA30, dataSource),             sub: '30-day moving average',         color: '#E6B450'    },
     { label: `60d ${maLabel} MA`, value: fmtHashRate(currentMA60, dataSource),             sub: '60-day moving average',         color: '#3B82F6'    },
-    { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}Ã—` : 'â€”', sub: statusLabel,            color: ratioColor   },
+    { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}Ã—` : '—', sub: statusLabel,            color: ratioColor   },
   ];
 
   // Capitulation zones

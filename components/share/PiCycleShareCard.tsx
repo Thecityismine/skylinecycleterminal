@@ -40,7 +40,7 @@ function fmtY(v: number): string {
 }
 
 function fmtUSD(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
 }
 
@@ -65,7 +65,7 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
     { label: 'BTC Price',        value: fmtUSD(currentPrice),                         sub: 'Latest close',            color: '#F7F9FC'   },
     { label: '150-Day MA',       value: fmtUSD(currentMA150),                         sub: 'Short-term trend line',   color: '#E6B450'   },
     { label: '471d MA Ã— 0.745',  value: fmtUSD(currentThreshold),                     sub: 'Pi Cycle threshold',      color: '#3B82F6'   },
-    { label: 'Ratio (150d / T)', value: ratio != null ? `${ratio.toFixed(3)}Ã—` : 'â€”', sub: statusLabel,               color: ratioColor  },
+    { label: 'Ratio (150d / T)', value: ratio != null ? `${ratio.toFixed(3)}Ã—` : '—', sub: statusLabel,               color: ratioColor  },
   ];
 
   // Compute zone spans from the data

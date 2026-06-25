@@ -66,12 +66,12 @@ function fmtRatio(v: number): string {
 }
 
 function fmtR(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return fmtRatio(v);
 }
 
 function fmtPct(v: number | null): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 }
 

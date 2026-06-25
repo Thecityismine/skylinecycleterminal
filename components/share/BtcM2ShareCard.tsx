@@ -33,7 +33,7 @@ export const BTC_M2_CARD_CHART_RECT = {
 };
 
 function fmt(v: number | null, d = 2): string {
-  return v == null ? 'â€”' : v.toFixed(d);
+  return v == null ? '—' : v.toFixed(d);
 }
 
 export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
@@ -58,8 +58,8 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
 
   const stats = [
     { label: 'Current Ratio',  value: fmt(ratio),  sub: 'BTC price Ã· M2 (Ã—1000)',    color: '#F7F9FC' },
-    { label: '200 EMA',        value: fmt(ema200), sub: ratio != null && ema200 != null ? (ratio > ema200 ? 'â†‘ Price above' : 'â†“ Price below') : 'â€”', color: '#35D07F' },
-    { label: '400 EMA',        value: fmt(ema400), sub: ratio != null && ema400 != null ? (ratio > ema400 ? 'â†‘ Price above' : 'â†“ Price below') : 'â€”', color: '#FF5C5C' },
+    { label: '200 EMA',        value: fmt(ema200), sub: ratio != null && ema200 != null ? (ratio > ema200 ? 'â†‘ Price above' : 'â†“ Price below') : '—', color: '#35D07F' },
+    { label: '400 EMA',        value: fmt(ema400), sub: ratio != null && ema400 != null ? (ratio > ema400 ? 'â†‘ Price above' : 'â†“ Price below') : '—', color: '#FF5C5C' },
     { label: '52-Week SMA',    value: fmt(sma52),  sub: '1-year simple average',       color: '#E6B450' },
   ];
 
@@ -174,7 +174,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             width={52}
           />
 
-          {/* 400 EMA â€” red */}
+          {/* 400 EMA — red */}
           <Line
             type="monotone"
             dataKey="ema400"
@@ -185,7 +185,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             connectNulls={false}
           />
 
-          {/* 200 EMA â€” green */}
+          {/* 200 EMA — green */}
           <Line
             type="monotone"
             dataKey="ema200"
@@ -196,7 +196,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             connectNulls={false}
           />
 
-          {/* 52 SMA â€” dashed yellow */}
+          {/* 52 SMA — dashed yellow */}
           <Line
             type="monotone"
             dataKey="sma52"
@@ -208,7 +208,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             connectNulls={false}
           />
 
-          {/* BTC/M2 ratio â€” white on top */}
+          {/* BTC/M2 ratio — white on top */}
           <Line
             type="monotone"
             dataKey="ratio"
