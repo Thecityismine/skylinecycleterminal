@@ -1,4 +1,4 @@
-import { fetchBTCDailyPrice } from './coinmetrics';
+import { fetchDailyPrice } from './coinmetrics';
 
 export type EtfDailyFlow = {
   time: string;
@@ -149,7 +149,7 @@ export async function fetchEtfFlows(): Promise<EtfDailyFlow[]> {
 
     // Merge BTC daily price from CoinMetrics
     const start = flows[0].time;
-    const prices = await fetchBTCDailyPrice('btc', start);
+    const prices = await fetchDailyPrice('btc', start);
     const priceMap = new Map(prices.map(p => [p.time, p.price]));
 
     return flows.map(f => ({
