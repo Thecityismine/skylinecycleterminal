@@ -66,7 +66,7 @@ export default async function DXYPage() {
       </div>
 
       {/* Main chart section */}
-      <DXYChartSection chartData={chartData} zones={zones} />
+      <DXYChartSection chartData={chartData} zones={zones} current={current} />
 
       {/* Two panels side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
