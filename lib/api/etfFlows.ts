@@ -139,32 +139,66 @@ function parseFarside(html: string): Omit<EtfDailyFlow, 'btcClose'>[] {
   return results.sort((a, b) => a.time.localeCompare(b.time));
 }
 
-// allorigins.win is a free CORS proxy that can reach Farside where direct
-// server-side fetches are blocked by Cloudflare (403 from data center IPs).
 const FARSIDE_URL = 'https://farside.co.uk/bitcoin-etf-flow-all-data/';
-const PROXY_URL   = `https://api.allorigins.win/get?url=${encodeURIComponent(FARSIDE_URL)}`;
+const FARSIDE_ENC = encodeURIComponent(FARSIDE_URL);
+
+// Internal Edge-runtime proxy (runs on Cloudflare network, avoids AWS-IP blocks)
+const EDGE_PROXY_URL = '/api/farside-proxy';
+
+// External CORS proxy fallbacks
+const CORS_PROXIES = [
+  `https://api.allorigins.win/get?url=${FARSIDE_ENC}`,
+  `https://corsproxy.io/?url=${FARSIDE_ENC}`,
+];
+
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
+};
+
+async function tryFetch(url: string, timeout = 8000): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: BROWSER_HEADERS,
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(timeout),
+    });
+    if (!res.ok) return null;
+    const text = await res.text();
+    // allorigins.win wraps HTML in JSON { contents, status }
+    if (text.startsWith('{') && text.includes('"contents"')) {
+      const json = JSON.parse(text) as { contents?: string; status?: { http_code?: number } };
+      if (json.status?.http_code && json.status.http_code !== 200) return null;
+      return json.contents ?? null;
+    }
+    return text;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchFarsideHtml(): Promise<string> {
+  // 1. Try internal Edge proxy (same Cloudflare network as Farside's WAF)
+  const fromEdge = await tryFetch(EDGE_PROXY_URL, 12000);
+  if (fromEdge && fromEdge.length > 5000 && fromEdge.includes('IBIT')) return fromEdge;
+
+  // 2. Try external CORS proxies in sequence
+  for (const proxy of CORS_PROXIES) {
+    const html = await tryFetch(proxy, 8000);
+    if (html && html.length > 5000 && html.includes('IBIT')) return html;
+  }
+
+  throw new Error('All Farside fetch strategies failed');
+}
 
 export async function fetchEtfFlows(): Promise<EtfDailyFlow[]> {
   try {
-    const res = await fetch(PROXY_URL, {
-      headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(25000),
-    });
-
-    if (!res.ok) throw new Error(`allorigins HTTP ${res.status}`);
-
-    const json = await res.json() as { contents?: string; status?: { http_code?: number } };
-    const httpCode = json.status?.http_code;
-    const html     = json.contents ?? '';
-
-    if (httpCode && httpCode !== 200) throw new Error(`Farside via proxy returned ${httpCode}`);
-    if (html.length < 5000) throw new Error(`Proxy response too short (${html.length} bytes)`);
-
-    const flows = parseFarside(html);
+    const html   = await fetchFarsideHtml();
+    const flows  = parseFarside(html);
     if (flows.length === 0) throw new Error('Farside parse returned 0 rows');
 
-    // Merge BTC daily price from CoinMetrics
     const start  = flows[0].time;
     const prices = await fetchDailyPrice('btc', start);
     const priceMap = new Map(prices.map(p => [p.time, p.price]));
