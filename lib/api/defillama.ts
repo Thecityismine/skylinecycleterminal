@@ -1,4 +1,4 @@
-﻿// DeFiLlama Stablecoins API â€” completely free, no key required
+// DeFiLlama Stablecoins API — completely free, no key required
 // Docs: https://stablecoins.llama.fi
 
 export type StablecoinData = {
@@ -24,7 +24,7 @@ export async function fetchStablecoinSupply(): Promise<StablecoinData | null> {
   try {
     const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/all', {
       headers: { Accept: 'application/json' },
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
       signal: AbortSignal.timeout(12000),
     });
 
@@ -51,7 +51,7 @@ export async function fetchStablecoinHistory(): Promise<StablecoinHistoryPoint[]
   try {
     const res = await fetch('https://stablecoins.llama.fi/stablecoincharts/all', {
       headers: { Accept: 'application/json' },
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
       signal: AbortSignal.timeout(20000),
     });
 

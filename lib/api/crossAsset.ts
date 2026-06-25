@@ -1,4 +1,4 @@
-﻿import { fetchBTCDailyPrice, type PricePoint } from '@/lib/api/coinmetrics';
+import { fetchBTCDailyPrice, type PricePoint } from '@/lib/api/coinmetrics';
 
 type SimplePt = { time: string; value: number };
 
@@ -11,7 +11,7 @@ async function fredSeries(seriesId: string): Promise<SimplePt[]> {
     `&sort_order=desc&limit=5000`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];
@@ -25,13 +25,13 @@ async function fredSeries(seriesId: string): Promise<SimplePt[]> {
   }
 }
 
-// Yahoo Finance chart API â€” no key required, used as primary source for Gold
+// Yahoo Finance chart API — no key required, used as primary source for Gold
 // which is unreliable on FRED (GOLDAMGBD228NLBM returns empty intermittently)
 async function yahooSeries(symbol: string): Promise<SimplePt[]> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1wk&range=max`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
       signal: AbortSignal.timeout(20000),
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SkylineTerminal/1.0)' },
     });
@@ -59,7 +59,7 @@ async function yahooSeries(symbol: string): Promise<SimplePt[]> {
 }
 
 async function goldSeries(): Promise<SimplePt[]> {
-  // Primary: Yahoo Finance gold futures (GC=F) â€” reliable, no key needed
+  // Primary: Yahoo Finance gold futures (GC=F) — reliable, no key needed
   const yahoo = await yahooSeries('GC=F');
   if (yahoo.length > 50) return yahoo;
   // Fallback: FRED London PM gold fixing
@@ -135,7 +135,7 @@ export async function fetchCrossAssetData(): Promise<{
     };
   });
 
-  // Downsample to weekly for chart performance (~4000+ â†’ ~600 rows)
+  // Downsample to weekly for chart performance (~4000+ → ~600 rows)
   const points = allPoints.filter((_, i) => i % 7 === 0 || i === allPoints.length - 1);
 
   return {

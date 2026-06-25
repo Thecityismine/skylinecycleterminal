@@ -1,22 +1,22 @@
-﻿import { fetchBTCDailyPrice }        from '@/lib/api/coinmetrics';
+import { fetchBTCDailyPrice }        from '@/lib/api/coinmetrics';
 import { PageHeader }                from '@/components/dashboard/PageHeader';
 import { HeikinAshiChartSection }    from '@/components/charts/HeikinAshiChartSection';
 import type { HACandle }             from '@/components/charts/HeikinAshiChart';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ────────────────────────────────────────────────────────────────
 function fmtUSD(n: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(n);
 }
 
-// â”€â”€â”€ Data processing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Data processing ────────────────────────────────────────────────────────
 async function buildCandles(): Promise<HACandle[]> {
   const daily = await fetchBTCDailyPrice('2010-07-01');
 
-  // 1. Aggregate daily closes â†’ monthly OHLC
+  // 1. Aggregate daily closes → monthly OHLC
   const byMonth: Record<string, number[]> = {};
   for (const p of daily) {
     if (p.price <= 0) continue;
@@ -65,7 +65,7 @@ async function buildCandles(): Promise<HACandle[]> {
     };
   });
 
-  // 3. Detect bear-end signals (first green after â‰¥ 3 consecutive red months)
+  // 3. Detect bear-end signals (first green after ≥ 3 consecutive red months)
   let redStreak = 0;
   for (const c of raw) {
     if (!c.isGreen) {
@@ -82,7 +82,7 @@ async function buildCandles(): Promise<HACandle[]> {
   return raw;
 }
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ───────────────────────────────────────────────────────────────────
 export default async function HeikinAshiPage() {
   let candles: HACandle[] = [];
   let fetchError = false;
@@ -112,10 +112,10 @@ export default async function HeikinAshiPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Monthly Heikin-Ashi"
-        subtitle="BTC monthly HA candles â€” first green after 3+ consecutive red months signals the end of the bear market"
+        subtitle="BTC monthly HA candles — first green after 3+ consecutive red months signals the end of the bear market"
       />
 
-      {/* â”€â”€ Status banner â”€â”€ */}
+      {/* ── Status banner ── */}
       {latest && (
         <div
           className="rounded-xl border px-5 py-4 flex flex-wrap items-center gap-6"
@@ -126,18 +126,18 @@ export default async function HeikinAshiPage() {
               className="w-10 h-10 rounded-lg flex items-center justify-center text-xl font-bold shrink-0"
               style={{ backgroundColor: statusColor + '20', color: statusColor }}
             >
-              {isGreen ? 'â–²' : 'â–¼'}
+              {isGreen ? '▲' : '▼'}
             </div>
             <div>
               <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
-                {latest.month}{latest.partial ? ' Â· in progress' : ''} â€” Monthly HA
+                {latest.month}{latest.partial ? ' · in progress' : ''} — Monthly HA
               </p>
               <p className="text-sm font-semibold mt-0.5" style={{ color: statusColor }}>
                 {isSignal
-                  ? `BEAR MARKET END SIGNAL â€” First green after ${latest.redStreakBefore} consecutive red months`
+                  ? `BEAR MARKET END SIGNAL — First green after ${latest.redStreakBefore} consecutive red months`
                   : isGreen
-                  ? 'Green Candle â€” Uptrend / Bull Phase Active'
-                  : `Red Candle â€” Bear Phase Â· ${redStreak} consecutive red month${redStreak !== 1 ? 's' : ''}`}
+                  ? 'Green Candle — Uptrend / Bull Phase Active'
+                  : `Red Candle — Bear Phase · ${redStreak} consecutive red month${redStreak !== 1 ? 's' : ''}`}
               </p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default async function HeikinAshiPage() {
         </div>
       )}
 
-      {/* â”€â”€ Chart â”€â”€ */}
+      {/* ── Chart ── */}
       <HeikinAshiChartSection
         candles={candles}
         latest={latest}
@@ -176,7 +176,7 @@ export default async function HeikinAshiPage() {
         fetchError={fetchError}
       />
 
-      {/* â”€â”€ Bottom row: Signals + Interpretation â”€â”€ */}
+      {/* ── Bottom row: Signals + Interpretation ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
         {/* Historical signals */}
@@ -215,7 +215,7 @@ export default async function HeikinAshiPage() {
                         )}
                       </div>
                       <p className="text-[11px] mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-                        First green after {s.redStreakBefore} red months Â· entry {fmtUSD(s.realClose)}
+                        First green after {s.redStreakBefore} red months · entry {fmtUSD(s.realClose)}
                       </p>
                     </div>
                     {gainToNow != null && (
@@ -243,9 +243,9 @@ export default async function HeikinAshiPage() {
           </p>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#35D07F10', border: '1px solid #35D07F30' }}>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#35D07F' }}>â–² Bear Market End Signal</p>
+            <p className="text-xs font-semibold mb-1" style={{ color: '#35D07F' }}>▲ Bear Market End Signal</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              The first monthly green HA candle after 3 or more consecutive red months. Every major BTC bear market bottom has produced this signal. It doesn't mark the exact low â€” BTC may still retest â€” but it confirms that selling pressure has structurally exhausted on the monthly timeframe.
+              The first monthly green HA candle after 3 or more consecutive red months. Every major BTC bear market bottom has produced this signal. It doesn't mark the exact low — BTC may still retest — but it confirms that selling pressure has structurally exhausted on the monthly timeframe.
             </p>
           </div>
 
@@ -259,14 +259,14 @@ export default async function HeikinAshiPage() {
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#FF5C5C08', border: '1px solid #FF5C5C25' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#FF5C5C' }}>Red Candle</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              HA Close &lt; HA Open. Net selling dominates. The longer the red streak, the deeper the bear phase. Candles with no upper wick indicate that every bounce is being sold â€” a classic bear market signature.
+              HA Close &lt; HA Open. Net selling dominates. The longer the red streak, the deeper the bear phase. Candles with no upper wick indicate that every bounce is being sold — a classic bear market signature.
             </p>
           </div>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#3B82F608', border: '1px solid #3B82F625' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#3B82F6' }}>Why Heikin-Ashi?</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              Unlike standard candles, HA values are averaged from prior candles, filtering out noise. On a monthly timeframe, this removes short-term volatility entirely and reveals the macro directional bias â€” making it far easier to spot trend changes and bear market reversals.
+              Unlike standard candles, HA values are averaged from prior candles, filtering out noise. On a monthly timeframe, this removes short-term volatility entirely and reveals the macro directional bias — making it far easier to spot trend changes and bear market reversals.
             </p>
           </div>
         </div>

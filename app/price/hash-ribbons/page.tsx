@@ -1,12 +1,12 @@
-﻿import { fetchBTCHashRibbon }       from '@/lib/api/coinmetrics';
+import { fetchBTCHashRibbon }       from '@/lib/api/coinmetrics';
 import { PageHeader }               from '@/components/dashboard/PageHeader';
 import { StatCard }                 from '@/components/dashboard/StatCard';
 import { HashRibbonChartSection }  from '@/components/charts/HashRibbonChartSection';
 import type { HRPoint }            from '@/components/charts/HashRibbonChart';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ────────────────────────────────────────────────────────────────
 function smaSliding(values: (number | null)[], period: number): (number | null)[] {
   const out: (number | null)[] = [];
   let sum = 0;
@@ -24,16 +24,16 @@ function smaSliding(values: (number | null)[], period: number): (number | null)[
 }
 
 function fmtUSD(n: number | null): string {
-  if (n == null) return 'â€”';
+  if (n == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(n);
 }
 
 function fmtHashRate(v: number | null, source: string): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   if (source === 'DiffLast') {
-    // Difficulty â€” show in billions (T)
+    // Difficulty — show in billions (T)
     if (v >= 1e12)  return `${(v / 1e12).toFixed(1)} T`;
     if (v >= 1e9)   return `${(v / 1e9).toFixed(1)} B`;
     return v.toFixed(0);
@@ -60,7 +60,7 @@ function downsamplePreserving(points: HRPoint[], max: number): HRPoint[] {
   return points.filter((_, i) => i % step === 0 || keep.has(i));
 }
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ───────────────────────────────────────────────────────────────────
 type HRStatus = 'CAPITULATION' | 'RECOVERY' | 'NO_SIGNAL';
 
 type CapitEvent = {
@@ -71,7 +71,7 @@ type CapitEvent = {
   durationDays: number | null;
 };
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ────────────────────────────────────────────────────────────────────
 export default async function HashRibbonsPage() {
   let chartData:    HRPoint[]     = [];
   let capitEvents:  CapitEvent[]  = [];
@@ -166,34 +166,34 @@ export default async function HashRibbonsPage() {
     fetchError = true;
   }
 
-  // â”€â”€â”€ Status config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Status config ──────────────────────────────────────────────────────
   const SC = {
     CAPITULATION: {
       label:  'Miner Capitulation: Active',
-      sub:    '30d hash-rate MA is below 60d MA â€” miners are shutting off and selling',
+      sub:    '30d hash-rate MA is below 60d MA — miners are shutting off and selling',
       color:  '#FF5C5C',
       border: '#FF5C5C',
-      icon:   'â¬‡',
+      icon:   '⬇',
     },
     RECOVERY: {
       label:  'Miner Capitulation: Complete',
-      sub:    'Recovery Signal: Active â€” 30d hash-rate MA has crossed back above the 60d MA',
+      sub:    'Recovery Signal: Active — 30d hash-rate MA has crossed back above the 60d MA',
       color:  '#35D07F',
       border: '#35D07F',
-      icon:   'â–²',
+      icon:   '▲',
     },
     NO_SIGNAL: {
       label:  'No Signal',
-      sub:    '30d hash-rate MA is above 60d MA â€” healthy miner network, no recent capitulation',
+      sub:    '30d hash-rate MA is above 60d MA — healthy miner network, no recent capitulation',
       color:  'var(--sct-muted)',
       border: 'var(--sct-border)',
-      icon:   'â—',
+      icon:   '●',
     },
   } as const;
 
   const sc = SC[status];
 
-  // Ratio bar position (0.5Ã— to 2.0Ã— range, cap at edges)
+  // Ratio bar position (0.5× to 2.0× range, cap at edges)
   const barPct = currentRatio != null
     ? Math.min(Math.max(((currentRatio - 0.5) / (2.0 - 0.5)) * 100, 1), 99)
     : null;
@@ -202,10 +202,10 @@ export default async function HashRibbonsPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Hash Ribbons"
-        subtitle="Miner capitulation detector â€” 30-day vs 60-day hash-rate MA cross signals forced selling exhaustion"
+        subtitle="Miner capitulation detector — 30-day vs 60-day hash-rate MA cross signals forced selling exhaustion"
       />
 
-      {/* â”€â”€ Status banner â”€â”€ */}
+      {/* ── Status banner ── */}
       <div
         className="rounded-xl border px-5 py-4 flex flex-wrap items-start gap-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: sc.border }}
@@ -218,14 +218,14 @@ export default async function HashRibbonsPage() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
-            Hash Ribbons â€” Current Status
+            Hash Ribbons — Current Status
           </p>
           <p className="text-sm font-semibold mt-0.5" style={{ color: sc.color }}>{sc.label}</p>
           <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--sct-muted)' }}>{sc.sub}</p>
         </div>
       </div>
 
-      {/* â”€â”€ Stat cards â”€â”€ */}
+      {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="BTC Price"
@@ -250,12 +250,12 @@ export default async function HashRibbonsPage() {
         />
         <StatCard
           label="Ribbon Ratio (30d / 60d)"
-          value={currentRatio != null ? `${currentRatio.toFixed(3)}Ã—` : 'â€”'}
+          value={currentRatio != null ? `${currentRatio.toFixed(3)}×` : '—'}
           sub={
             currentRatio == null ? 'Computing...' :
-            currentRatio < 1.0   ? 'Below 1.0 â€” Capitulation Active' :
-            currentRatio < 1.05  ? 'Just above 1.0 â€” Recovery Signal' :
-                                   'Above 1.0 â€” Network healthy'
+            currentRatio < 1.0   ? 'Below 1.0 — Capitulation Active' :
+            currentRatio < 1.05  ? 'Just above 1.0 — Recovery Signal' :
+                                   'Above 1.0 — Network healthy'
           }
           accent={
             currentRatio == null ? 'var(--sct-muted)' :
@@ -267,7 +267,7 @@ export default async function HashRibbonsPage() {
         />
       </div>
 
-      {/* â”€â”€ Chart card â”€â”€ */}
+      {/* ── Chart card ── */}
       <HashRibbonChartSection
         data={chartData}
         fetchError={fetchError}
@@ -280,7 +280,7 @@ export default async function HashRibbonsPage() {
         dataSource={dataSource}
       />
 
-      {/* â”€â”€ Bottom row â”€â”€ */}
+      {/* ── Bottom row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
         {/* Historical capitulation events */}
@@ -337,12 +337,12 @@ export default async function HashRibbonsPage() {
                               {ev.endDate}
                             </span>
                             <span className="text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-                              @ {fmtUSD(ev.endPrice)} Â· {ev.durationDays}d
+                              @ {fmtUSD(ev.endPrice)} · {ev.durationDays}d
                             </span>
                           </div>
                         ) : (
                           <p className="text-[11px] font-mono" style={{ color: '#FF5C5C' }}>
-                            Still active Â· {ev.durationDays} days so far
+                            Still active · {ev.durationDays} days so far
                           </p>
                         )}
                       </div>
@@ -355,7 +355,7 @@ export default async function HashRibbonsPage() {
                             {gain >= 0 ? '+' : ''}{gain.toFixed(0)}%
                           </p>
                           <p className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>
-                            start â†’ recovery
+                            start → recovery
                           </p>
                         </div>
                       )}
@@ -390,7 +390,7 @@ export default async function HashRibbonsPage() {
                            currentRatio! < 1.05 ? '#35D07F' : 'var(--sct-muted)',
                   }}
                 >
-                  {currentRatio!.toFixed(3)}Ã—
+                  {currentRatio!.toFixed(3)}×
                 </span>
               </div>
               <div className="relative">
@@ -415,11 +415,11 @@ export default async function HashRibbonsPage() {
                 className="flex justify-between text-[9px] font-mono mt-1.5"
                 style={{ color: 'var(--sct-muted)' }}
               >
-                <span>0.5Ã—</span>
-                <span>0.75Ã—</span>
-                <span>1.0Ã—</span>
-                <span>1.5Ã—</span>
-                <span>2.0Ã—</span>
+                <span>0.5×</span>
+                <span>0.75×</span>
+                <span>1.0×</span>
+                <span>1.5×</span>
+                <span>2.0×</span>
               </div>
             </div>
           )}
@@ -427,21 +427,21 @@ export default async function HashRibbonsPage() {
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#FF5C5C10', border: '1px solid #FF5C5C30' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#FF5C5C' }}>Capitulation Phase (ratio &lt; 1.0)</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              The 30d hash-rate MA drops below the 60d MA â€” miners are shutting off unprofitable rigs and selling BTC to cover operating costs. This forced selling creates sustained downward price pressure. Capitulation can last weeks to months.
+              The 30d hash-rate MA drops below the 60d MA — miners are shutting off unprofitable rigs and selling BTC to cover operating costs. This forced selling creates sustained downward price pressure. Capitulation can last weeks to months.
             </p>
           </div>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#35D07F10', border: '1px solid #35D07F30' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#35D07F' }}>Recovery / Buy Signal (ratio crosses above 1.0)</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              The 30d MA crosses back above the 60d MA â€” the miner washout is over. Inefficient miners have exited, remaining miners are profitable again, and forced selling has ended. Historically this has preceded major price recoveries within 60â€“120 days.
+              The 30d MA crosses back above the 60d MA — the miner washout is over. Inefficient miners have exited, remaining miners are profitable again, and forced selling has ended. Historically this has preceded major price recoveries within 60–120 days.
             </p>
           </div>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#A78BFA10', border: '1px solid #A78BFA30' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#A78BFA' }}>Why Hash Rate Matters</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              Miners are the only natural net sellers of BTC â€” they receive block rewards and must sell some portion to pay electricity and operating costs. When hash rate drops, miners are shutting off, which means they were previously selling under cost. The capitulation exhausts that sell pressure and acts as a natural bottom-finding mechanism.
+              Miners are the only natural net sellers of BTC — they receive block rewards and must sell some portion to pay electricity and operating costs. When hash rate drops, miners are shutting off, which means they were previously selling under cost. The capitulation exhausts that sell pressure and acts as a natural bottom-finding mechanism.
             </p>
           </div>
 

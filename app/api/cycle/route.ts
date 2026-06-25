@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { fetchOnChainMetrics, fetchCurrentLTHData, fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { fetchFearGreed } from '@/lib/api/feargreed';
 import { fetchMVRV } from '@/lib/api/cryptoquant';
@@ -6,8 +6,8 @@ import { fetchStablecoinSupply } from '@/lib/api/defillama';
 import { fetchHashrate } from '@/lib/api/mempool';
 import { computeSkylineScore, buildHistoricalContext } from '@/lib/indicators/skylineScore';
 
-// 24-hour CDN cache â€” on-chain data is published daily with a 1-day lag
-export const revalidate = 3600;
+// 24-hour CDN cache — on-chain data is published daily with a 1-day lag
+export const revalidate = 86400;
 
 export async function GET() {
   try {
@@ -22,7 +22,7 @@ export async function GET() {
     ]);
 
     // Build percentile distributions from full price history.
-    // This is what makes the score self-calibrating â€” each indicator is scored
+    // This is what makes the score self-calibrating — each indicator is scored
     // relative to where it sits within all of Bitcoin's recorded history.
     const ctx = buildHistoricalContext(fullPrices);
 

@@ -1,4 +1,4 @@
-﻿import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
+import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
 import { calculate2YearMA } from "@/lib/indicators/cycleHelpers";
 import { TwoYearMAChart } from "@/components/charts/TwoYearMAChart";
 import { TwoYearMAShareModal } from "@/components/share/TwoYearMAShareModal";
@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export default async function TwoYearMAPage() {
   let chartData: Awaited<ReturnType<typeof calculate2YearMA>> = [];
@@ -42,46 +42,46 @@ export default async function TwoYearMAPage() {
     if (m >= 5.0) {
       zoneLabel = 'Distribution Zone';
       color = '#FF5C5C';
-      body = `At ${m.toFixed(2)}Ã— the 2-Year MA, BTC is above the historical distribution band (2YMAÃ—5). Every time price has reached this zone it has marked a major cycle top. Aggressive, systematic profit-taking is historically warranted.`;
-      ctx = 'Price above 2YMAÃ—5 has coincided with every major BTC cycle top: 2011, 2013, 2017, and 2021 â€” each followed by a 70â€“85% drawdown.';
+      body = `At ${m.toFixed(2)}× the 2-Year MA, BTC is above the historical distribution band (2YMA×5). Every time price has reached this zone it has marked a major cycle top. Aggressive, systematic profit-taking is historically warranted.`;
+      ctx = 'Price above 2YMA×5 has coincided with every major BTC cycle top: 2011, 2013, 2017, and 2021 — each followed by a 70–85% drawdown.';
     } else if (m >= 3.5) {
-      zoneLabel = 'High Risk â€” Approaching Top Band';
+      zoneLabel = 'High Risk — Approaching Top Band';
       color = '#F97316';
-      body = `At ${m.toFixed(2)}Ã— the 2-Year MA, BTC is significantly extended. The distribution band (5Ã—) is within reach. Risk/reward is shifting decisively â€” begin taking profits in tranches on strength.`;
-      ctx = 'The final 20â€“30% of prior bull runs occurred in this zone. Each time it resolved with 70â€“80%+ corrections when the 5Ã— band was eventually reached.';
+      body = `At ${m.toFixed(2)}× the 2-Year MA, BTC is significantly extended. The distribution band (5×) is within reach. Risk/reward is shifting decisively — begin taking profits in tranches on strength.`;
+      ctx = 'The final 20–30% of prior bull runs occurred in this zone. Each time it resolved with 70–80%+ corrections when the 5× band was eventually reached.';
     } else if (m >= 2.0) {
-      zoneLabel = 'Bull Market â€” Elevated Premium';
+      zoneLabel = 'Bull Market — Elevated Premium';
       color = '#E6B450';
-      body = `BTC is ${m.toFixed(2)}Ã— its 2-Year MA â€” in a healthy bull market with a growing premium above trend. Long-term holders have significant unrealized gains. Consider partial profit-taking at key resistance levels.`;
-      ctx = 'The 2020â€“2021 bull run spent most of its time between 2Ã—â€“5Ã— the 2YMA. Holding through this range has historically been rewarded, but position sizing matters.';
+      body = `BTC is ${m.toFixed(2)}× its 2-Year MA — in a healthy bull market with a growing premium above trend. Long-term holders have significant unrealized gains. Consider partial profit-taking at key resistance levels.`;
+      ctx = 'The 2020–2021 bull run spent most of its time between 2×–5× the 2YMA. Holding through this range has historically been rewarded, but position sizing matters.';
     } else if (m >= 1.0) {
       zoneLabel = 'Neutral / Expansion';
       color = '#35D07F';
-      body = `BTC is ${m.toFixed(2)}Ã— its 2-Year MA â€” in the healthy expansion zone. Price is above trend but without excessive premium. This is the most comfortable zone for holding and accumulating on dips.`;
-      ctx = 'The 1Ã—â€“2Ã— range is where BTC spends the most time during bull markets and where the bulk of mid-cycle gains typically accumulate.';
+      body = `BTC is ${m.toFixed(2)}× its 2-Year MA — in the healthy expansion zone. Price is above trend but without excessive premium. This is the most comfortable zone for holding and accumulating on dips.`;
+      ctx = 'The 1×–2× range is where BTC spends the most time during bull markets and where the bulk of mid-cycle gains typically accumulate.';
     } else {
       zoneLabel = 'Accumulation Zone';
       color = '#3B82F6';
-      body = `BTC is below its 2-Year MA at ${m.toFixed(2)}Ã— â€” historically the strongest long-term entry zone in BTC\'s history. This level has only been reached during deep bear market bottoms.`;
-      ctx = 'Price below 2YMA has occurred near the 2015 ($150), 2019 ($3.4K), and 2022 ($16K) cycle lows â€” each preceded a 5â€“20Ã— move.';
+      body = `BTC is below its 2-Year MA at ${m.toFixed(2)}× — historically the strongest long-term entry zone in BTC\'s history. This level has only been reached during deep bear market bottoms.`;
+      ctx = 'Price below 2YMA has occurred near the 2015 ($150), 2019 ($3.4K), and 2022 ($16K) cycle lows — each preceded a 5–20× move.';
     }
     const barPos = Math.min(m / 6.0, 1) * 100;
     return {
       zoneLabel, color,
-      headline: `${m.toFixed(2)}Ã— the 2-Year Moving Average`,
+      headline: `${m.toFixed(2)}× the 2-Year Moving Average`,
       body, ctx, barPos,
     };
   })();
 
   const zone =
     latestMA5 != null && latestPrice > latestMA5
-      ? { label: 'Distribution Zone', color: 'var(--sct-red)', desc: 'Price above 2YMAÃ—5 â€” historically a cycle top signal' }
+      ? { label: 'Distribution Zone', color: 'var(--sct-red)', desc: 'Price above 2YMA×5 — historically a cycle top signal' }
       : latestMA != null && latestPrice < latestMA
-      ? { label: 'Accumulation Zone', color: 'var(--sct-blue)', desc: 'Price below 2YMA â€” historically the best long-term buy zone' }
-      : { label: 'Neutral / Expansion', color: 'var(--sct-green)', desc: 'Price between 2YMA and 2YMAÃ—5 â€” normal bull market range' };
+      ? { label: 'Accumulation Zone', color: 'var(--sct-blue)', desc: 'Price below 2YMA — historically the best long-term buy zone' }
+      : { label: 'Neutral / Expansion', color: 'var(--sct-green)', desc: 'Price between 2YMA and 2YMA×5 — normal bull market range' };
 
   function fmt(n: number | null): string {
-    if (n == null || n === 0) return 'â€”';
+    if (n == null || n === 0) return '—';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -93,7 +93,7 @@ export default async function TwoYearMAPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="2-Year Moving Average"
-        subtitle="Phillip Swift's macro valuation band â€” accumulate below 2YMA Â· distribute above 2YMAÃ—5"
+        subtitle="Phillip Swift's macro valuation band — accumulate below 2YMA · distribute above 2YMA×5"
       />
 
       {/* Stats row */}
@@ -112,14 +112,14 @@ export default async function TwoYearMAPage() {
           accent="#F7931A"
         />
         <StatCard
-          label="2Y MA Ã— 5"
+          label="2Y MA × 5"
           value={fmt(latestMA5)}
           sub="Historical cycle top band"
           accent="#FF5C5C"
         />
         <StatCard
           label="Current Multiple"
-          value={multiplier != null ? `${multiplier.toFixed(2)}Ã—` : 'â€”'}
+          value={multiplier != null ? `${multiplier.toFixed(2)}×` : '—'}
           sub={zone.label}
           accent={zone.color}
         />
@@ -151,10 +151,10 @@ export default async function TwoYearMAPage() {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC / USD vs 2-Year Moving Average â€” Log Scale
+              BTC / USD vs 2-Year Moving Average — Log Scale
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Price below orange = historically best buy zone Â· Price above red = historically cycle top
+              Price below orange = historically best buy zone · Price above red = historically cycle top
             </p>
           </div>
           <div className="flex items-center gap-4 flex-wrap">
@@ -170,7 +170,7 @@ export default async function TwoYearMAPage() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-6 h-px border-t-2 border-dashed" style={{ borderColor: '#FF5C5C' }} />
-                2Y MA Ã—5
+                2Y MA ×5
               </span>
             </div>
             {!fetchError && (
@@ -193,7 +193,7 @@ export default async function TwoYearMAPage() {
             className="h-[480px] flex items-center justify-center rounded-lg border text-sm"
             style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
           >
-            Unable to load price data â€” CoinMetrics API unreachable
+            Unable to load price data — CoinMetrics API unreachable
           </div>
         ) : (
           <div className="h-[480px]">
@@ -225,15 +225,15 @@ export default async function TwoYearMAPage() {
             {/* Zone bar */}
             <div className="relative mb-1.5">
               <div className="flex h-1.5 rounded-full overflow-hidden">
-                {/* 0â€“1Ã— Accumulation */}
+                {/* 0–1× Accumulation */}
                 <div style={{ width: '16.7%', backgroundColor: '#3B82F6' }} />
-                {/* 1â€“2Ã— Neutral */}
+                {/* 1–2× Neutral */}
                 <div style={{ width: '16.7%', backgroundColor: '#35D07F' }} />
-                {/* 2â€“3.5Ã— Elevated */}
+                {/* 2–3.5× Elevated */}
                 <div style={{ width: '25.0%', backgroundColor: '#E6B450' }} />
-                {/* 3.5â€“5Ã— High Risk */}
+                {/* 3.5–5× High Risk */}
                 <div style={{ width: '25.0%', backgroundColor: '#F97316' }} />
-                {/* 5Ã—+ Distribution */}
+                {/* 5×+ Distribution */}
                 <div style={{ width: '16.6%', backgroundColor: '#FF5C5C' }} />
               </div>
               {/* Position marker */}
@@ -252,11 +252,11 @@ export default async function TwoYearMAPage() {
               className="flex justify-between text-[9px] font-mono mb-4"
               style={{ color: 'var(--sct-muted)' }}
             >
-              <span>0Ã—</span>
-              <span>1Ã— 2YMA</span>
-              <span>3.5Ã—</span>
-              <span>5Ã— Top</span>
-              <span>6Ã—+</span>
+              <span>0×</span>
+              <span>1× 2YMA</span>
+              <span>3.5×</span>
+              <span>5× Top</span>
+              <span>6×+</span>
             </div>
 
             {/* Historical context note */}
@@ -274,25 +274,25 @@ export default async function TwoYearMAPage() {
       <InsightPanel title="Indicator Logic">
         <InsightRow
           label="Accumulation Signal"
-          value="Price < 2YMA â€” occurred briefly in every bear market bottom (2011, 2015, 2019, 2022)"
+          value="Price < 2YMA — occurred briefly in every bear market bottom (2011, 2015, 2019, 2022)"
           valueColor="var(--sct-blue)"
           stack
         />
         <InsightRow
           label="Distribution Signal"
-          value="Price > 2YMAÃ—5 â€” has marked every cycle top in BTC's history"
+          value="Price > 2YMA×5 — has marked every cycle top in BTC's history"
           valueColor="var(--sct-red)"
           stack
         />
         <InsightRow
           label="Current Multiple"
-          value={multiplier != null ? `${multiplier.toFixed(2)}Ã— the 2-Year Moving Average` : 'â€”'}
+          value={multiplier != null ? `${multiplier.toFixed(2)}× the 2-Year Moving Average` : '—'}
           valueColor={zone.color}
           stack
         />
         <InsightRow
           label="Source"
-          value="Daily price: CoinMetrics Community API Â· Calculation: 730-day simple moving average"
+          value="Daily price: CoinMetrics Community API · Calculation: 730-day simple moving average"
           stack
         />
       </InsightPanel>

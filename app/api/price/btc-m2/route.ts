@@ -1,7 +1,7 @@
-﻿import { NextResponse }  from 'next/server';
+import { NextResponse }  from 'next/server';
 import { computeBtcM2 } from '@/lib/indicators/btcM2';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export type { BtcM2Point } from '@/lib/indicators/btcM2';
 

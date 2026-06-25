@@ -1,4 +1,4 @@
-﻿import { fetchBTCMVRVData } from '@/lib/api/coinmetrics';
+import { fetchBTCMVRVData } from '@/lib/api/coinmetrics';
 import {
   buildSoprPoints,
   getSoprRegime,
@@ -10,28 +10,28 @@ import { BTCSoprChartSection } from '@/components/charts/BTCSoprChartSection';
 import { PageHeader }    from '@/components/dashboard/PageHeader';
 import { StatCard }      from '@/components/dashboard/StatCard';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt3(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return v.toFixed(3);
 }
 
 function fmtDev(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(3)}`;
 }
 
 function fmtUSD(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function SoprPage() {
   const points = await (async () => {
@@ -66,7 +66,7 @@ export default async function SoprPage() {
         subtitle="Realized profit and loss behavior of coins moving on-chain"
       />
 
-      {/* â”€â”€ Regime banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Regime banner ───────────────────────────────────────────────── */}
       <div
         className="flex items-center gap-4 rounded-xl border px-5 py-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: regime.color, borderWidth: 1 }}
@@ -83,7 +83,7 @@ export default async function SoprPage() {
                 color: regime.color,
               }}
             >
-              MVRV Deviation {last ? fmtDev(last.soprDeviation) : 'â€”'}
+              MVRV Deviation {last ? fmtDev(last.soprDeviation) : '—'}
             </span>
             <span
               className="px-2.5 py-0.5 rounded text-xs font-mono border"
@@ -106,7 +106,7 @@ export default async function SoprPage() {
         )}
       </div>
 
-      {/* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Stat cards ──────────────────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <StatCard
@@ -126,15 +126,15 @@ export default async function SoprPage() {
           />
           <StatCard
             label="30D Average"
-            value={last.sma30 != null ? fmt3(last.sma30) : 'â€”'}
-            sub={avg30dev != null ? `Deviation: ${fmtDev(avg30dev)}` : 'Calculatingâ€¦'}
+            value={last.sma30 != null ? fmt3(last.sma30) : '—'}
+            sub={avg30dev != null ? `Deviation: ${fmtDev(avg30dev)}` : 'Calculating…'}
             accent="#F2B84B"
             freshness="daily"
           />
           <StatCard
             label="90D Average"
-            value={last.sma90 != null ? fmt3(last.sma90) : 'â€”'}
-            sub={avg90dev != null ? `Deviation: ${fmtDev(avg90dev)}` : 'Calculatingâ€¦'}
+            value={last.sma90 != null ? fmt3(last.sma90) : '—'}
+            sub={avg90dev != null ? `Deviation: ${fmtDev(avg90dev)}` : 'Calculating…'}
             accent="#3B82F6"
             freshness="daily"
           />
@@ -148,23 +148,23 @@ export default async function SoprPage() {
         </div>
       )}
 
-      {/* â”€â”€ Data source note â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Data source note ────────────────────────────────────────────── */}
       <div
         className="flex items-start gap-3 rounded-lg border px-4 py-3 text-xs"
         style={{ backgroundColor: `#3B82F610`, borderColor: `#3B82F640`, color: 'var(--sct-muted)' }}
       >
-        <span className="mt-0.5 shrink-0" style={{ color: '#3B82F6' }}>â“˜</span>
+        <span className="mt-0.5 shrink-0" style={{ color: '#3B82F6' }}>ⓘ</span>
         <p>
           <span style={{ color: '#3B82F6' }}>Data source note: </span>
           True SOPR (Spent Output Profit Ratio) requires UTXO-level on-chain data that is not available
           in free public APIs. This page uses the <strong style={{ color: 'var(--sct-text)' }}>MVRV Ratio</strong> from
-          CoinMetrics as a directional proxy â€” both metrics center on 1.0 (break-even), go green above
+          CoinMetrics as a directional proxy — both metrics center on 1.0 (break-even), go green above
           and red below, and identify the same profit/loss regimes at the cycle level.
-          MVRV deviation = MVRV âˆ’ 1.0, equivalent to SOPR âˆ’ 1.0.
+          MVRV deviation = MVRV − 1.0, equivalent to SOPR − 1.0.
         </p>
       </div>
 
-      {/* â”€â”€ Main chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Main chart ──────────────────────────────────────────────────── */}
       {points.length > 0 ? (
         <BTCSoprChartSection
           points={points}
@@ -187,7 +187,7 @@ export default async function SoprPage() {
         </div>
       )}
 
-      {/* â”€â”€ Secondary panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Secondary panels ────────────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -259,13 +259,13 @@ export default async function SoprPage() {
         </div>
       )}
 
-      {/* â”€â”€ Historical regime table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Historical regime table ──────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--sct-text)' }}>
-          Historical SOPR Regimes â€” Reference Table
+          Historical SOPR Regimes — Reference Table
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs font-mono">
@@ -295,7 +295,7 @@ export default async function SoprPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Interpretation panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Interpretation panel ─────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -308,7 +308,7 @@ export default async function SoprPage() {
             <p className="font-semibold mb-1" style={{ color: '#FF5C5C' }}>Capitulation</p>
             <p>
               MVRV materially below 1.0. Holders are at aggregate loss. Historically coincides with
-              bear market lows â€” but loss realization alone does not confirm a bottom.
+              bear market lows — but loss realization alone does not confirm a bottom.
             </p>
           </div>
           <div>
@@ -322,7 +322,7 @@ export default async function SoprPage() {
             <p className="font-semibold mb-1" style={{ color: '#35D07F' }}>Healthy Bull</p>
             <p>
               SOPR above 1.0. Holders in profit. Pullbacks to near 1.0 that get absorbed
-              without breaking below are constructive â€” they represent distribution followed by re-accumulation.
+              without breaking below are constructive — they represent distribution followed by re-accumulation.
             </p>
           </div>
           <div>
@@ -340,14 +340,14 @@ export default async function SoprPage() {
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Key principle: </span>
             SOPR shows whether Bitcoin holders moving coins are realizing profits or losses. The key signal
-            is not one red or green bar â€” it is whether SOPR can reclaim and hold the break-even level (1.0)
+            is not one red or green bar — it is whether SOPR can reclaim and hold the break-even level (1.0)
             over time. A sustained hold above 1.0 after a period below it is one of the most reliable
             early-cycle recovery signals in Bitcoin&apos;s history.
           </p>
           <p className="mt-2">
             <span style={{ color: 'var(--sct-text)' }}>Data source: </span>
             MVRV Ratio (CapMVRVCur) from CoinMetrics Community API, updated daily.
-            MVRV deviation (MVRV âˆ’ 1) is used as a free-tier directional proxy for SOPR âˆ’ 1.
+            MVRV deviation (MVRV − 1) is used as a free-tier directional proxy for SOPR − 1.
             Both metrics identify the same market profit/loss regimes at the cycle level.
           </p>
         </div>

@@ -1,4 +1,4 @@
-﻿import { fetchBTCMVRVData } from '@/lib/api/coinmetrics';
+import { fetchBTCMVRVData } from '@/lib/api/coinmetrics';
 import {
   buildValueFloorPoints,
   getFloorProximityScore,
@@ -8,24 +8,24 @@ import { BTCValueFloorChartSection } from '@/components/charts/BTCValueFloorChar
 import { PageHeader }         from '@/components/dashboard/PageHeader';
 import { StatCard }           from '@/components/dashboard/StatCard';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtUSD(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmtMult(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
-  return `${v.toFixed(2)}Ã—`;
+  if (v == null) return '—';
+  return `${v.toFixed(2)}×`;
 }
 
 function fmtPct(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 }
 
@@ -37,18 +37,18 @@ function distColor(v: number | null | undefined): string {
   return '#FF5C5C';
 }
 
-// â”€â”€â”€ Historical reference table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Historical reference table ────────────────────────────────────────────────
 
 const CYCLE_SNAPSHOTS = [
   { period: '2011 Cycle Low', date: 'Nov 2011', btcPrice: '$2',      vsCostBasis: 'Below', regime: 'Deep Value', color: '#3B82F6' },
-  { period: '2015 Bear Low',  date: 'Jan 2015', btcPrice: '$175',    vsCostBasis: '0â€“20%', regime: 'Deep Value', color: '#3B82F6' },
+  { period: '2015 Bear Low',  date: 'Jan 2015', btcPrice: '$175',    vsCostBasis: '0–20%', regime: 'Deep Value', color: '#3B82F6' },
   { period: '2018 Bear Low',  date: 'Dec 2018', btcPrice: '$3,122',  vsCostBasis: '~20%',  regime: 'Deep Value', color: '#3B82F6' },
   { period: 'COVID Crash',    date: 'Mar 2020', btcPrice: '$3,858',  vsCostBasis: '~5%',   regime: 'Approaching', color: '#35D07F' },
   { period: '2022 Bear Low',  date: 'Nov 2022', btcPrice: '$15,476', vsCostBasis: '~-15%', regime: 'Deep Value', color: '#3B82F6' },
   { period: '2024 ATH',       date: 'Mar 2024', btcPrice: '$73,737', vsCostBasis: '~280%', regime: 'Extended',   color: '#FF5C5C' },
 ];
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function CVDDPage() {
   const points = await (async () => {
@@ -77,25 +77,25 @@ export default async function CVDDPage() {
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
         title="Bitcoin Value Floor Model"
-        subtitle="Long-term on-chain value reference floors â€” realized price, moving averages, and power law"
+        subtitle="Long-term on-chain value reference floors — realized price, moving averages, and power law"
         regime={pageRegime}
       />
 
-      {/* â”€â”€ Methodology note â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Methodology note ───────────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-4 flex items-start gap-3"
         style={{ backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.25)' }}
       >
-        <span className="text-blue-400 text-base shrink-0">â“˜</span>
+        <span className="text-blue-400 text-base shrink-0">ⓘ</span>
         <p className="text-xs leading-relaxed" style={{ color: 'rgba(147,197,253,0.9)' }}>
           <strong>CVDD Alternative:</strong> True CVDD (Cumulative Value Days Destroyed) requires daily Coin Days Destroyed (CDD) data, which is paywalled across all on-chain providers including CoinMetrics, Glassnode, and Blockchain.info.
-          This page answers the same question â€” <em>is Bitcoin near historically depressed valuation territory?</em> â€” using four free-tier metrics:
+          This page answers the same question — <em>is Bitcoin near historically depressed valuation territory?</em> — using four free-tier metrics:
           <strong> Realized Price</strong> (aggregate holder cost basis via MVRV), <strong>200W MA</strong>, <strong>2Y MA</strong>, and <strong>Power Law</strong> central value.
           All four have historically converged near major bear-market lows, providing equivalent floor reference signals to CVDD.
         </p>
       </div>
 
-      {/* â”€â”€ Floor proximity score banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Floor proximity score banner ───────────────────────────────────── */}
       <div
         className="rounded-xl border px-5 py-4 flex items-center gap-4"
         style={{
@@ -111,13 +111,13 @@ export default async function CVDDPage() {
         </div>
         <div>
           <p className="text-sm font-semibold" style={{ color: score.color }}>
-            Floor Proximity Score â€” {score.label}
+            Floor Proximity Score — {score.label}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>{score.description}</p>
         </div>
       </div>
 
-      {/* â”€â”€ Primary stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Primary stat cards ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard
           label="BTC Price"
@@ -133,9 +133,9 @@ export default async function CVDDPage() {
         />
         <StatCard
           label="vs Realized Price"
-          value={vsRealized != null ? fmtPct(vsRealized) : 'â€”'}
+          value={vsRealized != null ? fmtPct(vsRealized) : '—'}
           sub={vsRealized != null
-            ? vsRealized < 0 ? 'Below cost basis â€” deep value' : 'Above aggregate cost basis'
+            ? vsRealized < 0 ? 'Below cost basis — deep value' : 'Above aggregate cost basis'
             : ''}
           accent={distColor(vsRealized)}
         />
@@ -147,7 +147,7 @@ export default async function CVDDPage() {
         />
         <StatCard
           label="ATH Drawdown"
-          value={last ? `${last.drawdownPct.toFixed(1)}%` : 'â€”'}
+          value={last ? `${last.drawdownPct.toFixed(1)}%` : '—'}
           sub={last ? `ATH: ${fmtUSD(last.ath)}` : ''}
           accent={last?.drawdownPct != null
             ? last.drawdownPct < -50 ? '#35D07F'
@@ -158,35 +158,35 @@ export default async function CVDDPage() {
         />
       </div>
 
-      {/* â”€â”€ Secondary distance cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Secondary distance cards ───────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
           label="200W MA"
           value={fmtUSD(last?.ma200w)}
-          sub={vs200w != null ? `${fmtPct(vs200w)} above` : 'Calculatingâ€¦'}
+          sub={vs200w != null ? `${fmtPct(vs200w)} above` : 'Calculating…'}
           accent="#A855F7"
         />
         <StatCard
           label="vs 200W MA"
-          value={last?.vs200w != null ? fmtMult(last.vs200w) : 'â€”'}
+          value={last?.vs200w != null ? fmtMult(last.vs200w) : '—'}
           sub="Price / 200-week moving average"
           accent={distColor(vs200w)}
         />
         <StatCard
           label="2-Year MA"
           value={fmtUSD(last?.ma2y)}
-          sub={vs2y != null ? `${fmtPct(vs2y)} above` : 'Calculatingâ€¦'}
+          sub={vs2y != null ? `${fmtPct(vs2y)} above` : 'Calculating…'}
           accent="#35D07F"
         />
         <StatCard
           label="vs Power Law"
-          value={last?.vsPowerLaw != null ? fmtMult(last.vsPowerLaw) : 'â€”'}
+          value={last?.vsPowerLaw != null ? fmtMult(last.vsPowerLaw) : '—'}
           sub={vsPowerLaw != null ? `${fmtPct(vsPowerLaw)} vs central value` : ''}
           accent={distColor(vsPowerLaw)}
         />
       </div>
 
-      {/* â”€â”€ Main chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Main chart ────────────────────────────────────────────────────── */}
       <BTCValueFloorChartSection
         points={points}
         scoreScore={score.score}
@@ -198,7 +198,7 @@ export default async function CVDDPage() {
         drawdownPct={last?.drawdownPct ?? null}
       />
 
-      {/* â”€â”€ Score breakdown + zone guide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Score breakdown + zone guide ───────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Score panel */}
@@ -222,11 +222,11 @@ export default async function CVDDPage() {
             />
           </div>
           <div className="flex justify-between text-[10px] font-mono mb-4" style={{ color: 'var(--sct-muted)' }}>
-            <span style={{ color: '#FF5C5C' }}>0 â€” Extended</span>
+            <span style={{ color: '#FF5C5C' }}>0 — Extended</span>
             <span style={{ color: '#E6B450' }}>20</span>
             <span style={{ color: '#6B7280' }}>40</span>
             <span style={{ color: '#35D07F' }}>60</span>
-            <span style={{ color: '#3B82F6' }}>80 â€” Deep Value</span>
+            <span style={{ color: '#3B82F6' }}>80 — Deep Value</span>
             <span>100</span>
           </div>
 
@@ -267,11 +267,11 @@ export default async function CVDDPage() {
           </p>
           <div className="space-y-3">
             {[
-              { range: '80â€“100', label: 'Historical Bottom Zone',  color: '#3B82F6', desc: 'Price near or below multiple historical value floors. All major bear lows 2015â€“2022 fell here.' },
-              { range: '60â€“80',  label: 'Approaching Deep Value',  color: '#35D07F', desc: 'Price meaningfully below long-term averages. Often seen in later stages of bear markets.' },
-              { range: '40â€“60',  label: 'Pullback / Neutral',      color: '#6B7280', desc: 'Normal mid-cycle range. Price is neither historically cheap nor historically expensive.' },
-              { range: '20â€“40',  label: 'Normal Expansion',        color: '#E6B450', desc: 'Healthy bull market. Price extended above cost basis but not at speculative extremes.' },
-              { range: '0â€“20',   label: 'Far Above Value Floors',  color: '#FF5C5C', desc: 'Price far above all reference floors. Historically preceded cycle peaks (2017, 2021).' },
+              { range: '80–100', label: 'Historical Bottom Zone',  color: '#3B82F6', desc: 'Price near or below multiple historical value floors. All major bear lows 2015–2022 fell here.' },
+              { range: '60–80',  label: 'Approaching Deep Value',  color: '#35D07F', desc: 'Price meaningfully below long-term averages. Often seen in later stages of bear markets.' },
+              { range: '40–60',  label: 'Pullback / Neutral',      color: '#6B7280', desc: 'Normal mid-cycle range. Price is neither historically cheap nor historically expensive.' },
+              { range: '20–40',  label: 'Normal Expansion',        color: '#E6B450', desc: 'Healthy bull market. Price extended above cost basis but not at speculative extremes.' },
+              { range: '0–20',   label: 'Far Above Value Floors',  color: '#FF5C5C', desc: 'Price far above all reference floors. Historically preceded cycle peaks (2017, 2021).' },
             ].map((z) => (
               <div key={z.range} className="flex gap-3">
                 <div>
@@ -289,13 +289,13 @@ export default async function CVDDPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Historical cycle reference â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Historical cycle reference ─────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
         <p className="text-xs font-medium tracking-wider uppercase mb-4" style={{ color: 'var(--sct-muted)' }}>
-          Historical Cycle Reference â€” Floor Proximity at Key Dates
+          Historical Cycle Reference — Floor Proximity at Key Dates
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
@@ -327,13 +327,13 @@ export default async function CVDDPage() {
         </p>
       </div>
 
-      {/* â”€â”€ Interpretation panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Interpretation panel ───────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: 'Realized Price Floor',
             color: '#3B82F6',
-            content: 'The realized price is the average cost basis of all Bitcoin holders â€” what they paid when their coins last moved. Trading near or below this level means most holders are at breakeven or a loss. All major bear-market lows (2015, 2018, 2022) have touched this floor.',
+            content: 'The realized price is the average cost basis of all Bitcoin holders — what they paid when their coins last moved. Trading near or below this level means most holders are at breakeven or a loss. All major bear-market lows (2015, 2018, 2022) have touched this floor.',
           },
           {
             label: '200W MA Support',
@@ -343,12 +343,12 @@ export default async function CVDDPage() {
           {
             label: 'Power Law Floor',
             color: '#E6B450',
-            content: 'Bitcoin follows a long-term logarithmic growth trend. The power law central value represents the mathematical middle of this trend. The lower support band (Â½Ã— central) has only been breached at Bitcoin\'s most extreme historical lows.',
+            content: 'Bitcoin follows a long-term logarithmic growth trend. The power law central value represents the mathematical middle of this trend. The lower support band (½× central) has only been breached at Bitcoin\'s most extreme historical lows.',
           },
           {
             label: 'Model Limitations',
             color: '#6B7280',
-            content: 'Value floors are reference lines, not precise buy signals. Each cycle produces different multiples. These models measure where price is relative to on-chain cost basis and long-term trends â€” they do not predict when or whether a bottom will form.',
+            content: 'Value floors are reference lines, not precise buy signals. Each cycle produces different multiples. These models measure where price is relative to on-chain cost basis and long-term trends — they do not predict when or whether a bottom will form.',
           },
         ].map((p) => (
           <div

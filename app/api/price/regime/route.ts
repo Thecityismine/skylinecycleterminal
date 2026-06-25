@@ -1,8 +1,8 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeRegime } from '@/lib/indicators/regimeHelpers';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function GET() {
   try {

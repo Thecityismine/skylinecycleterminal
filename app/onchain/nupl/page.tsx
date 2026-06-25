@@ -1,20 +1,20 @@
-﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeNUPL, nuplSignal } from '@/lib/indicators/nupl';
 import { NUPLChartSection } from '@/components/charts/NUPLChartSection';
 import { PageHeader }        from '@/components/dashboard/PageHeader';
 import { StatCard }          from '@/components/dashboard/StatCard';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 function fmtUSD(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
 function fmt3(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return v.toFixed(3);
 }
 
@@ -40,10 +40,10 @@ export default async function NUPLPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin NUPL"
-        subtitle="Net Unrealized Profit/Loss â€” 5-zone sentiment model using 730-day MA as cost basis proxy"
+        subtitle="Net Unrealized Profit/Loss — 5-zone sentiment model using 730-day MA as cost basis proxy"
       />
 
-      {/* â”€â”€ Regime banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Regime banner ───────────────────────────────────────────────── */}
       <div
         className="flex items-center gap-4 rounded-xl border px-5 py-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: signal.color, borderWidth: 1 }}
@@ -60,7 +60,7 @@ export default async function NUPLPage() {
                 color: signal.color,
               }}
             >
-              NUPL {current.nupl != null ? current.nupl.toFixed(3) : 'â€”'}
+              NUPL {current.nupl != null ? current.nupl.toFixed(3) : '—'}
             </span>
           </div>
           <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>{signal.label}</p>
@@ -77,7 +77,7 @@ export default async function NUPLPage() {
         )}
       </div>
 
-      {/* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Stat cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="BTC Price"
@@ -105,29 +105,29 @@ export default async function NUPLPage() {
           label="2Y MA (Cost Basis Proxy)"
           value={fmtUSD(current.ma730)}
           sub={current.ma730 != null && current.price != null
-            ? (ma730BelowPrice ? 'Price below 2Y MA â€” accumulate zone' : 'Price above 2Y MA â€” bull territory')
+            ? (ma730BelowPrice ? 'Price below 2Y MA — accumulate zone' : 'Price above 2Y MA — bull territory')
             : '730-day moving average'}
           accent={ma730Color}
           freshness="daily"
         />
       </div>
 
-      {/* â”€â”€ Data source note â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Data source note ────────────────────────────────────────────── */}
       <div
         className="flex items-start gap-3 rounded-lg border px-4 py-3 text-xs"
         style={{ backgroundColor: `#A855F710`, borderColor: `#A855F740`, color: 'var(--sct-muted)' }}
       >
-        <span className="mt-0.5 shrink-0" style={{ color: '#A855F7' }}>â“˜</span>
+        <span className="mt-0.5 shrink-0" style={{ color: '#A855F7' }}>ⓘ</span>
         <p>
           <span style={{ color: '#A855F7' }}>Data source note: </span>
           True NUPL (Net Unrealized Profit/Loss) requires UTXO-level realized price data.
           This page approximates realized price using the <strong style={{ color: 'var(--sct-text)' }}>730-day moving average</strong> as
-          a cost-basis proxy. NUPL = (Market Cap âˆ’ Realized Cap) / Market Cap. Positive values indicate
+          a cost-basis proxy. NUPL = (Market Cap − Realized Cap) / Market Cap. Positive values indicate
           the market is in aggregate profit; negative values indicate aggregate loss.
         </p>
       </div>
 
-      {/* â”€â”€ Main chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Main chart ──────────────────────────────────────────────────── */}
       {points.length > 0 ? (
         <NUPLChartSection
           points={points}
@@ -149,7 +149,7 @@ export default async function NUPLPage() {
         </div>
       )}
 
-      {/* â”€â”€ Zone reference â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Zone reference ──────────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -161,28 +161,28 @@ export default async function NUPLPage() {
           {[
             {
               zone: 'Capitulation', range: 'NUPL < 0', color: '#3B82F6',
-              desc: 'Market in aggregate loss. Nearly all holders are underwater â€” historically the strongest long-term accumulation zone.',
+              desc: 'Market in aggregate loss. Nearly all holders are underwater — historically the strongest long-term accumulation zone.',
               ctx: 'Has marked every major cycle bottom in BTC history.',
             },
             {
-              zone: 'Hope', range: '0 â€“ 0.35', color: '#35D07F',
+              zone: 'Hope', range: '0 – 0.35', color: '#35D07F',
               desc: 'Market moves from loss to modest profit. Early recovery phase. Long-term holders who accumulated are starting to profit.',
               ctx: 'The bulk of a bull run\'s time is spent in this zone.',
             },
             {
-              zone: 'Optimism', range: '0.35 â€“ 0.60', color: '#A3E635',
+              zone: 'Optimism', range: '0.35 – 0.60', color: '#A3E635',
               desc: 'Most holders in significant profit. Retail interest picking up. Bull market confirmation territory.',
               ctx: 'Begin trimming positions in tranches through this zone.',
             },
             {
-              zone: 'Belief', range: '0.60 â€“ 0.75', color: '#E6B450',
+              zone: 'Belief', range: '0.60 – 0.75', color: '#E6B450',
               desc: 'Almost all holders in substantial profit. Euphoria building. Distribution by long-term holders accelerates.',
-              ctx: 'High caution â€” cycles have topped in this zone before.',
+              ctx: 'High caution — cycles have topped in this zone before.',
             },
             {
               zone: 'Euphoria', range: 'NUPL > 0.75', color: '#FF5C5C',
               desc: 'Extreme unrealized profit. Every prior instance preceded a major bear market. Statistically, mean reversion is near certain.',
-              ctx: 'Historical top signal â€” reduce exposure significantly.',
+              ctx: 'Historical top signal — reduce exposure significantly.',
             },
           ].map((z) => (
             <div key={z.zone}>
@@ -203,7 +203,7 @@ export default async function NUPLPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Interpretation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Interpretation ──────────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -215,7 +215,7 @@ export default async function NUPLPage() {
           <div>
             <p className="font-semibold mb-1" style={{ color: 'var(--sct-text)' }}>The formula</p>
             <p>
-              NUPL = (Market Cap âˆ’ Realized Cap) / Market Cap. When positive, the market is sitting on
+              NUPL = (Market Cap − Realized Cap) / Market Cap. When positive, the market is sitting on
               net unrealized gains. When negative, the market is sitting on net unrealized losses.
               The magnitude shows how extreme the aggregate position is.
             </p>
@@ -223,7 +223,7 @@ export default async function NUPLPage() {
           <div>
             <p className="font-semibold mb-1" style={{ color: 'var(--sct-text)' }}>The proxy approach</p>
             <p>
-              True realized price requires tracking the cost basis of every UTXO â€” data not available
+              True realized price requires tracking the cost basis of every UTXO — data not available
               through free public APIs. The 730-day (2-year) MA is used as a directional proxy: it
               approximates the average entry price across the holder base at cycle timescales.
             </p>
@@ -231,8 +231,8 @@ export default async function NUPLPage() {
           <div>
             <p className="font-semibold mb-1" style={{ color: 'var(--sct-text)' }}>What it signals</p>
             <p>
-              Transitions between zones â€” especially from Capitulation to Hope and from Belief to
-              Euphoria â€” are the most actionable signals. A sustained hold in Capitulation followed
+              Transitions between zones — especially from Capitulation to Hope and from Belief to
+              Euphoria — are the most actionable signals. A sustained hold in Capitulation followed
               by a break above 0 has historically confirmed every major cycle bottom.
             </p>
           </div>

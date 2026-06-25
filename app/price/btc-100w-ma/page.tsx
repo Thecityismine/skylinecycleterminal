@@ -1,4 +1,4 @@
-﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import {
   calculateWeeklyPoints,
   calculateTrendScore,
@@ -11,31 +11,31 @@ import { BTC100WChartSection }  from '@/components/charts/BTC100WChartSection';
 import { PageHeader }           from '@/components/dashboard/PageHeader';
 import { StatCard }             from '@/components/dashboard/StatCard';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtUSD(n: number | null): string {
-  if (n == null) return 'â€”';
+  if (n == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(n);
 }
 
 function fmtPct(n: number | null, decimals = 1): string {
-  if (n == null) return 'â€”';
+  if (n == null) return '—';
   return `${n >= 0 ? '+' : ''}${n.toFixed(decimals)}%`;
 }
 
 function slopeLabel(slope: number | null): { text: string; color: string } {
-  if (slope == null) return { text: 'â€”', color: '#94A3B8' };
+  if (slope == null) return { text: '—', color: '#94A3B8' };
   if (slope >  5)  return { text: 'Strong rise', color: '#35D07F' };
   if (slope >  0)  return { text: 'Moderate rise', color: '#3B82F6' };
   if (slope > -2)  return { text: 'Flattening', color: '#E6B450' };
   return               { text: 'Falling', color: '#FF5C5C' };
 }
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function BTC100WMAPage() {
   let points = await (async () => {
@@ -65,17 +65,17 @@ export default async function BTC100WMAPage() {
 
   const regimeLabel = last?.trendRegime === 'bullish' ? 'Above Trend'
     : last?.trendRegime === 'bearish' ? 'Below Trend'
-    : last?.trendRegime === 'testing' ? 'Testing Trend (Â±5%)'
-    : 'â€”';
+    : last?.trendRegime === 'testing' ? 'Testing Trend (±5%)'
+    : '—';
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin 100-Week Moving Average"
-        subtitle="Medium-term trend, momentum, and supportâ€“resistance structure"
+        subtitle="Medium-term trend, momentum, and support–resistance structure"
       />
 
-      {/* â”€â”€ Trend Score banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Trend Score banner ──────────────────────────────────────────── */}
       <div
         className="flex items-center gap-4 rounded-xl border px-5 py-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: score.color, borderWidth: 1 }}
@@ -111,7 +111,7 @@ export default async function BTC100WMAPage() {
         )}
       </div>
 
-      {/* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Stat cards ──────────────────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <StatCard
@@ -132,16 +132,16 @@ export default async function BTC100WMAPage() {
           <StatCard
             label="Distance from 100W"
             value={fmtPct(last.distanceFrom100W)}
-            sub={last.distanceFrom100W == null ? 'â€”'
-              : last.distanceFrom100W > 5   ? 'Above trend â€” bullish'
-              : last.distanceFrom100W < -5  ? 'Below trend â€” bearish'
+            sub={last.distanceFrom100W == null ? '—'
+              : last.distanceFrom100W > 5   ? 'Above trend — bullish'
+              : last.distanceFrom100W < -5  ? 'Below trend — bearish'
               : 'Testing trend zone'}
             accent={distColor}
             freshness="daily"
           />
           <StatCard
             label="100W MA Slope (20W)"
-            value={slope != null ? fmtPct(slope) : 'â€”'}
+            value={slope != null ? fmtPct(slope) : '—'}
             sub={slopeText}
             accent={slopeColor}
             freshness="daily"
@@ -156,7 +156,7 @@ export default async function BTC100WMAPage() {
         </div>
       )}
 
-      {/* â”€â”€ Main chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Main chart ──────────────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -184,7 +184,7 @@ export default async function BTC100WMAPage() {
         )}
       </div>
 
-      {/* â”€â”€ Secondary stats row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Secondary stats row ─────────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -266,20 +266,20 @@ export default async function BTC100WMAPage() {
             ))}
             <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--sct-border)' }}>
               <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-                100W MA slope (20w): <span style={{ color: slopeColor }}>{fmtPct(slope)} â€” {slopeText}</span>
+                100W MA slope (20w): <span style={{ color: slopeColor }}>{fmtPct(slope)} — {slopeText}</span>
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* â”€â”€ Historical touchpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Historical touchpoints ───────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--sct-text)' }}>
-          Key 100W MA Events â€” Historical Reference
+          Key 100W MA Events — Historical Reference
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs font-mono">
@@ -315,7 +315,7 @@ export default async function BTC100WMAPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Interpretation panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Interpretation panel ─────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -329,12 +329,12 @@ export default async function BTC100WMAPage() {
             <p>Bitcoin is in a constructive medium-term trend. Pullbacks to the 100W MA are historically buyable during bull markets. The MA acts as dynamic support.</p>
           </div>
           <div>
-            <p className="font-semibold mb-1" style={{ color: '#E6B450' }}>Testing the 100W MA (Â±5%)</p>
+            <p className="font-semibold mb-1" style={{ color: '#E6B450' }}>Testing the 100W MA (±5%)</p>
             <p>Critical decision zone. A clean weekly close back above the MA after a test is historically bullish. A breakdown below with the MA flattening or falling signals trend deterioration.</p>
           </div>
           <div>
             <p className="font-semibold mb-1" style={{ color: '#FF5C5C' }}>Below a Falling 100W MA</p>
-            <p>Deep bear territory. The 100W MA broke down in 2015, 2018, and 2022 â€” each coincided with cycle lows. A reclaim (4+ weekly closes back above) has historically confirmed the trend recovery.</p>
+            <p>Deep bear territory. The 100W MA broke down in 2015, 2018, and 2022 — each coincided with cycle lows. A reclaim (4+ weekly closes back above) has historically confirmed the trend recovery.</p>
           </div>
         </div>
         <div
@@ -349,7 +349,7 @@ export default async function BTC100WMAPage() {
           </p>
           <p className="mt-2">
             <span style={{ color: 'var(--sct-text)' }}>Data source:</span>{' '}
-            CoinMetrics Community API (daily closes) â†’ weekly close aggregation â†’ 50W / 100W / 200W simple moving averages.
+            CoinMetrics Community API (daily closes) → weekly close aggregation → 50W / 100W / 200W simple moving averages.
             Revalidated every 24 hours.
           </p>
         </div>

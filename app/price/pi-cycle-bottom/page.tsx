@@ -1,12 +1,12 @@
-﻿import { fetchBTCDailyPrice }   from '@/lib/api/coinmetrics';
+import { fetchBTCDailyPrice }   from '@/lib/api/coinmetrics';
 import { PageHeader }            from '@/components/dashboard/PageHeader';
 import { StatCard }              from '@/components/dashboard/StatCard';
 import { PiCycleChartSection }  from '@/components/charts/PiCycleChartSection';
 import type { PiBottomPoint }   from '@/components/charts/PiCycleBottomChart';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ────────────────────────────────────────────────────────────────
 function smaSliding(values: number[], period: number): (number | null)[] {
   const out: (number | null)[] = [];
   let sum = 0;
@@ -19,7 +19,7 @@ function smaSliding(values: number[], period: number): (number | null)[] {
 }
 
 function fmtUSD(n: number | null): string {
-  if (n == null) return 'â€”';
+  if (n == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(n);
@@ -40,7 +40,7 @@ function downsampleWithBoundaries(points: PiBottomPoint[], max: number): PiBotto
   return points.filter((_, i) => i % step === 0 || keep.has(i));
 }
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ───────────────────────────────────────────────────────────────────
 type Status = 'BOTTOM_ZONE' | 'RECOVERY' | 'NO_SIGNAL';
 
 type CrossEvent = {
@@ -56,7 +56,7 @@ type ZoneEvent = {
   end:   CrossEvent | null;
 };
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ────────────────────────────────────────────────────────────────────
 export default async function PiCycleBottomPage() {
   let chartData:      PiBottomPoint[] = [];
   let crossovers:     CrossEvent[]    = [];
@@ -108,7 +108,7 @@ export default async function PiCycleBottomPage() {
       wasInZone = inZ;
     }
 
-    // Pair INTO_ZONE â†’ OUT_OF_ZONE events
+    // Pair INTO_ZONE → OUT_OF_ZONE events
     for (let i = 0; i < crossovers.length; i++) {
       if (crossovers[i].type === 'INTO_ZONE') {
         const end = crossovers[i + 1]?.type === 'OUT_OF_ZONE' ? crossovers[i + 1] : null;
@@ -138,34 +138,34 @@ export default async function PiCycleBottomPage() {
     fetchError = true;
   }
 
-  // â”€â”€â”€ Status config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Status config ──────────────────────────────────────────────────────
   const SC = {
     BOTTOM_ZONE: {
-      label:  'Bottom Zone â€” Signal Active',
+      label:  'Bottom Zone — Signal Active',
       color:  '#3B82F6',
       border: '#3B82F6',
-      icon:   'â¬‡',
-      desc:   '150-day MA is currently below the 471dÃ—0.745 threshold. Historically the most reliable long-term accumulation zone in BTC.',
+      icon:   '⬇',
+      desc:   '150-day MA is currently below the 471d×0.745 threshold. Historically the most reliable long-term accumulation zone in BTC.',
     },
     RECOVERY: {
       label:  'Recovery Confirmed',
       color:  '#35D07F',
       border: '#35D07F',
-      icon:   'â–²',
-      desc:   '150-day MA has crossed back above the 471dÃ—0.745 threshold â€” bull market resumption historically confirmed. Watch for the monthly Heikin-Ashi first green candle for additional confirmation.',
+      icon:   '▲',
+      desc:   '150-day MA has crossed back above the 471d×0.745 threshold — bull market resumption historically confirmed. Watch for the monthly Heikin-Ashi first green candle for additional confirmation.',
     },
     NO_SIGNAL: {
       label:  'No Signal',
       color:  'var(--sct-muted)',
       border: 'var(--sct-border)',
-      icon:   'â—',
-      desc:   '150-day MA is above the 471dÃ—0.745 threshold. No bottom zone active â€” normal bull market or early recovery conditions.',
+      icon:   '●',
+      desc:   '150-day MA is above the 471d×0.745 threshold. No bottom zone active — normal bull market or early recovery conditions.',
     },
   } as const;
 
   const sc = SC[status];
 
-  // â”€â”€â”€ Ratio bar position (0.5Ã— to 1.5Ã—, marker at current ratio) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Ratio bar position (0.5× to 1.5×, marker at current ratio) ─────────
   const barPct = ratio != null
     ? Math.min(Math.max(((ratio - 0.5) / (1.5 - 0.5)) * 100, 1), 99)
     : null;
@@ -174,10 +174,10 @@ export default async function PiCycleBottomPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Pi Cycle Bottom"
-        subtitle="Bullish bear-market-end signal â€” 150-day MA crosses below 471-day MA Ã— 0.745"
+        subtitle="Bullish bear-market-end signal — 150-day MA crosses below 471-day MA × 0.745"
       />
 
-      {/* â”€â”€ Status banner â”€â”€ */}
+      {/* ── Status banner ── */}
       <div
         className="rounded-xl border px-5 py-4 flex flex-wrap items-start gap-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: sc.border }}
@@ -190,14 +190,14 @@ export default async function PiCycleBottomPage() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
-            Pi Cycle Bottom â€” Current Status
+            Pi Cycle Bottom — Current Status
           </p>
           <p className="text-sm font-semibold mt-0.5" style={{ color: sc.color }}>{sc.label}</p>
           <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--sct-muted)' }}>{sc.desc}</p>
         </div>
       </div>
 
-      {/* â”€â”€ Stat cards â”€â”€ */}
+      {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="BTC Price"
@@ -214,7 +214,7 @@ export default async function PiCycleBottomPage() {
           freshness="daily"
         />
         <StatCard
-          label="471d MA Ã— 0.745"
+          label="471d MA × 0.745"
           value={fmtUSD(currentThreshold)}
           sub="Signal threshold"
           accent="#3B82F6"
@@ -222,12 +222,12 @@ export default async function PiCycleBottomPage() {
         />
         <StatCard
           label="Ratio (150d / Threshold)"
-          value={ratio != null ? `${ratio.toFixed(3)}Ã—` : 'â€”'}
+          value={ratio != null ? `${ratio.toFixed(3)}×` : '—'}
           sub={
             ratio == null ? 'Computing...' :
-            ratio < 1.0   ? 'Below 1.0 â€” Bottom Zone Active' :
-            ratio < 1.15  ? 'Near threshold â€” Watch closely' :
-                            'Above threshold â€” No signal'
+            ratio < 1.0   ? 'Below 1.0 — Bottom Zone Active' :
+            ratio < 1.15  ? 'Near threshold — Watch closely' :
+                            'Above threshold — No signal'
           }
           accent={
             ratio == null ? 'var(--sct-muted)' :
@@ -239,7 +239,7 @@ export default async function PiCycleBottomPage() {
         />
       </div>
 
-      {/* â”€â”€ Chart card â”€â”€ */}
+      {/* ── Chart card ── */}
       <PiCycleChartSection
         data={chartData}
         fetchError={fetchError}
@@ -251,7 +251,7 @@ export default async function PiCycleBottomPage() {
         ratio={ratio}
       />
 
-      {/* â”€â”€ Bottom row â”€â”€ */}
+      {/* ── Bottom row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
 
         {/* Historical zone events */}
@@ -303,7 +303,7 @@ export default async function PiCycleBottomPage() {
                           </div>
                         ) : (
                           <p className="text-[11px] font-mono mt-1" style={{ color: '#3B82F6' }}>
-                            Still in zone â€” no recovery cross yet
+                            Still in zone — no recovery cross yet
                           </p>
                         )}
                       </div>
@@ -316,7 +316,7 @@ export default async function PiCycleBottomPage() {
                             {gainEntry >= 0 ? '+' : ''}{gainEntry.toFixed(0)}%
                           </p>
                           <p className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>
-                            signal â†’ recovery
+                            signal → recovery
                           </p>
                         </div>
                       )}
@@ -342,22 +342,22 @@ export default async function PiCycleBottomPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-                  150d MA / (471d Ã— 0.745)
+                  150d MA / (471d × 0.745)
                 </span>
                 <span
                   className="text-[11px] font-mono font-bold"
                   style={{ color: ratio! < 1.0 ? '#3B82F6' : ratio! < 1.15 ? '#E6B450' : 'var(--sct-muted)' }}
                 >
-                  {ratio!.toFixed(3)}Ã—
+                  {ratio!.toFixed(3)}×
                 </span>
               </div>
               <div className="relative">
                 <div className="flex h-1.5 rounded-full overflow-hidden">
                   {/* < 0.85 Deep Bottom */}
                   <div style={{ width: '35%', backgroundColor: '#3B82F6' }} />
-                  {/* 0.85â€“1.0 Bottom Zone */}
+                  {/* 0.85–1.0 Bottom Zone */}
                   <div style={{ width: '15%', backgroundColor: '#60A5FA' }} />
-                  {/* 1.0â€“1.15 Recovery */}
+                  {/* 1.0–1.15 Recovery */}
                   <div style={{ width: '15%', backgroundColor: '#35D07F' }} />
                   {/* > 1.15 Normal */}
                   <div style={{ width: '35%', backgroundColor: '#374151' }} />
@@ -377,11 +377,11 @@ export default async function PiCycleBottomPage() {
                 className="flex justify-between text-[9px] font-mono mt-1.5"
                 style={{ color: 'var(--sct-muted)' }}
               >
-                <span>0.5Ã—</span>
-                <span>0.85Ã—</span>
-                <span>1.0Ã—</span>
-                <span>1.15Ã—</span>
-                <span>1.5Ã—</span>
+                <span>0.5×</span>
+                <span>0.85×</span>
+                <span>1.0×</span>
+                <span>1.15×</span>
+                <span>1.5×</span>
               </div>
             </div>
           )}
@@ -389,28 +389,28 @@ export default async function PiCycleBottomPage() {
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#3B82F610', border: '1px solid #3B82F630' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#3B82F6' }}>Bottom Zone (ratio &lt; 1.0)</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              The 150d MA crosses below the 471dÃ—0.745 threshold. This has only occurred during the deepest bear market bottoms in BTC's history â€” 2015, 2018â€“2019, and 2022. Each was followed by a multi-year bull run. Price may continue lower after the signal fires, but history shows this is the long-term accumulation zone.
+              The 150d MA crosses below the 471d×0.745 threshold. This has only occurred during the deepest bear market bottoms in BTC's history — 2015, 2018–2019, and 2022. Each was followed by a multi-year bull run. Price may continue lower after the signal fires, but history shows this is the long-term accumulation zone.
             </p>
           </div>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#35D07F10', border: '1px solid #35D07F30' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#35D07F' }}>Recovery Confirmed (ratio crosses above 1.0)</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              When the 150d MA crosses back above the threshold, selling pressure has structurally reversed. Combine with the monthly Heikin-Ashi first-green candle for maximum conviction â€” two independent signals aligning is historically the strongest buy confirmation.
+              When the 150d MA crosses back above the threshold, selling pressure has structurally reversed. Combine with the monthly Heikin-Ashi first-green candle for maximum conviction — two independent signals aligning is historically the strongest buy confirmation.
             </p>
           </div>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#E6B45010', border: '1px solid #E6B45030' }}>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#E6B450' }}>Pi Cycle Math â€” Why These Numbers?</p>
+            <p className="text-xs font-semibold mb-1" style={{ color: '#E6B450' }}>Pi Cycle Math — Why These Numbers?</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              471 Ã· 150 â‰ˆ Ï€ (3.14159â€¦) â€” hence the name. The 0.745 multiplier scales the longer MA down to create a lower band that has historically matched BTC bear market floors. Together these two lines form a "Pi" ratio relationship that has been remarkably stable across BTC's entire history.
+              471 ÷ 150 ≈ π (3.14159…) — hence the name. The 0.745 multiplier scales the longer MA down to create a lower band that has historically matched BTC bear market floors. Together these two lines form a "Pi" ratio relationship that has been remarkably stable across BTC's entire history.
             </p>
           </div>
 
           <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#F9731610', border: '1px solid #F9731630' }}>
             <p className="text-xs font-semibold mb-1" style={{ color: '#F97316' }}>Combine With for Best Results</p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              Best used alongside: (1) Monthly Heikin-Ashi â€” first green candle after reds, (2) MVRV Z-Score below 0, (3) Puell Multiple below 0.5, (4) 2-Year MA Multiplier below 1Ã—. When the Pi Cycle Bottom fires alongside 2+ of these, it has historically been a generational entry point.
+              Best used alongside: (1) Monthly Heikin-Ashi — first green candle after reds, (2) MVRV Z-Score below 0, (3) Puell Multiple below 0.5, (4) 2-Year MA Multiplier below 1×. When the Pi Cycle Bottom fires alongside 2+ of these, it has historically been a generational entry point.
             </p>
           </div>
         </div>

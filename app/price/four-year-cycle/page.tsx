@@ -1,4 +1,4 @@
-﻿import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
+import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
 import { assignCycles, getCurrentCycleInfo, CYCLE_STROKE, CYCLE_LABEL } from "@/lib/indicators/cycleHelpers";
 import { FourYearCycleChart } from "@/components/charts/FourYearCycleChart";
 import { FourYearCycleShareModal } from "@/components/share/FourYearCycleShareModal";
@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
 export default async function FourYearCyclePage() {
   const info = getCurrentCycleInfo();
@@ -33,7 +33,7 @@ export default async function FourYearCyclePage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin 4-Year Cycle"
-        subtitle="Halving-driven cycle epochs â€” log scale Â· accumulate in early cycles, distribute near peaks"
+        subtitle="Halving-driven cycle epochs — log scale · accumulate in early cycles, distribute near peaks"
       />
 
       {/* Stats row */}
@@ -74,10 +74,10 @@ export default async function FourYearCyclePage() {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC / USD â€” Log Scale
+              BTC / USD — Log Scale
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Dashed verticals mark halvings Â· Shaded zones represent each 4-year cycle
+              Dashed verticals mark halvings · Shaded zones represent each 4-year cycle
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -112,7 +112,7 @@ export default async function FourYearCyclePage() {
             className="h-[480px] flex items-center justify-center rounded-lg border text-sm"
             style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
           >
-            Unable to load price data â€” CoinMetrics API unreachable
+            Unable to load price data — CoinMetrics API unreachable
           </div>
         ) : (
           <div className="h-[480px]">
@@ -125,12 +125,12 @@ export default async function FourYearCyclePage() {
       <InsightPanel title="Cycle Framework">
         <InsightRow
           label="Mechanism"
-          value="Bitcoin's supply issuance halves every ~210,000 blocks (~4 years). Supply shocks historically precede major price expansion 12â€“18 months post-halving."
+          value="Bitcoin's supply issuance halves every ~210,000 blocks (~4 years). Supply shocks historically precede major price expansion 12–18 months post-halving."
           stack
         />
         <InsightRow
           label="Current Position"
-          value={`Cycle ${info.currentCycleNum} â€” ${info.daysSince} days since the Apr 20, 2024 halving`}
+          value={`Cycle ${info.currentCycleNum} — ${info.daysSince} days since the Apr 20, 2024 halving`}
           valueColor={cycleColor}
           stack
         />
@@ -147,7 +147,7 @@ export default async function FourYearCyclePage() {
         />
         <InsightRow
           label="Past Cycle Peaks"
-          value="C1: Nov 2013 ($1,177) Â· C2: Dec 2017 ($19.8K) Â· C3: Nov 2021 ($69K)"
+          value="C1: Nov 2013 ($1,177) · C2: Dec 2017 ($19.8K) · C3: Nov 2021 ($69K)"
           stack
         />
       </InsightPanel>

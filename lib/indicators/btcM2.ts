@@ -1,11 +1,11 @@
-﻿import { fetchDailyPrice } from '@/lib/api/coinmetrics';
+import { fetchDailyPrice } from '@/lib/api/coinmetrics';
 
-// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export type BtcM2Point = {
   time:   string;
   ts:     number;
-  ratio:  number;         // (BTC price / M2_billions) Ã— 1000  â‰ˆ BTC / M2_trillions
+  ratio:  number;         // (BTC price / M2_billions) × 1000  ≈ BTC / M2_trillions
   ema200: number | null;
   ema400: number | null;
   sma52:  number | null;
@@ -21,7 +21,7 @@ export type BtcM2Result = {
   };
 };
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function emaCalc(values: number[], period: number): (number | null)[] {
   const k   = 2 / (period + 1);
@@ -70,7 +70,7 @@ async function fetchM2History(startYear = 2012): Promise<{ date: string; value: 
     `https://api.stlouisfed.org/fred/series/observations` +
     `?series_id=M2SL&api_key=${key}&file_type=json` +
     `&sort_order=asc&observation_start=${startYear}-01-01`;
-  const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(15000) });
+  const res = await fetch(url, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`FRED M2SL HTTP ${res.status}`);
   const json = await res.json();
   return (json.observations as Array<{ date: string; value: string }>)
@@ -92,7 +92,7 @@ function alignM2(weekly: { time: string }[], m2: { date: string; value: number }
   });
 }
 
-// â”€â”€ Main export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export async function computeBtcM2(maxPoints = 600): Promise<BtcM2Result> {
   const [daily, m2Raw] = await Promise.all([

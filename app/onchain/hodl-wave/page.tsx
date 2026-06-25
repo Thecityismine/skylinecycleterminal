@@ -1,4 +1,4 @@
-﻿import { fetchBTCExchangeReserve } from '@/lib/api/coinmetrics';
+import { fetchBTCExchangeReserve } from '@/lib/api/coinmetrics';
 import {
   buildHodlWavePoints,
   getHodlRegime,
@@ -9,34 +9,34 @@ import { BTCHodlWaveChartSection } from '@/components/charts/BTCHodlWaveChartSec
 import { PageHeader }       from '@/components/dashboard/PageHeader';
 import { StatCard }         from '@/components/dashboard/StatCard';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 86400;
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtPct(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${v.toFixed(2)}%`;
 }
 
 function fmtPp(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   const sign = v >= 0 ? '+' : '';
   return `${sign}${v.toFixed(2)} pp`;
 }
 
 function fmtBtc(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return `${(v / 1_000_000).toFixed(3)}M BTC`;
 }
 
 function fmtUSD(v: number | null | undefined): string {
-  if (v == null) return 'â€”';
+  if (v == null) return '—';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(v);
 }
 
-// â”€â”€â”€ Historical snapshots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Historical snapshots ─────────────────────────────────────────────────────
 
 const HISTORICAL_SNAPSHOTS = [
   { period: 'Peak 2017',       date: 'Dec 2017', exchPct: '~27%', change: 'Rising sharply',   btcPrice: '~$19,900', regime: 'Distribution',    color: '#FF5C5C' },
@@ -47,7 +47,7 @@ const HISTORICAL_SNAPSHOTS = [
   { period: 'Recovery 2023',   date: 'Dec 2023', exchPct: '~14%', change: 'Declining trend',  btcPrice: '~$44,000', regime: 'Accumulation',    color: '#3B82F6' },
 ];
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function HodlWavePage() {
   const points = await (async () => {
@@ -72,27 +72,27 @@ export default async function HodlWavePage() {
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
         title="Bitcoin Long-Term Holder Behavior"
-        subtitle="BTC exchange supply reserve â€” declining coins on exchanges signals accumulation and long-term holding"
+        subtitle="BTC exchange supply reserve — declining coins on exchanges signals accumulation and long-term holding"
         regime={pageRegime}
       />
 
-      {/* â”€â”€ Data source note â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Data source note ───────────────────────────────────────────────── */}
       <div
         className="rounded-xl border p-4 flex items-start gap-3"
         style={{ backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.25)' }}
       >
-        <span className="text-blue-400 text-base shrink-0">â“˜</span>
+        <span className="text-blue-400 text-base shrink-0">ⓘ</span>
         <p className="text-xs leading-relaxed" style={{ color: 'rgba(147,197,253,0.9)' }}>
           <strong>Methodology:</strong> This page tracks the percentage of Bitcoin&apos;s circulating supply
           held on centralized exchanges (CoinMetrics <code>SplyExNtv / SplyCur</code>).
-          When exchange supply falls, coins move to cold storage â€” indicating long-term holding (HODL) behavior.
-          When exchange supply rises, coins return to exchanges â€” which may signal preparation to sell.
+          When exchange supply falls, coins move to cold storage — indicating long-term holding (HODL) behavior.
+          When exchange supply rises, coins return to exchanges — which may signal preparation to sell.
           True 1Y+ HODL wave data (supply inactive for 365+ days) is not available in the free API tier.
           Exchange reserve is the closest freely available proxy.
         </p>
       </div>
 
-      {/* â”€â”€ Regime banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Regime banner ──────────────────────────────────────────────────── */}
       <div
         className="rounded-xl border px-5 py-4 flex items-center gap-4"
         style={{
@@ -107,17 +107,17 @@ export default async function HodlWavePage() {
         </div>
       </div>
 
-      {/* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Stat cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard
           label="Exchange Reserve"
-          value={last ? fmtPct(last.exchPct) : 'â€”'}
-          sub={last ? fmtBtc(last.exchBtc) : 'Loadingâ€¦'}
+          value={last ? fmtPct(last.exchPct) : '—'}
+          sub={last ? fmtBtc(last.exchBtc) : 'Loading…'}
           accent="#F7931A"
         />
         <StatCard
           label="30D Change"
-          value={last ? fmtPp(last.change30d) : 'â€”'}
+          value={last ? fmtPp(last.change30d) : '—'}
           sub={last && last.change30d != null
             ? last.change30d < 0 ? 'Coins leaving exchanges' : 'Coins entering exchanges'
             : ''}
@@ -127,7 +127,7 @@ export default async function HodlWavePage() {
         />
         <StatCard
           label="90D Change"
-          value={last ? fmtPp(last.change90d) : 'â€”'}
+          value={last ? fmtPp(last.change90d) : '—'}
           sub={last && last.change90d != null
             ? last.change90d < 0 ? 'Net accumulation trend' : 'Net distribution trend'
             : ''}
@@ -149,7 +149,7 @@ export default async function HodlWavePage() {
         />
       </div>
 
-      {/* â”€â”€ BTC price + current level â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── BTC price + current level ──────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard
@@ -181,7 +181,7 @@ export default async function HodlWavePage() {
         </div>
       )}
 
-      {/* â”€â”€ Main chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Main chart ────────────────────────────────────────────────────── */}
       <BTCHodlWaveChartSection
         points={points}
         regimeLabel={regime.label}
@@ -195,7 +195,7 @@ export default async function HodlWavePage() {
         scoreColor={score.color}
       />
 
-      {/* â”€â”€ Regime + Distribution Score â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Regime + Distribution Score ────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Regime panel */}
@@ -223,7 +223,7 @@ export default async function HodlWavePage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#3B82F6' }} />
-              <span><strong style={{ color: 'var(--sct-secondary)' }}>Healthy Expansion:</strong> Exchange supply falling, price rising â€” holders not selling</span>
+              <span><strong style={{ color: 'var(--sct-secondary)' }}>Healthy Expansion:</strong> Exchange supply falling, price rising — holders not selling</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#E6B450' }} />
@@ -259,10 +259,10 @@ export default async function HodlWavePage() {
             />
           </div>
           <div className="flex justify-between text-[10px] font-mono mb-4" style={{ color: 'var(--sct-muted)' }}>
-            <span style={{ color: '#3B82F6' }}>0 â€” Accumulation</span>
+            <span style={{ color: '#3B82F6' }}>0 — Accumulation</span>
             <span style={{ color: '#35D07F' }}>25</span>
             <span style={{ color: '#E6B450' }}>50</span>
-            <span style={{ color: '#FF5C5C' }}>75 â€” Distribution</span>
+            <span style={{ color: '#FF5C5C' }}>75 — Distribution</span>
             <span>100</span>
           </div>
 
@@ -295,7 +295,7 @@ export default async function HodlWavePage() {
         </div>
       </div>
 
-      {/* â”€â”€ Historical cycle snapshots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Historical cycle snapshots ──────────────────────────────────────── */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -337,18 +337,18 @@ export default async function HodlWavePage() {
         </p>
       </div>
 
-      {/* â”€â”€ Interpretation panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Interpretation panel ───────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: 'Exchange Supply Falling',
             color: '#3B82F6',
-            content: 'Coins are leaving exchanges and moving to private wallets and cold storage. This is consistent with long-term holding behavior â€” investors less likely to sell in the near term.',
+            content: 'Coins are leaving exchanges and moving to private wallets and cold storage. This is consistent with long-term holding behavior — investors less likely to sell in the near term.',
           },
           {
             label: 'Exchange Supply Rising',
             color: '#FF5C5C',
-            content: 'More coins are arriving on exchanges. This historically precedes distribution phases â€” holders positioning coins where they can be sold quickly.',
+            content: 'More coins are arriving on exchanges. This historically precedes distribution phases — holders positioning coins where they can be sold quickly.',
           },
           {
             label: 'Low Exchange Reserve',
@@ -358,7 +358,7 @@ export default async function HodlWavePage() {
           {
             label: 'Interpretation Caveats',
             color: '#6B7280',
-            content: 'Exchange supply alone is not a top or bottom indicator. Coins move between exchanges and wallets for many reasons â€” custody changes, ETF collateral, DeFi, and internal transfers all register as flows.',
+            content: 'Exchange supply alone is not a top or bottom indicator. Coins move between exchanges and wallets for many reasons — custody changes, ETF collateral, DeFi, and internal transfers all register as flows.',
           },
         ].map((p) => (
           <div

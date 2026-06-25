@@ -45,4 +45,3 @@ next-env.d.ts
 /functions/node_modules
 
 .vercel
-.env*.local

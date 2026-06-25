@@ -1,4 +1,4 @@
-﻿export type FearGreedData = {
+export type FearGreedData = {
   value: number;
   classification: string;
 };
@@ -16,12 +16,12 @@ export async function fetchFearGreed(): Promise<FearGreedData> {
   };
 }
 
-// â”€â”€ Historical (up to 2000 days) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Historical (up to 2000 days) ──────────────────────────────────────────────
 
 export type FGPoint = {
   time:    string;   // YYYY-MM-DD
   ts:      number;   // epoch ms
-  value:   number;   // 0â€“100
+  value:   number;   // 0–100
   fgClass: string;   // "Extreme Fear" | "Fear" | "Neutral" | "Greed" | "Extreme Greed"
 };
 
@@ -34,7 +34,7 @@ export function fgColor(value: number): string {
 
 export async function fetchFearGreedHistory(): Promise<FGPoint[]> {
   const res = await fetch('https://api.alternative.me/fng/?limit=0', {
-    next: { revalidate: 3600 },
+    next: { revalidate: 86400 },
     signal: AbortSignal.timeout(12000),
   });
   if (!res.ok) throw new Error(`Fear & Greed history HTTP ${res.status}`);
