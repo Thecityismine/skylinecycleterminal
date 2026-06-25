@@ -156,7 +156,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap:                 12,
         marginTop:           GAP,
-        marginBottom:        GAP,
+        marginBottom:        STATS_GAP,
       }}>
         {stats.map((s) => (
           <div key={s.label} style={{
