@@ -184,3 +184,9 @@ export async function fetchLiquiditySeriesData(startDate = '2018-01-01'): Promis
   ]);
   return { dxy, realYield, m2, fedBalance };
 }
+
+export type DxyDataPoint = { date: string; value: number };
+
+export async function fetchDXYHistory(): Promise<DxyDataPoint[]> {
+  return fredGetFrom('DTWEXBGS', '1970-01-01');
+}
