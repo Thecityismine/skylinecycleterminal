@@ -87,10 +87,10 @@ export function computeStats(data: EtfDailyFlow[]) {
   }
 
   // Issuer breadth — most recent trading day
-  const ISSUER_KEYS = ['ibit','fbtc','arkb','bitb','hodl','ezbc','btcw','brrr','gbtc','gbtcMini'] as const;
+  const ISSUER_KEYS = ['ibit','fbtc','bitb','arkb','btco','ezbc','brrr','hodl','btcw','msbt','gbtc','btcMini'] as const;
   let positiveIssuers = 0, negativeIssuers = 0;
   for (const k of ISSUER_KEYS) {
-    const v = last[k as keyof EtfDailyFlow] as number | undefined;
+    const v = (last as Record<string, unknown>)[k] as number | undefined;
     if (v == null) continue;
     if (v > 0) positiveIssuers++;
     else if (v < 0) negativeIssuers++;
