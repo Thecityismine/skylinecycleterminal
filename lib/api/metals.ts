@@ -1,15 +1,25 @@
 import { fredGetFrom } from './fred';
+import { fetchWeeklyHistory } from './yahoo';
 
 export type MetalDataPoint = { date: string; value: number };
 
-// Gold: London PM fix, daily since 1968
-export async function fetchGoldHistory(): Promise<MetalDataPoint[]> {
-  return fredGetFrom('GOLDAMGBD228NLBM', '1970-01-01');
+async function yahooWeekly(ticker: string): Promise<MetalDataPoint[]> {
+  try {
+    const weeks = await fetchWeeklyHistory(ticker);
+    return weeks.map(w => ({ date: w.time, value: w.close }));
+  } catch {
+    return [];
+  }
 }
 
-// Silver: IMF Global price, monthly since 1980
+// Gold: XAU/USD via Yahoo Finance gold futures (GC=F)
+export async function fetchGoldHistory(): Promise<MetalDataPoint[]> {
+  return yahooWeekly('GC=F');
+}
+
+// Silver: XAG/USD via Yahoo Finance silver futures (SI=F)
 export async function fetchSilverHistory(): Promise<MetalDataPoint[]> {
-  return fredGetFrom('SLVPRUSD', '1970-01-01');
+  return yahooWeekly('SI=F');
 }
 
 // 10Y Inflation-Indexed Treasury yield (real yield), daily since 2003
