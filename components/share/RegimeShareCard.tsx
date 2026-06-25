@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   ComposedChart,
@@ -23,7 +23,7 @@ export type RegimeSharePayload = {
 
 const PAD      = 32;
 const HEADER_H = 72;
-const STATS_H  = 68;
+const STATS_H  = 60;
 const FOOTER_H = 28;
 const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH  - PAD * 2;

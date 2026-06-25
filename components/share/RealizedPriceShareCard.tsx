@@ -28,14 +28,15 @@ export type RealizedPriceSharePayload = {
 
 const PAD      = 32;
 const HEADER_H = 72;
-const STATS_H  = 68;
+const STATS_H  = 60;
 const GAP      = 8;
+const STATS_GAP = 20;
 const FOOTER_H = 24;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - GAP - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - STATS_GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
 
 export const REALIZED_PRICE_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + STATS_GAP, w: CHART_W, h: CHART_H,
 };
 
 function fmtFull(n: number | null): string {
@@ -146,7 +147,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
             backgroundColor: '#161B22',
             border:          '1px solid #21262D',
             borderRadius:    8,
-            padding:         '10px 12px',
+            padding:         '6px 12px',
             display:         'flex',
             flexDirection:   'column',
             justifyContent:  'center',
