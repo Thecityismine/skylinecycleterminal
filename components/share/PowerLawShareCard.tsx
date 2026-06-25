@@ -129,7 +129,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             Bitcoin Power Law
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            logâ‚â‚€(P) = 5.82 Ã— logâ‚â‚€(days) âˆ’ 16.73 · Log scale{range !== 'All' ? ` · ${range}` : ''}
+            logâ‚â‚€(P) = 5.82 Ã— logâ‚â‚€(days) - 16.73 · Log scale{range !== 'All' ? ` · ${range}` : ''}
           </p>
         </div>
 

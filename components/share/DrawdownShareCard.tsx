@@ -46,10 +46,10 @@ const HALVINGS = [
 ];
 
 const BEAR_BOTTOMS = [
-  { ts: new Date('2011-11-18T00:00:00Z').getTime(), label: '2011  âˆ’93.8%' },
-  { ts: new Date('2015-01-14T00:00:00Z').getTime(), label: '2015  âˆ’86.9%' },
-  { ts: new Date('2018-12-15T00:00:00Z').getTime(), label: '2018  âˆ’84.2%' },
-  { ts: new Date('2022-11-21T00:00:00Z').getTime(), label: '2022  âˆ’77.5%' },
+  { ts: new Date('2011-11-18T00:00:00Z').getTime(), label: '2011  -93.8%' },
+  { ts: new Date('2015-01-14T00:00:00Z').getTime(), label: '2015  -86.9%' },
+  { ts: new Date('2018-12-15T00:00:00Z').getTime(), label: '2018  -84.2%' },
+  { ts: new Date('2022-11-21T00:00:00Z').getTime(), label: '2022  -77.5%' },
 ];
 
 const YEAR_TICKS = Array.from({ length: 17 }, (_, i) =>
@@ -273,11 +273,11 @@ export function DrawdownShareCard({ payload }: { payload: DrawdownSharePayload }
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             {[
-              { color: 'rgba(53,208,127,0.5)',  label: '>âˆ’15%'       },
-              { color: 'rgba(230,180,80,0.5)',  label: 'âˆ’15 to âˆ’30%' },
-              { color: 'rgba(249,115,22,0.5)',  label: 'âˆ’30 to âˆ’50%' },
-              { color: 'rgba(255,92,92,0.5)',   label: 'âˆ’50 to âˆ’70%' },
-              { color: 'rgba(185,28,28,0.6)',   label: '<âˆ’70%'       },
+              { color: 'rgba(53,208,127,0.5)',  label: '>-15%'       },
+              { color: 'rgba(230,180,80,0.5)',  label: '-15 to -30%' },
+              { color: 'rgba(249,115,22,0.5)',  label: '-30 to -50%' },
+              { color: 'rgba(255,92,92,0.5)',   label: '-50 to -70%' },
+              { color: 'rgba(185,28,28,0.6)',   label: '<-70%'       },
             ].map((l) => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
