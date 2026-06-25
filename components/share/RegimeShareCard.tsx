@@ -158,36 +158,33 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
 
       {/* ── Stats strip ── */}
       <div style={{
-        height:        STATS_H,
-        flex:          `0 0 ${STATS_H}px`,
-        display:       'flex',
-        gap:           0,
-        borderTop:     '1px solid #21262D',
-        borderBottom:  '1px solid #21262D',
-        marginTop:     GAP,
+        height:              STATS_H,
+        flex:                `0 0 ${STATS_H}px`,
+        display:             'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap:                 12,
+        marginTop:           GAP,
+        marginBottom:        GAP,
       }}>
-        {stats.map((s, i) => (
-          <div
-            key={s.label}
-            style={{
-              flex:        1,
-              padding:     '4px 16px',
-              borderRight: i < stats.length - 1 ? '1px solid #21262D' : 'none',
-              display:     'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              gap:         2,
-            }}
-          >
-            <div style={{ fontSize: 8, color: '#6B7280', letterSpacing: '0.12em' }}>{s.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-            {s.sub && <div style={{ fontSize: 9, color: '#6B7280' }}>{s.sub}</div>}
+        {stats.map((s) => (
+          <div key={s.label} style={{
+            backgroundColor: '#161B22',
+            border:          '1px solid #21262D',
+            borderRadius:    8,
+            padding:         '4px 12px',
+            display:         'flex',
+            flexDirection:   'column',
+            justifyContent:  'center',
+          }}>
+            <p style={{ fontSize: 10, color: '#8B949E', margin: 0 }}>{s.label}</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: s.color, margin: '3px 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.value}</p>
+            <p style={{ fontSize: 9, color: '#484F58', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.sub ?? ''}</p>
           </div>
         ))}
       </div>
 
       {/* ── Chart ── */}
-      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', marginTop: STATS_GAP }}>
+      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto' }}>
         <ComposedChart
           width={CHART_W}
           height={CHART_H}
