@@ -1,11 +1,11 @@
-import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeNUPL, nuplSignal } from '@/lib/indicators/nupl';
 import { NUPLChartSection } from '@/components/charts/NUPLChartSection';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmtUSD(n: number) {
   return new Intl.NumberFormat('en-US', {
@@ -42,15 +42,15 @@ export default async function NUPLPage() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
-        title="NUPL — Net Unrealized Profit / Loss"
-        subtitle="Cycle sentiment proxy: (Price − 2Y MA) / Price · positive = market in unrealized profit, negative = aggregate loss"
+        title="NUPL â€” Net Unrealized Profit / Loss"
+        subtitle="Cycle sentiment proxy: (Price âˆ’ 2Y MA) / Price Â· positive = market in unrealized profit, negative = aggregate loss"
       />
 
       {/* Stat row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="NUPL"
-          value={cur?.nupl != null ? cur.nupl.toFixed(3) : '—'}
+          value={cur?.nupl != null ? cur.nupl.toFixed(3) : 'â€”'}
           sub={sig.zone}
           accent={sig.color}
           freshness="daily"
@@ -58,18 +58,18 @@ export default async function NUPLPage() {
         />
         <StatCard
           label="Signal"
-          value={sig.zone !== 'Unknown' ? sig.zone : '—'}
+          value={sig.zone !== 'Unknown' ? sig.zone : 'â€”'}
           sub={cur?.nupl != null
             ? cur.nupl < 0
               ? 'Price below 2-year MA'
               : `${(cur.nupl * 100).toFixed(1)}% above 2Y cost basis`
-            : 'Loading…'}
+            : 'Loadingâ€¦'}
           accent={sig.color}
           freshness="daily"
         />
         <StatCard
           label="2Y Moving Avg"
-          value={cur?.ma730 != null ? fmtUSD(cur.ma730) : '—'}
+          value={cur?.ma730 != null ? fmtUSD(cur.ma730) : 'â€”'}
           sub="Realized-price proxy (730-day MA)"
           accent="var(--sct-secondary)"
           freshness="daily"
@@ -126,29 +126,29 @@ export default async function NUPLPage() {
       <InsightPanel title="Indicator Logic">
         <InsightRow
           label="What it measures"
-          value="(Price − 2Y MA) / Price. Positive values mean BTC trades above its 2-year average cost basis (holders in aggregate profit). Negative means BTC is below that baseline — historically the deepest accumulation windows."
+          value="(Price âˆ’ 2Y MA) / Price. Positive values mean BTC trades above its 2-year average cost basis (holders in aggregate profit). Negative means BTC is below that baseline â€” historically the deepest accumulation windows."
           stack
         />
         <InsightRow
           label="Capitulation Zone (< 0)"
-          value="Price is below the 2-year moving average. Every major cycle bottom — 2015, 2018, March 2020, late 2022 — coincided with this zone. The best long-term entry windows in Bitcoin history have occurred here."
+          value="Price is below the 2-year moving average. Every major cycle bottom â€” 2015, 2018, March 2020, late 2022 â€” coincided with this zone. The best long-term entry windows in Bitcoin history have occurred here."
           valueColor="#3B82F6"
           stack
         />
         <InsightRow
           label="Euphoria Zone (> 0.75)"
-          value="Price is more than 3× above its 2-year cost basis. Prior cycle peaks (2013, 2017, 2021) all occurred while NUPL was in this zone. Begin scaling out of risk exposure."
+          value="Price is more than 3Ã— above its 2-year cost basis. Prior cycle peaks (2013, 2017, 2021) all occurred while NUPL was in this zone. Begin scaling out of risk exposure."
           valueColor="#FF5C5C"
           stack
         />
         <InsightRow
           label="Methodology note"
-          value="True NUPL uses the on-chain Realized Cap (average BTC cost basis weighted by last move date). This page uses the 730-day MA as a realized-price proxy — values and zone thresholds are recalibrated accordingly. The signal behavior is equivalent."
+          value="True NUPL uses the on-chain Realized Cap (average BTC cost basis weighted by last move date). This page uses the 730-day MA as a realized-price proxy â€” values and zone thresholds are recalibrated accordingly. The signal behavior is equivalent."
           stack
         />
         <InsightRow
           label="Source"
-          value="BTC daily price via CoinMetrics Community API · 730-day MA computed server-side · revalidated every 24 hours"
+          value="BTC daily price via CoinMetrics Community API · 730-day MA computed server-side · data cache refreshed hourly"
           stack
         />
       </InsightPanel>

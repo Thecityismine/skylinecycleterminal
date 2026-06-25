@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { fetchCrossAssetData } from '@/lib/api/crossAsset';
 import { computeRegime } from '@/lib/indicators/regimeHelpers';
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 export async function GET() {
   try {

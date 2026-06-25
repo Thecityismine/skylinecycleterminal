@@ -1,23 +1,23 @@
-import { PageHeader } from '@/components/dashboard/PageHeader';
+﻿import { PageHeader } from '@/components/dashboard/PageHeader';
 import { BennerCycleChart } from '@/components/charts/BennerCycleChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
-// ─── All cycle dates ────────────────────────────────────────────────────────
+// â”€â”€â”€ All cycle dates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PANIC = [1927, 1945, 1965, 1981, 1999, 2019, 2035, 2053];
 const SELL  = [1926, 1935, 1945, 1953, 1962, 1972, 1980, 1989, 1999, 2007, 2016, 2026, 2034, 2043, 2053];
 const BUY   = [1924, 1931, 1942, 1951, 1958, 1969, 1978, 1985, 1996, 2005, 2012, 2023, 2032, 2039, 2050, 2059];
 
-// Historical context — real market events that aligned with Benner dates
+// Historical context â€” real market events that aligned with Benner dates
 const HISTORICAL: { year: number; event: string; type: 'A' | 'B' | 'C' }[] = [
-  { year: 2023, type: 'C', event: 'SVB banking crisis — crypto bear market bottom' },
+  { year: 2023, type: 'C', event: 'SVB banking crisis â€” crypto bear market bottom' },
   { year: 2019, type: 'A', event: 'Repo market panic, pre-COVID stress' },
   { year: 2016, type: 'B', event: 'Pre-election S&P 500 peak, BTC halving cycle' },
   { year: 2012, type: 'C', event: 'European sovereign debt crisis bottom' },
   { year: 2007, type: 'B', event: 'S&P 500 all-time high (October 2007)' },
-  { year: 2005, type: 'C', event: 'Pre-housing-bubble bottom — best long-term entry' },
+  { year: 2005, type: 'C', event: 'Pre-housing-bubble bottom â€” best long-term entry' },
   { year: 1999, type: 'A', event: 'Dot-com euphoria peak + panic' },
-  { year: 1999, type: 'B', event: 'Nasdaq peaks at 5,048 — sell signal confirmed' },
+  { year: 1999, type: 'B', event: 'Nasdaq peaks at 5,048 â€” sell signal confirmed' },
   { year: 1996, type: 'C', event: 'Tech bear bottom before the dot-com run' },
   { year: 1981, type: 'A', event: 'Volcker recession, S&P 500 bear market' },
   { year: 1980, type: 'B', event: 'Gold peak at $850, commodity top' },
@@ -27,15 +27,15 @@ const HISTORICAL: { year: number; event: string; type: 'A' | 'B' | 'C' }[] = [
 const NOW = 2026;
 
 const UPCOMING: { year: number; type: string; action: string; color: string; desc: string }[] = [
-  { year: 2026, type: 'B', action: 'SELL',      color: '#E6B450', desc: 'Good Times — High Prices. Reduce exposure, take profits.' },
-  { year: 2032, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times — Low Prices. Deploy capital. Long-term accumulation.' },
-  { year: 2034, type: 'B', action: 'SELL',      color: '#E6B450', desc: 'Good Times — High Prices. Begin distribution cycle.' },
-  { year: 2035, type: 'A', action: 'REDUCE',    color: '#FF5C5C', desc: 'Panic Year. Market fear peak — sharp but recoverable decline.' },
-  { year: 2039, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times — Low Prices. Prime accumulation window.' },
-  { year: 2043, type: 'B', action: 'SELL',      color: '#E6B450', desc: 'Good Times — High Prices. Systematic profit-taking.' },
-  { year: 2050, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times — Low Prices. Generational buy opportunity.' },
-  { year: 2053, type: 'A+B', action: 'DISTRIBUTE', color: '#F97316', desc: 'Panic + Peak coincide. Highest risk window — distribute into strength.' },
-  { year: 2059, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times — Long-term low. Full cycle completion.' },
+  { year: 2026, type: 'B', action: 'SELL',      color: '#E6B450', desc: 'Good Times â€” High Prices. Reduce exposure, take profits.' },
+  { year: 2032, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times â€” Low Prices. Deploy capital. Long-term accumulation.' },
+  { year: 2034, type: 'B', action: 'SELL',      color: '#E6B450', desc: 'Good Times â€” High Prices. Begin distribution cycle.' },
+  { year: 2035, type: 'A', action: 'REDUCE',    color: '#FF5C5C', desc: 'Panic Year. Market fear peak â€” sharp but recoverable decline.' },
+  { year: 2039, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times â€” Low Prices. Prime accumulation window.' },
+  { year: 2043, type: 'B', action: 'SELL',      color: '#E6B450', desc: 'Good Times â€” High Prices. Systematic profit-taking.' },
+  { year: 2050, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times â€” Low Prices. Generational buy opportunity.' },
+  { year: 2053, type: 'A+B', action: 'DISTRIBUTE', color: '#F97316', desc: 'Panic + Peak coincide. Highest risk window â€” distribute into strength.' },
+  { year: 2059, type: 'C', action: 'BUY',       color: '#3B82F6', desc: 'Hard Times â€” Long-term low. Full cycle completion.' },
 ];
 
 const TYPE_COLOR: Record<string, string> = {
@@ -63,7 +63,7 @@ export default function BennerCyclePage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Benner Cycle"
-        subtitle="Samuel Benner's 1875 commodity cycle model — panic years, peak years, and accumulation windows"
+        subtitle="Samuel Benner's 1875 commodity cycle model â€” panic years, peak years, and accumulation windows"
       />
 
       {/* Current position banner */}
@@ -73,10 +73,10 @@ export default function BennerCyclePage() {
       >
         <div>
           <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
-            Current Position — {NOW}
+            Current Position â€” {NOW}
           </p>
           <p className="text-base font-semibold mt-0.5" style={{ color: '#E6B450' }}>
-            B Year — Good Times · High Prices
+            B Year â€” Good Times Â· High Prices
           </p>
           <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>
             {NOW} is a Sell year. Benner's model says this is a time to reduce exposure and take profits before the next hard times cycle begins in {yearsToNextC}.
@@ -106,25 +106,25 @@ export default function BennerCyclePage() {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Benner Cycle Timeline — 1920 to 2062
+              Benner Cycle Timeline â€” 1920 to 2062
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Based on Samuel Benner's 1875 cycle model · Dimmed markers = future projections
+              Based on Samuel Benner's 1875 cycle model Â· Dimmed markers = future projections
             </p>
           </div>
           {/* Legend */}
           <div className="flex items-center gap-5 text-xs font-mono">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#FF5C5C' }} />
-              <span style={{ color: '#FF5C5C' }}>A · Panic Years</span>
+              <span style={{ color: '#FF5C5C' }}>A Â· Panic Years</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#E6B450' }} />
-              <span style={{ color: '#E6B450' }}>B · Sell / Peak</span>
+              <span style={{ color: '#E6B450' }}>B Â· Sell / Peak</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#3B82F6' }} />
-              <span style={{ color: '#3B82F6' }}>C · Buy / Bottom</span>
+              <span style={{ color: '#3B82F6' }}>C Â· Buy / Bottom</span>
             </span>
           </div>
         </div>
@@ -204,31 +204,31 @@ export default function BennerCyclePage() {
           className="rounded-xl border p-5 space-y-2"
           style={{ backgroundColor: 'var(--sct-card)', borderColor: '#FF5C5C40' }}
         >
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#FF5C5C' }}>A · Panic Years</p>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#FF5C5C' }}>A Â· Panic Years</p>
           <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-            Years in which financial panics have occurred and are predicted to recur. The A cycle repeats on an 18–20–16 year rotation (54-year grand cycle). These are years of maximum fear — not necessarily crashes, but periods of financial stress and sharp dislocations.
+            Years in which financial panics have occurred and are predicted to recur. The A cycle repeats on an 18â€“20â€“16 year rotation (54-year grand cycle). These are years of maximum fear â€” not necessarily crashes, but periods of financial stress and sharp dislocations.
           </p>
-          <p className="text-[10px] font-mono" style={{ color: '#FF5C5C' }}>Pattern: 18 · 20 · 16 years</p>
+          <p className="text-[10px] font-mono" style={{ color: '#FF5C5C' }}>Pattern: 18 Â· 20 Â· 16 years</p>
         </div>
         <div
           className="rounded-xl border p-5 space-y-2"
           style={{ backgroundColor: 'var(--sct-card)', borderColor: '#E6B45040' }}
         >
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E6B450' }}>B · Peak / Sell Years</p>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E6B450' }}>B Â· Peak / Sell Years</p>
           <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-            Years of good times, high prices, and the time to sell stocks and assets of all kinds. The B cycle repeats on a 9–10–8 year rotation (27-year cycle). These are years when valuations are stretched and distributions should begin.
+            Years of good times, high prices, and the time to sell stocks and assets of all kinds. The B cycle repeats on a 9â€“10â€“8 year rotation (27-year cycle). These are years when valuations are stretched and distributions should begin.
           </p>
-          <p className="text-[10px] font-mono" style={{ color: '#E6B450' }}>Pattern: 9 · 10 · 8 years</p>
+          <p className="text-[10px] font-mono" style={{ color: '#E6B450' }}>Pattern: 9 Â· 10 Â· 8 years</p>
         </div>
         <div
           className="rounded-xl border p-5 space-y-2"
           style={{ backgroundColor: 'var(--sct-card)', borderColor: '#3B82F640' }}
         >
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#3B82F6' }}>C · Bottom / Buy Years</p>
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#3B82F6' }}>C Â· Bottom / Buy Years</p>
           <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-            Years of hard times, low prices, and the best time to buy stocks and hold until the boom. The C cycle repeats on a 7–11–9 year rotation (27-year cycle). These windows have historically been the strongest long-term entry points.
+            Years of hard times, low prices, and the best time to buy stocks and hold until the boom. The C cycle repeats on a 7â€“11â€“9 year rotation (27-year cycle). These windows have historically been the strongest long-term entry points.
           </p>
-          <p className="text-[10px] font-mono" style={{ color: '#3B82F6' }}>Pattern: 7 · 11 · 9 years</p>
+          <p className="text-[10px] font-mono" style={{ color: '#3B82F6' }}>Pattern: 7 Â· 11 Â· 9 years</p>
         </div>
       </div>
 
@@ -238,7 +238,7 @@ export default function BennerCyclePage() {
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
       >
         <span className="font-semibold" style={{ color: 'var(--sct-text)' }}>About this model: </span>
-        The Benner Cycle was published by Samuel Benner in his 1875 book <em>Benner's Prophecies of Future Ups and Downs in Prices</em>. Benner was an Ohio farmer who observed repeating cycles in commodity prices and market panics after losing his fortune in the 1873 panic. The three-cycle system — panic years (A), peak years (B), and bottom years (C) — has shown remarkable alignment with major market turning points across 150 years. It is not a trading system, but a macro timing framework for sizing positions across long time horizons.
+        The Benner Cycle was published by Samuel Benner in his 1875 book <em>Benner's Prophecies of Future Ups and Downs in Prices</em>. Benner was an Ohio farmer who observed repeating cycles in commodity prices and market panics after losing his fortune in the 1873 panic. The three-cycle system â€” panic years (A), peak years (B), and bottom years (C) â€” has shown remarkable alignment with major market turning points across 150 years. It is not a trading system, but a macro timing framework for sizing positions across long time horizons.
       </div>
     </div>
   );

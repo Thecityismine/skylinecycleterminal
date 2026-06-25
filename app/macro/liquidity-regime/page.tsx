@@ -1,4 +1,4 @@
-import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { fetchLiquiditySeriesData } from '@/lib/api/fred';
 import { fetchStablecoinHistory } from '@/lib/api/defillama';
 import { computeLiquidityRegime, REGIME_COLOR, REGIME_LABEL } from '@/lib/indicators/liquidityRegime';
@@ -7,7 +7,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 import { LiquidityRegimeSection } from '@/components/charts/LiquidityRegimeSection';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export default async function LiquidityRegimePage() {
   const [prices, fredData, stablecoinHist] = await Promise.all([
@@ -50,11 +50,11 @@ export default async function LiquidityRegimePage() {
           value={
             current.dxyChange90d != null
               ? `${current.dxyChange90d >= 0 ? '+' : ''}${current.dxyChange90d.toFixed(1)}%`
-              : '—'
+              : 'â€”'
           }
           sub={
             current.dxyChange90d != null
-              ? (current.dxyChange90d < -1 ? 'Weakening — bullish for BTC' : current.dxyChange90d > 1 ? 'Strengthening — bearish' : 'Flat')
+              ? (current.dxyChange90d < -1 ? 'Weakening â€” bullish for BTC' : current.dxyChange90d > 1 ? 'Strengthening â€” bearish' : 'Flat')
               : 'No FRED data'
           }
           accent={
@@ -69,11 +69,11 @@ export default async function LiquidityRegimePage() {
           value={
             current.realYieldChange90d != null
               ? `${current.realYieldChange90d >= 0 ? '+' : ''}${current.realYieldChange90d.toFixed(2)}pp`
-              : '—'
+              : 'â€”'
           }
           sub={
             current.realYieldChange90d != null
-              ? (current.realYieldChange90d < 0 ? 'Falling — bullish for BTC' : 'Rising — bearish')
+              ? (current.realYieldChange90d < 0 ? 'Falling â€” bullish for BTC' : 'Rising â€” bearish')
               : 'No FRED data'
           }
           accent={
@@ -90,7 +90,7 @@ export default async function LiquidityRegimePage() {
       <InsightPanel title="Score Model">
         <InsightRow
           label="Weighting"
-          value="Fed Balance Sheet 30% · DXY 20% · 10Y Real Yield 20% · M2 Growth 15% · Stablecoin Supply 10% · BTC Trend 5%"
+          value="Fed Balance Sheet 30% Â· DXY 20% Â· 10Y Real Yield 20% Â· M2 Growth 15% Â· Stablecoin Supply 10% Â· BTC Trend 5%"
           stack
         />
         <InsightRow
@@ -105,12 +105,12 @@ export default async function LiquidityRegimePage() {
         />
         <InsightRow
           label="Signal Use"
-          value="Regime context only — not a timing tool. Use alongside MVRV, SOPR, and the Skyline Cycle Score to confirm positioning before acting."
+          value="Regime context only â€” not a timing tool. Use alongside MVRV, SOPR, and the Skyline Cycle Score to confirm positioning before acting."
           stack
         />
         <InsightRow
           label="Data Sources"
-          value="BTC price via CoinMetrics · DXY (DTWEXBGS), Real Yield (DFII10), M2 (WM2NS), Fed Balance Sheet (WALCL) via FRED · Stablecoin supply via DeFiLlama"
+          value="BTC price via CoinMetrics Â· DXY (DTWEXBGS), Real Yield (DFII10), M2 (WM2NS), Fed Balance Sheet (WALCL) via FRED Â· Stablecoin supply via DeFiLlama"
           stack
         />
       </InsightPanel>

@@ -1,4 +1,4 @@
-import { fetchDXYHistory } from '@/lib/api/fred';
+﻿import { fetchDXYHistory } from '@/lib/api/fred';
 import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeDxyTrend, REGIME_COLOR, REGIME_LABEL } from '@/lib/indicators/dxyTrend';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -6,7 +6,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 import { DXYChartSection } from '@/components/charts/DXYChartSection';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export default async function DXYPage() {
   const [dxyData, btcPrices] = await Promise.all([
@@ -29,7 +29,7 @@ export default async function DXYPage() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
-        title="DXY — U.S. Dollar Index"
+        title="DXY â€” U.S. Dollar Index"
         subtitle="Dollar strength, macro liquidity pressure, and long-term trend structure"
       />
 
@@ -44,7 +44,7 @@ export default async function DXYPage() {
         />
         <StatCard
           label="90D Change"
-          value={current.change90d !== null ? `${current.change90d >= 0 ? '+' : ''}${current.change90d.toFixed(1)}%` : '—'}
+          value={current.change90d !== null ? `${current.change90d >= 0 ? '+' : ''}${current.change90d.toFixed(1)}%` : 'â€”'}
           sub="vs 13 weeks ago"
           accent={current.change90d !== null ? (current.change90d < 0 ? '#35D07F' : '#F85149') : 'var(--sct-muted)'}
           freshness="daily"
@@ -101,7 +101,7 @@ export default async function DXYPage() {
             </div>
           ))}
           <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-            Score above 75 = Strong Dollar (BTC headwind) · below 50 = Weak/Neutral Dollar
+            Score above 75 = Strong Dollar (BTC headwind) Â· below 50 = Weak/Neutral Dollar
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export default async function DXYPage() {
           {/* Correlation */}
           <div className="rounded p-3" style={{ backgroundColor: 'var(--sct-panel)' }}>
             <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-              BTC vs DXY — 26W Rolling Correlation
+              BTC vs DXY â€” 26W Rolling Correlation
             </p>
             <p
               className="text-xl font-bold font-mono mt-1"
@@ -136,7 +136,7 @@ export default async function DXYPage() {
                   : 'var(--sct-muted)',
               }}
             >
-              {current.rollingCorr !== null ? current.rollingCorr.toFixed(2) : '—'}
+              {current.rollingCorr !== null ? current.rollingCorr.toFixed(2) : 'â€”'}
             </p>
             <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>
               {current.rollingCorr === null ? 'Insufficient data'
@@ -152,7 +152,7 @@ export default async function DXYPage() {
       <InsightPanel title="Methodology">
         <InsightRow
           label="Data Source"
-          value="FRED DTWEXBGS — Nominal Broad U.S. Dollar Index (Goods). Weekly frequency, back to 1973. This is a trade-weighted broad dollar measure, closely correlated with the ICE DXY."
+          value="FRED DTWEXBGS â€” Nominal Broad U.S. Dollar Index (Goods). Weekly frequency, back to 1973. This is a trade-weighted broad dollar measure, closely correlated with the ICE DXY."
           stack
         />
         <InsightRow
@@ -162,7 +162,7 @@ export default async function DXYPage() {
         />
         <InsightRow
           label="Trend Score"
-          value="Composite 0–100 score: Price vs 50W MA (30%), Price vs 200W MA (25%), 50W MA slope (20%), 90D return (15%), DXY level vs 100 (10%). Higher score = stronger dollar = more pressure on BTC."
+          value="Composite 0â€“100 score: Price vs 50W MA (30%), Price vs 200W MA (25%), 50W MA slope (20%), 90D return (15%), DXY level vs 100 (10%). Higher score = stronger dollar = more pressure on BTC."
           stack
         />
         <InsightRow

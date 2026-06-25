@@ -1,4 +1,4 @@
-import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { fetchStablecoinHistory } from '@/lib/api/defillama';
 import { fetchMarketData } from '@/lib/api/coingecko';
 import { buildStablecoinDominancePoints } from '@/lib/indicators/stablecoinDominance';
@@ -7,15 +7,15 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmtPct(v: number | null, decimals = 2): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return `${v >= 0 ? '+' : ''}${v.toFixed(decimals)}%`;
 }
 
 function fmtBig(v: number | null): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
   if (v >= 1e9)  return `$${(v / 1e9).toFixed(1)}B`;
   return `$${v.toFixed(0)}`;
@@ -63,14 +63,14 @@ export default async function StablecoinDominancePage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Stablecoin Dominance"
-        subtitle="Stablecoin share of total crypto market cap — rising dominance signals defensive capital rotation; falling signals risk appetite returning"
+        subtitle="Stablecoin share of total crypto market cap â€” rising dominance signals defensive capital rotation; falling signals risk appetite returning"
       />
 
       {/* Stat row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           label="Stablecoin Dominance"
-          value={cur?.dominance != null ? `${cur.dominance.toFixed(2)}%` : '—'}
+          value={cur?.dominance != null ? `${cur.dominance.toFixed(2)}%` : 'â€”'}
           sub={cur?.ma30 != null ? `30D MA: ${cur.ma30.toFixed(2)}%` : 'of total crypto market cap'}
           accent="#4DA3FF"
           freshness="daily"
@@ -80,7 +80,7 @@ export default async function StablecoinDominancePage() {
           label="30D Dom. Change"
           value={cur?.dom30dChange != null
             ? `${cur.dom30dChange >= 0 ? '+' : ''}${cur.dom30dChange.toFixed(2)} pts`
-            : '—'}
+            : 'â€”'}
           sub={cur?.dom30dChange != null
             ? cur.dom30dChange < 0
               ? 'Dominance declining'
@@ -101,7 +101,7 @@ export default async function StablecoinDominancePage() {
         />
         <StatCard
           label="Liquidity Score"
-          value={result ? `${score} / 100` : '—'}
+          value={result ? `${score} / 100` : 'â€”'}
           sub={regime?.label ?? 'Capital flow signal'}
           accent={scoreColor}
           freshness="daily"
@@ -175,10 +175,10 @@ export default async function StablecoinDominancePage() {
             range: '< 6%',
             label: 'Risk-On',
             color: '#35D07F',
-            desc: 'Very low stablecoin share. Capital is deployed in crypto. Historically bull-market territory — late-stage rallies often coincide with extremely low stablecoin dominance.',
+            desc: 'Very low stablecoin share. Capital is deployed in crypto. Historically bull-market territory â€” late-stage rallies often coincide with extremely low stablecoin dominance.',
           },
           {
-            range: '6% – 12%',
+            range: '6% â€“ 12%',
             label: 'Neutral',
             color: '#F2B84B',
             desc: 'Stablecoin dominance in the middle range. No clear directional signal. Monitor the 30D trend direction rather than the absolute level.',
@@ -187,7 +187,7 @@ export default async function StablecoinDominancePage() {
             range: '> 12%',
             label: 'Risk-Off',
             color: '#FF5C5C',
-            desc: 'Elevated stablecoin share signals defensive capital rotation. Peaks above 14–18% have historically marked major bear market troughs or extreme fear events.',
+            desc: 'Elevated stablecoin share signals defensive capital rotation. Peaks above 14â€“18% have historically marked major bear market troughs or extreme fear events.',
           },
         ].map((zone) => (
           <div key={zone.range} className="flex flex-col gap-1">
@@ -205,17 +205,17 @@ export default async function StablecoinDominancePage() {
       <InsightPanel title="Indicator Logic">
         <InsightRow
           label="What it measures"
-          value="The share of total crypto market capitalization held in USD-pegged stablecoins (USDT, USDC, DAI, and others). When this percentage rises, capital is rotating defensively into stable assets. When it falls, capital is redeploying into volatile crypto assets — a constructive liquidity signal."
+          value="The share of total crypto market capitalization held in USD-pegged stablecoins (USDT, USDC, DAI, and others). When this percentage rises, capital is rotating defensively into stable assets. When it falls, capital is redeploying into volatile crypto assets â€” a constructive liquidity signal."
           stack
         />
         <InsightRow
           label="Regime interpretation"
-          value="Rising dominance during a bear market can mean two things: (1) fear-driven capital flight into stables, or (2) organic stablecoin supply growth. Context matters — check whether BTC price is also falling. Rising dominance while BTC rallies is historically a negative divergence. Falling dominance while BTC rallies is the cleanest risk-on signal."
+          value="Rising dominance during a bear market can mean two things: (1) fear-driven capital flight into stables, or (2) organic stablecoin supply growth. Context matters â€” check whether BTC price is also falling. Rising dominance while BTC rallies is historically a negative divergence. Falling dominance while BTC rallies is the cleanest risk-on signal."
           stack
         />
         <InsightRow
           label="Liquidity Score"
-          value="A composite 0–100 score weighting: 30D dominance change (40%), 90D dominance change (30%), and 30D stablecoin supply growth (30%). Score > 65 = favorable liquidity conditions. Score < 45 = deteriorating. This is a directional tool, not a precision signal."
+          value="A composite 0â€“100 score weighting: 30D dominance change (40%), 90D dominance change (30%), and 30D stablecoin supply growth (30%). Score > 65 = favorable liquidity conditions. Score < 45 = deteriorating. This is a directional tool, not a precision signal."
           stack
         />
         <InsightRow
@@ -225,7 +225,7 @@ export default async function StablecoinDominancePage() {
         />
         <InsightRow
           label="Source"
-          value="Stablecoin supply: DefiLlama stablecoincharts/all API (free tier, all-time daily) · Total market cap: CoinGecko Global API · BTC price: CoinMetrics Community API · Revalidated every 24 hours"
+          value="Stablecoin supply: DefiLlama stablecoincharts/all API (free tier, all-time daily) Â· Total market cap: CoinGecko Global API Â· BTC price: CoinMetrics Community API Â· Revalidated every 24 hours"
           stack
         />
       </InsightPanel>

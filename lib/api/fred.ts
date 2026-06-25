@@ -1,4 +1,4 @@
-// FRED API — St. Louis Federal Reserve
+﻿// FRED API â€” St. Louis Federal Reserve
 // Free key: fred.stlouisfed.org/docs/api/api_key.html
 // All series fetched server-side only (key never sent to client)
 
@@ -15,10 +15,10 @@ export type MacroResponse = {
   tenYear:          { current: number; series: MacroDataPoint[] };
   twoYear:          number;
   twoYearSeries:    MacroDataPoint[];
-  yieldCurveSeries: MacroDataPoint[];   // 10Y − 2Y spread
-  realRate:         number;             // tenYear.current − cpiYoY
-  realRateSeries:   MacroDataPoint[];   // daily 10Y yield − nearest monthly CPI YoY
-  macroScore:       number;             // 0 (bullish for BTC) → 100 (bearish for BTC)
+  yieldCurveSeries: MacroDataPoint[];   // 10Y âˆ’ 2Y spread
+  realRate:         number;             // tenYear.current âˆ’ cpiYoY
+  realRateSeries:   MacroDataPoint[];   // daily 10Y yield âˆ’ nearest monthly CPI YoY
+  macroScore:       number;             // 0 (bullish for BTC) â†’ 100 (bearish for BTC)
   fetchedAt:        string;
 };
 
@@ -32,7 +32,7 @@ async function fredGet(seriesId: string, limit: number): Promise<MacroDataPoint[
     `&sort_order=desc&limit=${limit}`;
 
   const res = await fetch(url, {
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) {
@@ -45,7 +45,7 @@ async function fredGet(seriesId: string, limit: number): Promise<MacroDataPoint[
   return (json.observations as Array<{ date: string; value: string }>)
     .filter((o) => o.value !== '.' && o.value !== '')
     .map((o) => ({ date: o.date, value: Number(o.value) }))
-    .reverse();   // oldest → newest for charts
+    .reverse();   // oldest â†’ newest for charts
 }
 
 function clamp(v: number, lo: number, hi: number) {
@@ -54,12 +54,12 @@ function clamp(v: number, lo: number, hi: number) {
 
 export async function fetchMacroData(): Promise<MacroResponse> {
   const [dxyRaw, fedRaw, cpiRaw, m2Raw, t10Raw, t2Raw] = await Promise.all([
-    fredGet('DTWEXBGS', 400),  // daily broad dollar index — ~13 months
-    fredGet('FEDFUNDS', 36),   // monthly fed funds rate — 3 years
-    fredGet('CPIAUCSL', 62),   // monthly CPI — 5+ years for YoY
-    fredGet('M2SL', 62),       // monthly M2 — 5+ years for YoY
-    fredGet('DGS10', 400),     // daily 10Y yield — ~13 months
-    fredGet('DGS2', 400),      // daily 2Y yield — ~13 months
+    fredGet('DTWEXBGS', 400),  // daily broad dollar index â€” ~13 months
+    fredGet('FEDFUNDS', 36),   // monthly fed funds rate â€” 3 years
+    fredGet('CPIAUCSL', 62),   // monthly CPI â€” 5+ years for YoY
+    fredGet('M2SL', 62),       // monthly M2 â€” 5+ years for YoY
+    fredGet('DGS10', 400),     // daily 10Y yield â€” ~13 months
+    fredGet('DGS2', 400),      // daily 2Y yield â€” ~13 months
   ]);
 
   // Current values
@@ -91,13 +91,13 @@ export async function fetchMacroData(): Promise<MacroResponse> {
   const m2Score      = clamp(((5 - m2YoY) / 20) * 100, 0, 100);
   const macroScore   = Math.round((dxyScore + fedScore + realRateScore + m2Score) / 4);
 
-  // ── Yield curve: 10Y − 2Y spread ──────────────────────────────────────────
+  // â”€â”€ Yield curve: 10Y âˆ’ 2Y spread â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const t2Map = new Map(t2Raw.map(d => [d.date, d.value]));
   const yieldCurveRaw = t10Raw
     .filter(d => t2Map.has(d.date))
     .map(d => ({ date: d.date, value: +(d.value - t2Map.get(d.date)!).toFixed(3) }));
 
-  // ── Historical CPI YoY series (monthly) ────────────────────────────────────
+  // â”€â”€ Historical CPI YoY series (monthly) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const cpiYoYSeriesRaw: MacroDataPoint[] = cpiRaw.slice(12).map((d, i) => ({
     date:  d.date,
     value: cpiRaw[i].value !== 0
@@ -106,7 +106,7 @@ export async function fetchMacroData(): Promise<MacroResponse> {
   }));
   const cpiYoYByMonth = new Map(cpiYoYSeriesRaw.map(d => [d.date.slice(0, 7), d.value]));
 
-  // ── Real rate: 10Y yield − nearest monthly CPI YoY (historical) ───────────
+  // â”€â”€ Real rate: 10Y yield âˆ’ nearest monthly CPI YoY (historical) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function nearestCpiYoY(dateStr: string): number | null {
     for (let offset = 0; offset < 6; offset++) {
       const d = new Date(dateStr + 'T00:00:00');
@@ -123,7 +123,7 @@ export async function fetchMacroData(): Promise<MacroResponse> {
     })
     .filter((d): d is MacroDataPoint => d != null);
 
-  // ── Downsample daily series to ~52 weekly points for chart performance ─────
+  // â”€â”€ Downsample daily series to ~52 weekly points for chart performance â”€â”€â”€â”€â”€
   function downsample(arr: MacroDataPoint[], target = 52): MacroDataPoint[] {
     if (arr.length <= target) return arr;
     const step = Math.floor(arr.length / target);
@@ -149,7 +149,7 @@ export async function fetchMacroData(): Promise<MacroResponse> {
   };
 }
 
-// Fetches FRED series from startDate ascending — returns [] if key not set (graceful)
+// Fetches FRED series from startDate ascending â€” returns [] if key not set (graceful)
 export async function fredGetFrom(seriesId: string, startDate: string): Promise<MacroDataPoint[]> {
   const key = process.env.FRED_API_KEY?.trim();
   if (!key) return [];
@@ -158,7 +158,7 @@ export async function fredGetFrom(seriesId: string, startDate: string): Promise<
     `?series_id=${seriesId}&api_key=${key}&file_type=json` +
     `&observation_start=${startDate}&sort_order=asc`;
   const res = await fetch(url, {
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) return [];

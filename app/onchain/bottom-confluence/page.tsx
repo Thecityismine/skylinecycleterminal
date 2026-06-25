@@ -1,4 +1,4 @@
-import {
+﻿import {
   fetchBTCMVRVData,
   fetchBTCHashRibbon,
   fetchBTCExchangeReserve,
@@ -15,9 +15,9 @@ import { BTCBottomConfluenceChartSection } from '@/components/charts/BTCBottomCo
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function statusAccent(s: SignalStatus): string {
   return s === 'confirmed' ? '#35D07F' : s === 'developing' ? '#E6B450' : '#6B7280';
@@ -34,7 +34,7 @@ function fmtPrice(v: number): string {
 }
 
 function fmtRet(v: number | null): { text: string; color: string } {
-  if (v == null) return { text: '—', color: '#6B7280' };
+  if (v == null) return { text: 'â€”', color: '#6B7280' };
   return {
     text:  `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`,
     color: v >= 0 ? '#35D07F' : '#FF5C5C',
@@ -75,7 +75,7 @@ function SignalRow({
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default async function BottomConfluencePage() {
   const [mvrvData, hashData, exchangeData] = await Promise.all([
@@ -118,22 +118,22 @@ export default async function BottomConfluencePage() {
     {
       n: 2,
       title:  'Hash Ribbon (Miner Capitulation)',
-      value:  last.hrRatio != null ? last.hrRatio.toFixed(3) : '—',
-      sub:    `30D/60D hashrate MA ratio. < 1.0 = miners selling at a loss (capitulation). Current: ${last.hrRatio?.toFixed(3) ?? '—'}`,
+      value:  last.hrRatio != null ? last.hrRatio.toFixed(3) : 'â€”',
+      sub:    `30D/60D hashrate MA ratio. < 1.0 = miners selling at a loss (capitulation). Current: ${last.hrRatio?.toFixed(3) ?? 'â€”'}`,
       status: last.hashStatus,
     },
     {
       n: 3,
       title:  '2Y Cost Basis (Price vs 2Y MA)',
-      value:  last.priceTo2y != null ? `${(last.priceTo2y * 100).toFixed(0)}%` : '—',
-      sub:    `Price / 2-Year Moving Average. < 100% = price below 2Y cost basis → recent buyers underwater. Current: ${last.priceTo2y != null ? (last.priceTo2y * 100).toFixed(1) + '%' : '—'}`,
+      value:  last.priceTo2y != null ? `${(last.priceTo2y * 100).toFixed(0)}%` : 'â€”',
+      sub:    `Price / 2-Year Moving Average. < 100% = price below 2Y cost basis â†’ recent buyers underwater. Current: ${last.priceTo2y != null ? (last.priceTo2y * 100).toFixed(1) + '%' : 'â€”'}`,
       status: last.twoYStatus,
     },
     {
       n: 4,
       title:  'LTH Accumulation (Exchange Flow)',
       value:  last.exchChange30d != null ? `${last.exchChange30d >= 0 ? '+' : ''}${last.exchChange30d.toFixed(2)}pp` : 'No data',
-      sub:    `Exchange supply 30D change (pp). Negative = coins leaving exchanges → cold storage / accumulation. Data available from 2016.`,
+      sub:    `Exchange supply 30D change (pp). Negative = coins leaving exchanges â†’ cold storage / accumulation. Data available from 2016.`,
       status: last.lthStatus,
     },
   ];
@@ -179,7 +179,7 @@ export default async function BottomConfluencePage() {
         <p className="text-base font-semibold" style={{ color: regime.color }}>{regime.label}</p>
         <p className="text-sm text-center max-w-lg" style={{ color: 'var(--sct-muted)' }}>{regime.sublabel}</p>
         <p className="text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>
-          as of {last.time} · BTC {fmtPrice(last.btcClose)}
+          as of {last.time} Â· BTC {fmtPrice(last.btcClose)}
         </p>
       </div>
 
@@ -214,15 +214,15 @@ export default async function BottomConfluencePage() {
         />
         <StatCard
           label="2Y MA"
-          value={last.ma2y != null ? fmtPrice(last.ma2y) : '—'}
-          sub={last.priceTo2y != null ? `Price at ${(last.priceTo2y * 100).toFixed(0)}% of 2Y MA` : '—'}
+          value={last.ma2y != null ? fmtPrice(last.ma2y) : 'â€”'}
+          sub={last.priceTo2y != null ? `Price at ${(last.priceTo2y * 100).toFixed(0)}% of 2Y MA` : 'â€”'}
           trend={last.twoYStatus === 'confirmed' ? 'down' : 'neutral'}
           freshness="daily"
           accent={statusAccent(last.twoYStatus)}
         />
         <StatCard
           label="HR Ratio 30/60D"
-          value={last.hrRatio != null ? last.hrRatio.toFixed(3) : '—'}
+          value={last.hrRatio != null ? last.hrRatio.toFixed(3) : 'â€”'}
           sub={last.hashStatus === 'confirmed' ? 'Miner capitulation active' : last.hashStatus === 'developing' ? 'Near capitulation' : 'Miners healthy'}
           trend={last.hashStatus === 'confirmed' ? 'down' : 'neutral'}
           freshness="daily"
@@ -274,7 +274,7 @@ export default async function BottomConfluencePage() {
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--sct-text)' }}>{e.signal}</p>
                     <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-                      {e.date} ·{' '}
+                      {e.date} Â·{' '}
                       <span style={{ color: statusAccent(e.status) }}>{statusLabel(e.status)}</span>
                     </p>
                   </div>
@@ -283,7 +283,7 @@ export default async function BottomConfluencePage() {
             </ol>
           )}
           <p className="text-xs mt-4 pt-3 border-t" style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}>
-            Each signal typically activates weeks apart. Full confluence rarely lasts more than 3–6 months before recovery begins.
+            Each signal typically activates weeks apart. Full confluence rarely lasts more than 3â€“6 months before recovery begins.
           </p>
         </div>
 
@@ -303,7 +303,7 @@ export default async function BottomConfluencePage() {
               },
               {
                 title: 'Exchange supply rise despite LTH behavior',
-                body: 'Institutional adoption changes exchange dynamics — custodial BTC may not show on traditional exchange reserve data.',
+                body: 'Institutional adoption changes exchange dynamics â€” custodial BTC may not show on traditional exchange reserve data.',
               },
               {
                 title: 'Structural bear (regulatory shutdown)',
@@ -387,7 +387,7 @@ export default async function BottomConfluencePage() {
             </table>
           </div>
           <p className="text-[10px] mt-1.5" style={{ color: 'var(--sct-muted)' }}>
-            Forward returns measured from the date the confluence score first reached ≥ 2.5 / 4. "In Progress" events have no return data yet. Past performance does not guarantee future results.
+            Forward returns measured from the date the confluence score first reached â‰¥ 2.5 / 4. "In Progress" events have no return data yet. Past performance does not guarantee future results.
           </p>
         </div>
       )}
@@ -402,12 +402,12 @@ export default async function BottomConfluencePage() {
           },
           {
             title: 'Signal 2: Hash Ribbon',
-            body: 'When the 30-day hashrate MA falls below the 60-day MA, miners are shutting off machines — a sign they can no longer mine profitably. Miner capitulation historically precedes price bottoms by 1–4 months.',
+            body: 'When the 30-day hashrate MA falls below the 60-day MA, miners are shutting off machines â€” a sign they can no longer mine profitably. Miner capitulation historically precedes price bottoms by 1â€“4 months.',
             color: statusAccent(last.hashStatus),
           },
           {
             title: 'Signal 3: 2Y Cost Basis',
-            body: 'The 730-day SMA approximates the average price paid by holders over the last two years. When spot price falls below this line, recent buyers are underwater — a precondition for sustained selling to exhaust and bottom formation to begin.',
+            body: 'The 730-day SMA approximates the average price paid by holders over the last two years. When spot price falls below this line, recent buyers are underwater â€” a precondition for sustained selling to exhaust and bottom formation to begin.',
             color: statusAccent(last.twoYStatus),
           },
           {
@@ -437,7 +437,7 @@ export default async function BottomConfluencePage() {
         style={{ borderColor: 'rgba(255,92,92,0.2)', color: 'var(--sct-muted)' }}
       >
         <strong style={{ color: '#FF5C5C' }}>Not financial advice.</strong>{' '}
-        This page identifies historical stress-signal alignment, not a buy signal. All four signals confirming simultaneously does not guarantee price recovery — it indicates conditions historically consistent with major bottoms. Markets can remain irrational. Always size positions according to your own risk tolerance.
+        This page identifies historical stress-signal alignment, not a buy signal. All four signals confirming simultaneously does not guarantee price recovery â€” it indicates conditions historically consistent with major bottoms. Markets can remain irrational. Always size positions according to your own risk tolerance.
       </div>
     </main>
   );

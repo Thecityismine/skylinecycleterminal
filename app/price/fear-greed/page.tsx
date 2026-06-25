@@ -1,4 +1,4 @@
-import { fetchFearGreedHistory, fgColor } from '@/lib/api/feargreed';
+﻿import { fetchFearGreedHistory, fgColor } from '@/lib/api/feargreed';
 import { fetchDailyPrice }                from '@/lib/api/coinmetrics';
 import { PageHeader }                     from '@/components/dashboard/PageHeader';
 import { StatCard }                       from '@/components/dashboard/StatCard';
@@ -6,9 +6,9 @@ import { InsightPanel, InsightRow }       from '@/components/dashboard/InsightPa
 import { FearGreedPageClient }            from '@/components/charts/FearGreedPageClient';
 import type { FGCombinedPoint }           from '@/components/charts/FearGreedChart';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function avg(arr: number[]): number {
   if (!arr.length) return 0;
@@ -21,7 +21,7 @@ export default async function FearGreedPage() {
     fetchDailyPrice('btc', '2018-01-01'),
   ]);
 
-  // ── Merge by date ─────────────────────────────────────────────────────────
+  // â”€â”€ Merge by date â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const priceMap = new Map(btcData.map(d => [d.time, d.price]));
 
   const combined: FGCombinedPoint[] = fgData.map(d => ({
@@ -32,7 +32,7 @@ export default async function FearGreedPage() {
     fgClass: d.fgClass,
   }));
 
-  // ── Current stats ─────────────────────────────────────────────────────────
+  // â”€â”€ Current stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const latest       = fgData.at(-1)!;
   const currentValue = latest.value;
   const currentClass = latest.fgClass;
@@ -70,7 +70,7 @@ export default async function FearGreedPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin Fear & Greed Index"
-        subtitle="Market sentiment gauge — extreme fear has historically marked cycle lows, extreme greed marks cycle highs"
+        subtitle="Market sentiment gauge â€” extreme fear has historically marked cycle lows, extreme greed marks cycle highs"
       />
 
       {/* Stat cards */}
@@ -85,19 +85,19 @@ export default async function FearGreedPage() {
         <StatCard
           label="7-Day Average"
           value={`${avg7}`}
-          sub={fgData.slice(-7).at(0)?.fgClass ?? '—'}
+          sub={fgData.slice(-7).at(0)?.fgClass ?? 'â€”'}
           accent={fgColor(avg7)}
         />
         <StatCard
           label="30-Day Average"
           value={`${avg30}`}
-          sub={fgData.slice(-30).at(0)?.fgClass ?? '—'}
+          sub={fgData.slice(-30).at(0)?.fgClass ?? 'â€”'}
           accent={fgColor(avg30)}
         />
         <StatCard
           label="90-Day Split"
           value={`${greedDays90}G / ${fearDays90}F`}
-          sub={`${extremeGreed90} Ext Greed · ${extremeFear90} Ext Fear days`}
+          sub={`${extremeGreed90} Ext Greed Â· ${extremeFear90} Ext Fear days`}
           accent={greedDays90 > fearDays90 ? '#16a34a' : '#dc2626'}
         />
       </div>
@@ -113,7 +113,7 @@ export default async function FearGreedPage() {
         />
         <div>
           <p className="text-sm font-semibold" style={{ color: currentColor }}>
-            {currentClass} — {currentValue}
+            {currentClass} â€” {currentValue}
             {currentPrice != null && (
               <span className="text-xs ml-3 font-normal" style={{ color: 'var(--sct-muted)' }}>
                 BTC: ${currentPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })}
@@ -124,7 +124,7 @@ export default async function FearGreedPage() {
             {currentValue < 25
               ? 'Historically, extreme fear levels near cycle lows have preceded major Bitcoin recoveries.'
               : currentValue < 50
-              ? 'Market is in fear territory. Elevated risk-off sentiment — watch for potential buying opportunities.'
+              ? 'Market is in fear territory. Elevated risk-off sentiment â€” watch for potential buying opportunities.'
               : currentValue < 75
               ? 'Market is in greed territory. Sentiment is positive but not yet overheated.'
               : 'Extreme greed typically coincides with late-cycle euphoria. Prior ATH peaks have occurred in this zone.'
@@ -142,25 +142,25 @@ export default async function FearGreedPage() {
           {
             label: 'All-Time Low',
             value: allTimeMin.toString(),
-            sub: `${allTimeMinDate} · Record fear`,
+            sub: `${allTimeMinDate} Â· Record fear`,
             color: '#dc2626',
           },
           {
             label: 'All-Time High',
             value: allTimeMax.toString(),
-            sub: `${allTimeMaxDate} · Peak greed`,
+            sub: `${allTimeMaxDate} Â· Peak greed`,
             color: '#16a34a',
           },
           {
             label: 'Last Extreme Fear',
             value: lastExtFear ? `${daysSinceExtFear}d ago` : 'N/A',
-            sub: lastExtFear ? `${lastExtFear.time} · ${lastExtFear.value}` : '—',
+            sub: lastExtFear ? `${lastExtFear.time} Â· ${lastExtFear.value}` : 'â€”',
             color: '#dc2626',
           },
           {
             label: 'Last Extreme Greed',
             value: lastExtGreed ? `${daysSinceExtGreed}d ago` : 'N/A',
-            sub: lastExtGreed ? `${lastExtGreed.time} · ${lastExtGreed.value}` : '—',
+            sub: lastExtGreed ? `${lastExtGreed.time} Â· ${lastExtGreed.value}` : 'â€”',
             color: '#16a34a',
           },
         ].map(({ label, value, sub, color }) => (
@@ -184,7 +184,7 @@ export default async function FearGreedPage() {
         <div className="px-5 py-4 border-b" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>Historical Zone Distribution</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-            {fgData.length} days of data · {fgData[0]?.time ?? ''} → {latest.time}
+            {fgData.length} days of data Â· {fgData[0]?.time ?? ''} â†’ {latest.time}
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -198,10 +198,10 @@ export default async function FearGreedPage() {
             </thead>
             <tbody>
               {[
-                { zone: 'Extreme Greed', range: '75–100', color: '#16a34a', filter: (v: number) => v >= 75,  context: 'Late-cycle euphoria — prior BTC ATHs have occurred here' },
-                { zone: 'Greed',         range: '50–74',  color: '#65a30d', filter: (v: number) => v >= 50 && v < 75, context: 'Positive sentiment, uptrend intact' },
-                { zone: 'Fear',          range: '25–49',  color: '#d97706', filter: (v: number) => v >= 25 && v < 50, context: 'Elevated uncertainty, risk-off behavior' },
-                { zone: 'Extreme Fear',  range: '0–24',   color: '#dc2626', filter: (v: number) => v < 25,   context: 'Capitulation zone — historically strongest long-term entry' },
+                { zone: 'Extreme Greed', range: '75â€“100', color: '#16a34a', filter: (v: number) => v >= 75,  context: 'Late-cycle euphoria â€” prior BTC ATHs have occurred here' },
+                { zone: 'Greed',         range: '50â€“74',  color: '#65a30d', filter: (v: number) => v >= 50 && v < 75, context: 'Positive sentiment, uptrend intact' },
+                { zone: 'Fear',          range: '25â€“49',  color: '#d97706', filter: (v: number) => v >= 25 && v < 50, context: 'Elevated uncertainty, risk-off behavior' },
+                { zone: 'Extreme Fear',  range: '0â€“24',   color: '#dc2626', filter: (v: number) => v < 25,   context: 'Capitulation zone â€” historically strongest long-term entry' },
               ].map(({ zone, range, color, filter, context }, i) => {
                 const count = allValues.filter(filter).length;
                 const pct   = ((count / allValues.length) * 100).toFixed(1);
@@ -232,11 +232,11 @@ export default async function FearGreedPage() {
       </div>
 
       <InsightPanel title="Reading the Fear & Greed Index">
-        <InsightRow label="What it measures" value="The Alternative.me Crypto Fear & Greed Index aggregates volatility, market momentum, social media sentiment, surveys, Bitcoin dominance, and Google Trends data into a 0–100 score. 0 = maximum fear, 100 = maximum greed." stack />
-        <InsightRow label="The contrarian signal" value="Bitcoin historically reaches cycle lows when the F&G index is in Extreme Fear (0–24). The Nov 2022 bottom coincided with readings of 6. This is a mean-reversion indicator — extreme sentiment tends to precede directional reversals." valueColor="#d97706" stack />
+        <InsightRow label="What it measures" value="The Alternative.me Crypto Fear & Greed Index aggregates volatility, market momentum, social media sentiment, surveys, Bitcoin dominance, and Google Trends data into a 0â€“100 score. 0 = maximum fear, 100 = maximum greed." stack />
+        <InsightRow label="The contrarian signal" value="Bitcoin historically reaches cycle lows when the F&G index is in Extreme Fear (0â€“24). The Nov 2022 bottom coincided with readings of 6. This is a mean-reversion indicator â€” extreme sentiment tends to precede directional reversals." valueColor="#d97706" stack />
         <InsightRow label="What it does NOT tell you" value="The F&G index measures current sentiment, not forward price. Fear can stay elevated for months (2022 bear market), and greed can persist through an entire bull run. It signals regime, not timing." stack />
         <InsightRow label="Best used with" value="Drawdown from ATH (where in the bear cycle?), MVRV Z-Score (on-chain valuation), and the Power Law model (log-scale structural position). When all three align at historical extremes, the combined signal is strongest." stack />
-        <InsightRow label="Source" value="Alternative.me Crypto Fear & Greed Index · api.alternative.me/fng · Updated daily" stack />
+        <InsightRow label="Source" value="Alternative.me Crypto Fear & Greed Index Â· api.alternative.me/fng Â· Updated daily" stack />
       </InsightPanel>
     </div>
   );

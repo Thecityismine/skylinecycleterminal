@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { fetchReserveRiskData } from '@/lib/api/coinmetrics';
 import { computeReserveRisk } from '@/lib/indicators/reserveRisk';
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 export async function GET() {
   try {

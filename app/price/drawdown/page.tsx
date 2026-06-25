@@ -1,4 +1,4 @@
-import { fetchDailyPrice }           from '@/lib/api/coinmetrics';
+﻿import { fetchDailyPrice }           from '@/lib/api/coinmetrics';
 import { PageHeader }                 from '@/components/dashboard/PageHeader';
 import { StatCard }                   from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow }   from '@/components/dashboard/InsightPanel';
@@ -12,9 +12,9 @@ import {
   HISTORICAL_CYCLES,
 } from '@/lib/indicators/drawdownFromATH';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function fmtUSD(v: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -32,16 +32,16 @@ function downsample<T>(arr: T[], max = 1400): T[] {
   return arr.filter((_, i) => i % step === 0 || i === arr.length - 1);
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default async function BTCDrawdownPage() {
-  // Fetch full BTC history — start from 2010 for complete drawdown picture
+  // Fetch full BTC history â€” start from 2010 for complete drawdown picture
   const raw = await fetchDailyPrice('btc', '2010-07-01');
 
   const allPoints   = calculateDrawdownFromATH(raw);
   const chartPoints = downsample(allPoints, 1400);
 
-  // ── Current stats ─────────────────────────────────────────────────────────
+  // â”€â”€ Current stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const last         = allPoints.at(-1)!;
   const currentPrice = last.close;
   const currentATH   = last.ath;
@@ -57,7 +57,7 @@ export default async function BTCDrawdownPage() {
 
   const regime = getDrawdownRegime(currentDD);
 
-  // ── Current cycle max drawdown (since the current ATH) ───────────────────
+  // â”€â”€ Current cycle max drawdown (since the current ATH) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const pointsSinceATH  = allPoints.filter(p => p.time >= athDate);
   const currentCycleMax = pointsSinceATH.length > 0
     ? Math.min(...pointsSinceATH.map(p => p.drawdown))
@@ -107,7 +107,7 @@ export default async function BTCDrawdownPage() {
         >
           <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--sct-muted)' }}>Recovery Needed</p>
           <p className="text-2xl font-mono font-semibold" style={{ color: recovery > 100 ? '#FF5C5C' : recovery > 50 ? '#F97316' : '#E6B450' }}>
-            {recovery < 0.1 ? '—' : fmtPct(recovery, 1)}
+            {recovery < 0.1 ? 'â€”' : fmtPct(recovery, 1)}
           </p>
           <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
             {recovery > 0.1
@@ -151,7 +151,7 @@ export default async function BTCDrawdownPage() {
       >
         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: regime.color }} />
         <div>
-          <p className="text-sm font-semibold" style={{ color: regime.color }}>{regime.label} — {currentDD.toFixed(1)}%</p>
+          <p className="text-sm font-semibold" style={{ color: regime.color }}>{regime.label} â€” {currentDD.toFixed(1)}%</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>{regime.desc}</p>
         </div>
       </div>
@@ -178,7 +178,7 @@ export default async function BTCDrawdownPage() {
         <div className="px-5 py-4 border-b" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>Historical Bear Market Drawdowns</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-            Based on daily close data from CoinMetrics — peak-to-trough from cycle ATH
+            Based on daily close data from CoinMetrics â€” peak-to-trough from cycle ATH
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -205,7 +205,7 @@ export default async function BTCDrawdownPage() {
                   <td className="px-5 py-3 font-semibold" style={{ color: '#FF5C5C' }}>{c.maxDrawdown.toFixed(1)}%</td>
                   <td className="px-5 py-3" style={{ color: 'var(--sct-muted)' }}>{c.daysToLow} days</td>
                   <td className="px-5 py-3" style={{ color: 'var(--sct-muted)' }}>
-                    {c.daysToRecovery != null ? `${c.daysToRecovery} days` : '—'}
+                    {c.daysToRecovery != null ? `${c.daysToRecovery} days` : 'â€”'}
                   </td>
                 </tr>
               ))}
@@ -237,20 +237,20 @@ export default async function BTCDrawdownPage() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>
           {[
-            { loss: '−25%', needed: '+33%' },
-            { loss: '−50%', needed: '+100%' },
-            { loss: '−75%', needed: '+300%' },
+            { loss: 'âˆ’25%', needed: '+33%' },
+            { loss: 'âˆ’50%', needed: '+100%' },
+            { loss: 'âˆ’75%', needed: '+300%' },
           ].map(({ loss, needed }) => (
             <div key={loss} className="flex items-center gap-2">
               <span className="text-[#FF5C5C]">{loss} loss</span>
-              <span>→</span>
+              <span>â†’</span>
               <span style={{ color: '#35D07F' }}>{needed} needed to recover</span>
             </div>
           ))}
         </div>
         <p className="text-[11px] mt-3" style={{ color: 'var(--sct-muted)' }}>
           Drawdown depth is asymmetric: a 50% decline requires a 100% gain to break even.
-          This is why bear-market capitulation zones (-77% to -94%) historically offered the highest long-term return potential — the math of recovery is extremely favorable.
+          This is why bear-market capitulation zones (-77% to -94%) historically offered the highest long-term return potential â€” the math of recovery is extremely favorable.
         </p>
       </div>
 
@@ -273,7 +273,7 @@ export default async function BTCDrawdownPage() {
         />
         <InsightRow
           label="Historical range"
-          value={`All prior Bitcoin bear market cycles have bottomed between −77% and −94% from their respective ATH. The current cycle's max drawdown of ${currentCycleMax.toFixed(1)}% provides context for where we sit relative to historical bear extremes.`}
+          value={`All prior Bitcoin bear market cycles have bottomed between âˆ’77% and âˆ’94% from their respective ATH. The current cycle's max drawdown of ${currentCycleMax.toFixed(1)}% provides context for where we sit relative to historical bear extremes.`}
           stack
         />
       </InsightPanel>

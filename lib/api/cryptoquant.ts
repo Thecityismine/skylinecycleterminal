@@ -1,4 +1,4 @@
-// CryptoQuant API — on-chain analytics
+﻿// CryptoQuant API â€” on-chain analytics
 // Free tier: 50 req/day, 7-day history, personal use
 // Auth: Bearer token in Authorization header
 
@@ -56,7 +56,7 @@ export async function fetchMVRV(): Promise<MVRVData | null> {
     try {
       const res = await fetch(base + qs, {
         headers,
-        next: { revalidate: 86400 },
+        next: { revalidate: 3600 },
         signal: AbortSignal.timeout(6000),
       });
 
@@ -74,10 +74,10 @@ export async function fetchMVRV(): Promise<MVRVData | null> {
         return { mvrv, source: 'cryptoquant', fetchedAt: new Date().toISOString() };
       }
     } catch {
-      // timeout or network error — try next candidate
+      // timeout or network error â€” try next candidate
     }
   }
 
-  console.warn('[CryptoQuant] All MVRV endpoints failed — using proxy');
+  console.warn('[CryptoQuant] All MVRV endpoints failed â€” using proxy');
   return null;
 }

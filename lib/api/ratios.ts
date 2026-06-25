@@ -1,4 +1,4 @@
-import { fetchDailyPrice, type PricePoint } from '@/lib/api/coinmetrics';
+﻿import { fetchDailyPrice, type PricePoint } from '@/lib/api/coinmetrics';
 
 export type RatioKey = 'btc_ixic' | 'btc_spx' | 'eth_ixic' | 'btc_eth' | 'eth_btc';
 
@@ -40,7 +40,7 @@ async function fredDaily(seriesId: string): Promise<FredPoint[]> {
     `&sort_order=asc&limit=10000`;
   try {
     const res = await fetch(url, {
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];
@@ -188,15 +188,15 @@ function computeRotationSignal(btc: PricePoint[], eth: PricePoint[]): RotationSi
   let color: string;
 
   if (deviation < -0.35) {
-    signal = 'strong_eth'; label = 'Strong Rotate to ETH · Deep Value vs BTC'; color = '#3B82F6';
+    signal = 'strong_eth'; label = 'Strong Rotate to ETH Â· Deep Value vs BTC'; color = '#3B82F6';
   } else if (deviation < -0.12) {
-    signal = 'favor_eth';  label = 'Favor ETH · Below 365-Day MA';             color = '#35D07F';
+    signal = 'favor_eth';  label = 'Favor ETH Â· Below 365-Day MA';             color = '#35D07F';
   } else if (deviation < 0.12) {
-    signal = 'neutral';    label = 'Neutral · Hold Current Mix';                color = 'var(--sct-muted)';
+    signal = 'neutral';    label = 'Neutral Â· Hold Current Mix';                color = 'var(--sct-muted)';
   } else if (deviation < 0.35) {
-    signal = 'favor_btc';  label = 'Favor BTC · ETH Extended vs MA';           color = '#E6B450';
+    signal = 'favor_btc';  label = 'Favor BTC Â· ETH Extended vs MA';           color = '#E6B450';
   } else {
-    signal = 'strong_btc'; label = 'Rotate to BTC · ETH Well Above MA';        color = '#FF5C5C';
+    signal = 'strong_btc'; label = 'Rotate to BTC Â· ETH Well Above MA';        color = '#FF5C5C';
   }
 
   // Downsample history to weekly for the sparkline

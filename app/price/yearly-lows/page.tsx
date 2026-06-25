@@ -1,4 +1,4 @@
-import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
+﻿import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import {
   calculateYearlyLows,
   computeFloorTrendScore,
@@ -9,24 +9,24 @@ import { FloorStaircaseChart } from '@/components/charts/FloorStaircaseChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function fmtUSD(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(n);
 }
 
 function fmtPct(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   const sign = n >= 0 ? '+' : '';
   return `${sign}${n.toFixed(1)}%`;
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default async function YearlyLowsPage() {
   let lows: ReturnType<typeof calculateYearlyLows> = [];
@@ -70,7 +70,7 @@ export default async function YearlyLowsPage() {
         subtitle="Annual Bitcoin price floors and long-term adoption trend"
       />
 
-      {/* ── Floor Trend banner ───────────────────────────────────────────── */}
+      {/* â”€â”€ Floor Trend banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {trend && (
         <div
           className="flex items-center gap-4 rounded-xl border px-5 py-4"
@@ -102,7 +102,7 @@ export default async function YearlyLowsPage() {
         </div>
       )}
 
-      {/* ── Stat cards ───────────────────────────────────────────────────── */}
+      {/* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {current && (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <StatCard
@@ -114,16 +114,16 @@ export default async function YearlyLowsPage() {
             source="CoinMetrics"
           />
           <StatCard
-            label={`${previous?.year ?? '—'} Low`}
+            label={`${previous?.year ?? 'â€”'} Low`}
             value={fmtUSD(previous?.lowPrice ?? null)}
-            sub={previous ? 'Prior full year' : '—'}
+            sub={previous ? 'Prior full year' : 'â€”'}
             accent="#3B82F6"
             freshness="daily"
           />
           <StatCard
             label="YoY Floor Change"
             value={fmtPct(current.yoyChange)}
-            sub={current.yoyChange == null ? '—'
+            sub={current.yoyChange == null ? 'â€”'
               : current.yoyChange >= 0
               ? `Floor rising vs ${previous?.year}`
               : `Floor below ${previous?.year}`}
@@ -132,7 +132,7 @@ export default async function YearlyLowsPage() {
           />
           <StatCard
             label={`vs ${fourYear?.year ?? '4Y'} Low`}
-            value={fourYear ? fmtPct(((current.lowPrice - fourYear.lowPrice) / fourYear.lowPrice) * 100) : '—'}
+            value={fourYear ? fmtPct(((current.lowPrice - fourYear.lowPrice) / fourYear.lowPrice) * 100) : 'â€”'}
             sub={fourYear ? `${fourYear.year} cycle low: ${fmtUSD(fourYear.lowPrice)}` : 'Not enough history'}
             accent={
               fourYear == null ? '#94A3B8'
@@ -143,8 +143,8 @@ export default async function YearlyLowsPage() {
           />
           <StatCard
             label="Annual Low CAGR"
-            value={cagr != null ? `${cagr.toFixed(1)}%` : '—'}
-            sub={first ? `Since ${first.year} ($${first.lowPrice.toFixed(0)})` : '—'}
+            value={cagr != null ? `${cagr.toFixed(1)}%` : 'â€”'}
+            sub={first ? `Since ${first.year} ($${first.lowPrice.toFixed(0)})` : 'â€”'}
             accent="#A78BFA"
             freshness="daily"
           />
@@ -163,7 +163,7 @@ export default async function YearlyLowsPage() {
         </div>
       )}
 
-      {/* ── Main log-scale chart ─────────────────────────────────────────── */}
+      {/* â”€â”€ Main log-scale chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {lows.length > 0 && (
         <div
           className="rounded-xl border p-5"
@@ -171,17 +171,17 @@ export default async function YearlyLowsPage() {
         >
           <div className="mb-4">
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Annual Bitcoin Price Floor — Log Scale
+              Annual Bitcoin Price Floor â€” Log Scale
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Lowest daily closing price per calendar year · Dashed verticals = halvings · Green = above prior year · Red = below
+              Lowest daily closing price per calendar year Â· Dashed verticals = halvings Â· Green = above prior year Â· Red = below
             </p>
           </div>
           <BitcoinYearlyLowsChart data={lows} />
         </div>
       )}
 
-      {/* ── Prior cycle low status ───────────────────────────────────────── */}
+      {/* â”€â”€ Prior cycle low status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {current && priorCycleLow && (
         <div
           className="rounded-xl border p-5"
@@ -232,7 +232,7 @@ export default async function YearlyLowsPage() {
         </div>
       )}
 
-      {/* ── Floor staircase ──────────────────────────────────────────────── */}
+      {/* â”€â”€ Floor staircase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {lows.length > 0 && (
         <div
           className="rounded-xl border p-5"
@@ -241,10 +241,10 @@ export default async function YearlyLowsPage() {
           <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-                Floor Staircase — Annual Lows
+                Floor Staircase â€” Annual Lows
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-                Bar width = log-scale position · Color = direction vs prior year
+                Bar width = log-scale position Â· Color = direction vs prior year
               </p>
             </div>
             <div className="flex gap-4 text-xs font-mono">
@@ -264,7 +264,7 @@ export default async function YearlyLowsPage() {
         </div>
       )}
 
-      {/* ── Full history table ───────────────────────────────────────────── */}
+      {/* â”€â”€ Full history table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {lows.length > 0 && (
         <div
           className="rounded-xl border p-5"
@@ -319,7 +319,7 @@ export default async function YearlyLowsPage() {
         </div>
       )}
 
-      {/* ── Interpretation ───────────────────────────────────────────────── */}
+      {/* â”€â”€ Interpretation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -334,20 +334,20 @@ export default async function YearlyLowsPage() {
           </div>
           <div>
             <p className="font-semibold mb-1" style={{ color: '#FF5C5C' }}>Falling Floor (Red)</p>
-            <p>The annual low undercuts the prior year. Typical in deep bear markets (2015, 2018, 2022). The key structural question is whether the prior <em>cycle</em> floor holds — not just the prior year.</p>
+            <p>The annual low undercuts the prior year. Typical in deep bear markets (2015, 2018, 2022). The key structural question is whether the prior <em>cycle</em> floor holds â€” not just the prior year.</p>
           </div>
           <div>
             <p className="font-semibold mb-1" style={{ color: '#F7931A' }}>Prior Cycle Floor</p>
-            <p>Breaking below the previous cycle's low is historically rare and significant. Every major bear market has held the prior cycle's structural low as a floor — a break below that level signals unusual structural stress.</p>
+            <p>Breaking below the previous cycle's low is historically rare and significant. Every major bear market has held the prior cycle's structural low as a floor â€” a break below that level signals unusual structural stress.</p>
           </div>
           <div>
             <p className="font-semibold mb-1" style={{ color: '#A78BFA' }}>Current Year (YTD)</p>
-            <p>The current year shows the running minimum close. This is a partial year figure — the actual annual low may be lower. Interpret with caution early in the year.</p>
+            <p>The current year shows the running minimum close. This is a partial year figure â€” the actual annual low may be lower. Interpret with caution early in the year.</p>
           </div>
         </div>
         <p className="mt-4 text-xs" style={{ color: 'var(--sct-muted)' }}>
           <span style={{ color: 'var(--sct-text)' }}>Data source:</span>
-          {' '}CoinMetrics Community API (PriceUSD daily closes) · Revalidated every 24 hours.
+          {' '}CoinMetrics Community API (PriceUSD daily closes) Â· Revalidated every 24 hours.
         </p>
       </div>
     </div>

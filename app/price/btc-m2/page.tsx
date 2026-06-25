@@ -1,13 +1,13 @@
-import { computeBtcM2 }     from '@/lib/indicators/btcM2';
+﻿import { computeBtcM2 }     from '@/lib/indicators/btcM2';
 import { BtcM2PageClient }  from '@/components/charts/BtcM2PageClient';
 import { PageHeader }       from '@/components/dashboard/PageHeader';
 import { StatCard }         from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmt(v: number | null, decimals = 2): string {
-  if (v == null) return '—';
+  if (v == null) return 'â€”';
   return v.toFixed(decimals);
 }
 
@@ -28,26 +28,26 @@ export default async function BtcM2Page() {
   const zone = (() => {
     if (ratio == null || ema200 == null) return null;
     if (ratio > ema200 && ema400 != null && ratio > ema400) {
-      return { label: 'Macro Bull — Above Both EMAs', color: '#35D07F',
-        desc: 'BTC/M2 ratio is above both the 200 and 400 EMA — historically a strong bull cycle backdrop.' };
+      return { label: 'Macro Bull â€” Above Both EMAs', color: '#35D07F',
+        desc: 'BTC/M2 ratio is above both the 200 and 400 EMA â€” historically a strong bull cycle backdrop.' };
     }
     if (ratio > ema200) {
-      return { label: 'Short-Term Bullish — Above 200 EMA', color: '#E6B450',
-        desc: 'Ratio has reclaimed the 200 EMA but remains below the 400 EMA — recovering but not yet confirmed macro bull.' };
+      return { label: 'Short-Term Bullish â€” Above 200 EMA', color: '#E6B450',
+        desc: 'Ratio has reclaimed the 200 EMA but remains below the 400 EMA â€” recovering but not yet confirmed macro bull.' };
     }
     if (ema400 != null && ratio > ema400) {
-      return { label: 'Below 200 EMA — Caution', color: '#F97316',
-        desc: 'Ratio is between the 400 and 200 EMA — short-term weakness within a longer-term bull structure.' };
+      return { label: 'Below 200 EMA â€” Caution', color: '#F97316',
+        desc: 'Ratio is between the 400 and 200 EMA â€” short-term weakness within a longer-term bull structure.' };
     }
-    return { label: 'Below Both EMAs — Bear Territory', color: '#FF5C5C',
-      desc: 'BTC/M2 ratio is below both EMAs — historically associated with bear market conditions.' };
+    return { label: 'Below Both EMAs â€” Bear Territory', color: '#FF5C5C',
+      desc: 'BTC/M2 ratio is below both EMAs â€” historically associated with bear market conditions.' };
   })();
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="BTC / M2 Money Supply"
-        subtitle="Weekly BTC price divided by US M2 — strips out monetary expansion to reveal true purchasing power momentum"
+        subtitle="Weekly BTC price divided by US M2 â€” strips out monetary expansion to reveal true purchasing power momentum"
       />
 
       {/* Stats */}
@@ -55,20 +55,20 @@ export default async function BtcM2Page() {
         <StatCard
           label="Current Ratio"
           value={fmt(ratio)}
-          sub="BTC price ÷ M2 (×1000)"
+          sub="BTC price Ã· M2 (Ã—1000)"
           accent="var(--sct-text)"
           freshness="daily"
         />
         <StatCard
           label="200 EMA"
           value={fmt(ema200)}
-          sub={ratio != null && ema200 != null ? (ratio > ema200 ? '↑ Price above' : '↓ Price below') : '—'}
+          sub={ratio != null && ema200 != null ? (ratio > ema200 ? 'â†‘ Price above' : 'â†“ Price below') : 'â€”'}
           accent="#35D07F"
         />
         <StatCard
           label="400 EMA"
           value={fmt(ema400)}
-          sub={ratio != null && ema400 != null ? (ratio > ema400 ? '↑ Price above' : '↓ Price below') : '—'}
+          sub={ratio != null && ema400 != null ? (ratio > ema400 ? 'â†‘ Price above' : 'â†“ Price below') : 'â€”'}
           accent="#FF5C5C"
         />
         <StatCard
@@ -99,7 +99,7 @@ export default async function BtcM2Page() {
           className="h-[480px] flex items-center justify-center rounded-xl border text-sm"
           style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
         >
-          Unable to load data — CoinMetrics or FRED API unreachable
+          Unable to load data â€” CoinMetrics or FRED API unreachable
         </div>
       ) : result ? (
         <BtcM2PageClient
@@ -117,7 +117,7 @@ export default async function BtcM2Page() {
       <InsightPanel title="Indicator Logic">
         <InsightRow
           label="What is BTC / M2?"
-          value="Divides BTC's USD price by US M2 money supply (×1000). When M2 expands, the ratio stays flat even if BTC nominally rises — making real purchasing power momentum visible."
+          value="Divides BTC's USD price by US M2 money supply (Ã—1000). When M2 expands, the ratio stays flat even if BTC nominally rises â€” making real purchasing power momentum visible."
           stack
         />
         <InsightRow
@@ -140,7 +140,7 @@ export default async function BtcM2Page() {
         />
         <InsightRow
           label="Source"
-          value="BTC price: CoinMetrics Community API (daily, resampled to weekly) · M2: FRED series M2SL (monthly, forward-filled)"
+          value="BTC price: CoinMetrics Community API (daily, resampled to weekly) Â· M2: FRED series M2SL (monthly, forward-filled)"
           stack
         />
       </InsightPanel>

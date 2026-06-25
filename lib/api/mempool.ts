@@ -1,4 +1,4 @@
-// Mempool.space API — completely free, no key required
+﻿// Mempool.space API â€” completely free, no key required
 // Docs: https://mempool.space/docs/api/rest
 
 export type HashratePoint = {
@@ -16,7 +16,7 @@ export async function fetchHashrate(): Promise<HashrateData | null> {
   try {
     const res = await fetch('https://mempool.space/api/v1/mining/hashrate/3y', {
       headers: { Accept: 'application/json' },
-      next: { revalidate: 86400 },
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(12000),
     });
 

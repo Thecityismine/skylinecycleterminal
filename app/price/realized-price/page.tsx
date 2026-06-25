@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 // O(n) sliding window MA — avoids nested loops on large arrays
 function computeMA(prices: number[], period: number): (number | null)[] {

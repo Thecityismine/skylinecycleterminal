@@ -1,4 +1,4 @@
-import { fetchCycleMasterData } from '@/lib/api/coinmetrics';
+﻿import { fetchCycleMasterData } from '@/lib/api/coinmetrics';
 import { computeCycleMaster, scoreCycleMaster } from '@/lib/indicators/cycleMaster';
 import type { CycleMasterPoint } from '@/lib/indicators/cycleMaster';
 import { CycleMasterChartSection } from '@/components/charts/CycleMasterChartSection';
@@ -6,53 +6,53 @@ import { CDDChart } from '@/components/charts/CDDChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
-// ─── Formatting helpers ───────────────────────────────────────────────────────
+// â”€â”€â”€ Formatting helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function fmtUSD(n: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'â€”';
   return new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 0,
   }).format(n);
 }
 
 function pctRelToPrice(price: number, target: number | null): string {
-  if (target == null) return '—';
+  if (target == null) return 'â€”';
   const pct = ((target - price) / price) * 100;
   const sign = pct >= 0 ? '+' : '';
   return `${sign}${pct.toFixed(1)}% vs price`;
 }
 
-// ─── Zone table data ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Zone table data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ZONE_TABLE = [
-  { range: '0 – 20',  zone: 'Capitulation',  color: '#3B82F6', desc: 'Price below key on-chain cost bases. Historic buy zones.' },
-  { range: '20 – 40', zone: 'Accumulation',  color: '#35D07F', desc: 'Price recovering toward realized price. Smart money accumulates.' },
-  { range: '40 – 60', zone: 'Expansion',     color: '#94A3B8', desc: 'Mid-cycle. Price above realized, below transferred × 3.' },
-  { range: '60 – 80', zone: 'Elevated',      color: '#E6B450', desc: 'Price approaching transferred price range. Reduce risk.' },
-  { range: '80 – 100', zone: 'Distribution', color: '#FF5C5C', desc: 'Price near or above terminal price. Historic cycle tops.' },
+  { range: '0 â€“ 20',  zone: 'Capitulation',  color: '#3B82F6', desc: 'Price below key on-chain cost bases. Historic buy zones.' },
+  { range: '20 â€“ 40', zone: 'Accumulation',  color: '#35D07F', desc: 'Price recovering toward realized price. Smart money accumulates.' },
+  { range: '40 â€“ 60', zone: 'Expansion',     color: '#94A3B8', desc: 'Mid-cycle. Price above realized, below transferred Ã— 3.' },
+  { range: '60 â€“ 80', zone: 'Elevated',      color: '#E6B450', desc: 'Price approaching transferred price range. Reduce risk.' },
+  { range: '80 â€“ 100', zone: 'Distribution', color: '#FF5C5C', desc: 'Price near or above terminal price. Historic cycle tops.' },
 ];
 
 const ZONE_DESCRIPTIONS = [
   {
     zone: 'Capitulation / Accumulation',
     color: '#3B82F6',
-    text: 'Score 0–40. BTC trades below its average realized price and balance price. Historically the safest multi-year entry windows. Every major cycle bottom — 2015, 2018, 2020, 2022 — occurred in this zone.',
+    text: 'Score 0â€“40. BTC trades below its average realized price and balance price. Historically the safest multi-year entry windows. Every major cycle bottom â€” 2015, 2018, 2020, 2022 â€” occurred in this zone.',
   },
   {
     zone: 'Expansion / Elevated',
     color: '#E6B450',
-    text: 'Score 40–80. Mid-to-late cycle. Price is above cost bases but below terminal price. Begin scaling positions. Watch CDD spikes as long-term holders start distributing.',
+    text: 'Score 40â€“80. Mid-to-late cycle. Price is above cost bases but below terminal price. Begin scaling positions. Watch CDD spikes as long-term holders start distributing.',
   },
   {
     zone: 'Distribution',
     color: '#FF5C5C',
-    text: 'Score 80–100. Price approaches or exceeds terminal price (transferred × 21). Every BTC cycle peak (2013, 2017, 2021) occurred in this zone. Reduce exposure significantly.',
+    text: 'Score 80â€“100. Price approaches or exceeds terminal price (transferred Ã— 21). Every BTC cycle peak (2013, 2017, 2021) occurred in this zone. Reduce exposure significantly.',
   },
 ];
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default async function CycleMasterPage() {
   // Fetch and compute
@@ -74,7 +74,7 @@ export default async function CycleMasterPage() {
     if (i % 7 === 0 || i === points.length - 1) weekly.push(points[i]);
   }
 
-  // CoinMetrics publishes with a 1-day lag — skip today's incomplete row
+  // CoinMetrics publishes with a 1-day lag â€” skip today's incomplete row
   const last = points.findLast((p) => p.realized != null) ?? points.at(-1) ?? null;
   const score = last ? scoreCycleMaster(last) : null;
 
@@ -82,10 +82,10 @@ export default async function CycleMasterPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin Cycle Master"
-        subtitle="On-chain valuation model — MVRV, Realized Price, Transferred Price, Terminal Price"
+        subtitle="On-chain valuation model â€” MVRV, Realized Price, Transferred Price, Terminal Price"
       />
 
-      {/* ── Cycle zone banner ───────────────────────────────────────────── */}
+      {/* â”€â”€ Cycle zone banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {score && last && (
         <div
           className="flex items-center gap-4 rounded-xl border px-5 py-4"
@@ -131,13 +131,13 @@ export default async function CycleMasterPage() {
         </div>
       )}
 
-      {/* ── 5 stat cards ────────────────────────────────────────────────── */}
+      {/* â”€â”€ 5 stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {last && (() => {
         const mvrv = last.realized != null && last.realized > 0
           ? last.price / last.realized
           : null;
         const mvrvSub = mvrv != null
-          ? mvrv < 1.0 ? 'Below cost basis — capitulation'
+          ? mvrv < 1.0 ? 'Below cost basis â€” capitulation'
           : mvrv < 2.0 ? 'Accumulation zone'
           : mvrv < 3.5 ? 'Expansion / elevated'
           : 'Distribution risk'
@@ -154,7 +154,7 @@ export default async function CycleMasterPage() {
             />
             <StatCard
               label="MVRV Ratio"
-              value={mvrv != null ? `${mvrv.toFixed(2)}×` : '—'}
+              value={mvrv != null ? `${mvrv.toFixed(2)}Ã—` : 'â€”'}
               sub={mvrvSub}
               accent="#A78BFA"
               freshness="daily"
@@ -200,7 +200,7 @@ export default async function CycleMasterPage() {
         </div>
       )}
 
-      {/* ── Main chart card ──────────────────────────────────────────────── */}
+      {/* â”€â”€ Main chart card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {weekly.length > 0 && (() => {
         const mvrv = last?.realized != null && last.realized > 0
           ? last.price / last.realized : null;
@@ -218,7 +218,7 @@ export default async function CycleMasterPage() {
         );
       })()}
 
-      {/* ── MVRV / CDD chart card ────────────────────────────────────────── */}
+      {/* â”€â”€ MVRV / CDD chart card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {weekly.length > 0 && (
         <div
           className="rounded-xl border p-5"
@@ -226,7 +226,7 @@ export default async function CycleMasterPage() {
         >
           <div className="mb-4">
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              MVRV Ratio · Market Value to Realized Value
+              MVRV Ratio Â· Market Value to Realized Value
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
               MVRV below 1.0 = price below average cost basis (cycle bottoms). Above 3.5 = distribution risk.
@@ -237,13 +237,13 @@ export default async function CycleMasterPage() {
         </div>
       )}
 
-      {/* ── Zone threshold table ─────────────────────────────────────────── */}
+      {/* â”€â”€ Zone threshold table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--sct-text)' }}>
-          Cycle Score — Zone Thresholds
+          Cycle Score â€” Zone Thresholds
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs font-mono">
@@ -273,7 +273,7 @@ export default async function CycleMasterPage() {
         </div>
       </div>
 
-      {/* ── How to read — 3-col zone grid ───────────────────────────────── */}
+      {/* â”€â”€ How to read â€” 3-col zone grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div
         className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
@@ -308,7 +308,7 @@ export default async function CycleMasterPage() {
         >
           <p>
             <span style={{ color: 'var(--sct-text)' }}>MVRV Ratio</span>
-            {' '}= Market Cap ÷ Realized Cap = Price ÷ Realized Price. Below 1.0 = price below holder cost basis. Historical tops at 3.5–7.0×.
+            {' '}= Market Cap Ã· Realized Cap = Price Ã· Realized Price. Below 1.0 = price below holder cost basis. Historical tops at 3.5â€“7.0Ã—.
           </p>
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Realized Price</span>
@@ -316,15 +316,15 @@ export default async function CycleMasterPage() {
           </p>
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Transferred Price</span>
-            {' '}= Cumulative CDD ÷ Circulating Supply. Requires Coin Days Destroyed (unavailable on free tier).
+            {' '}= Cumulative CDD Ã· Circulating Supply. Requires Coin Days Destroyed (unavailable on free tier).
           </p>
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Terminal Price</span>
-            {' '}= Transferred Price × 21. Requires CDD (unavailable on free tier).
+            {' '}= Transferred Price Ã— 21. Requires CDD (unavailable on free tier).
           </p>
           <p>
             <span style={{ color: 'var(--sct-text)' }}>Data source:</span>
-            {' '}CoinMetrics Community API (PriceUSD, SplyCur, CapMVRVCur — all free tier) · Revalidated every 24 hours.
+            {' '}CoinMetrics Community API (PriceUSD, SplyCur, CapMVRVCur â€” all free tier) Â· Revalidated every 24 hours.
           </p>
         </div>
       </div>

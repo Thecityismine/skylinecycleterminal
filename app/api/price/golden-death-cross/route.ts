@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import {
   buildChartPoints,
@@ -11,7 +11,7 @@ import {
   calculateSMA,
 } from '@/lib/indicators/goldenDeathCross';
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
 export async function GET() {
   try {
@@ -25,7 +25,7 @@ export async function GET() {
         price: p.price,
       }));
 
-    // ── Daily 50D / 200D ────────────────────────────────────────────────────
+    // â”€â”€ Daily 50D / 200D â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const dailyPoints = buildChartPoints(daily, 50, 200);
 
     // Cross detection on full history
@@ -36,7 +36,7 @@ export async function GET() {
     const cutoff4y = Date.now() - 4 * 365 * 86400_000;
     const chartDaily = dailyPoints.filter((p) => p.ts >= cutoff4y);
 
-    // ── Weekly 10W / 40W ────────────────────────────────────────────────────
+    // â”€â”€ Weekly 10W / 40W â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const weekly      = toWeeklyCloses(daily);
     const weeklyPrices = weekly.map((w) => w.close);
     const wma10        = calculateSMA(weeklyPrices, 10);
@@ -58,7 +58,7 @@ export async function GET() {
     // Chart data: last 4 years weekly
     const chartWeekly = weeklyPoints.filter((p) => p.ts >= cutoff4y);
 
-    // ── Current metrics ─────────────────────────────────────────────────────
+    // â”€â”€ Current metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const last = dailyPoints[dailyPoints.length - 1];
     const ma50  = last?.ma50  ?? null;
     const ma200 = last?.ma200 ?? null;
@@ -85,7 +85,7 @@ export async function GET() {
       ? trendConfidenceScore({ price, ma50, ma200, slope50, slope200, spread: spread ?? 0, return90d })
       : 50;
 
-    // ── Response ─────────────────────────────────────────────────────────────
+    // â”€â”€ Response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     return NextResponse.json({
       current: {
         price,

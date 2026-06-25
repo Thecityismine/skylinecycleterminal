@@ -1,4 +1,4 @@
-export type PricePoint = {
+﻿export type PricePoint = {
   time: string;  // "YYYY-MM-DD"
   price: number;
 };
@@ -21,14 +21,14 @@ async function coinmetricsGet(params: Record<string, string>): Promise<{ data: R
 
   const res = await fetch(url.toString(), {
     headers: { 'Accept': 'application/json' },
-    next: { revalidate: 86400 },
+    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`CoinMetrics HTTP ${res.status}`);
   return res.json();
 }
 
-// Generic daily price fetch — asset can be 'btc' or 'eth'
+// Generic daily price fetch â€” asset can be 'btc' or 'eth'
 export async function fetchDailyPrice(asset: string = 'btc', startTime = '2012-01-01'): Promise<PricePoint[]> {
   const all: PricePoint[] = [];
   let nextPageToken: string | null = null;
@@ -56,7 +56,7 @@ export async function fetchBTCDailyPrice(startTime = '2012-01-01'): Promise<Pric
   return fetchDailyPrice('btc', startTime);
 }
 
-// Realized Price = CapRealUSD / SplyCur — the average cost basis of all BTC holders
+// Realized Price = CapRealUSD / SplyCur â€” the average cost basis of all BTC holders
 // CapRealUSD may or may not be in the free Community tier; falls back to price-only if 403.
 export type RealizedPricePoint = {
   time: string;
@@ -93,14 +93,14 @@ export async function fetchBTCRealizedPrice(startTime = '2012-01-01'): Promise<R
 
     return all;
   } catch {
-    // CapRealUSD likely paywalled — return price-only data with realized: null
+    // CapRealUSD likely paywalled â€” return price-only data with realized: null
     if (all.length > 0) return all;
     const prices = await fetchBTCDailyPrice(startTime);
     return prices.map((p) => ({ ...p, realized: null }));
   }
 }
 
-// Reserve Risk data — PriceUSD + SplyCur + SplyAct1yr (active supply last 1yr)
+// Reserve Risk data â€” PriceUSD + SplyCur + SplyAct1yr (active supply last 1yr)
 // SplyAct1yr may be paywalled; falls back to price-only with null supply fields
 export type ReserveRiskRaw = {
   time: string;
@@ -134,7 +134,7 @@ export async function fetchReserveRiskData(startTime = '2012-01-01'): Promise<Re
 
     return all;
   } catch {
-    // SplyAct1yr likely paywalled — return price-only rows
+    // SplyAct1yr likely paywalled â€” return price-only rows
     if (all.length > 0) return all;
     const prices = await fetchBTCDailyPrice(startTime);
     return prices.map((p) => ({ time: p.time, price: p.price, splyCur: null, splyAct1yr: null }));
@@ -159,7 +159,7 @@ export async function fetchCurrentLTHData(): Promise<{ splyCur: number; splyAct1
   }
 }
 
-// Hash rate ribbon data — tries HashRate first, falls back to DiffLast (difficulty)
+// Hash rate ribbon data â€” tries HashRate first, falls back to DiffLast (difficulty)
 // Both produce equivalent 30d/60d MA relationships for capitulation detection.
 export type HashRibbonRaw = {
   time:     string;
@@ -207,7 +207,7 @@ export async function fetchBTCHashRibbon(startTime = '2010-01-01'): Promise<Hash
   }
 }
 
-// ─── MVRV daily data (free-tier proxy for SOPR) ──────────────────────────────
+// â”€â”€â”€ MVRV daily data (free-tier proxy for SOPR) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type MVRVDataPoint = {
   time:  string;
@@ -244,7 +244,7 @@ export async function fetchBTCMVRVData(startTime = '2011-01-01'): Promise<MVRVDa
   return all;
 }
 
-// ─── Cycle Master data ────────────────────────────────────────────────────────
+// â”€â”€â”€ Cycle Master data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type CycleMasterRaw = {
   time: string;
@@ -255,9 +255,9 @@ export type CycleMasterRaw = {
 };
 
 // CapMVRVCur (MVRV ratio) is available on the CoinMetrics Community free tier.
-// We derive Realized Cap:  CapRealUSD = Price × SplyCur / MVRV
-// because:  MVRV = CapMrktCurUSD / CapRealUSD  →  CapRealUSD = (Price × SplyCur) / MVRV
-// CDD remains null — unavailable from any free public API.
+// We derive Realized Cap:  CapRealUSD = Price Ã— SplyCur / MVRV
+// because:  MVRV = CapMrktCurUSD / CapRealUSD  â†’  CapRealUSD = (Price Ã— SplyCur) / MVRV
+// CDD remains null â€” unavailable from any free public API.
 export async function fetchCycleMasterData(startTime = '2010-07-01'): Promise<CycleMasterRaw[]> {
   const rows: CycleMasterRaw[] = [];
   let nextPageToken: string | null = null;
@@ -291,7 +291,7 @@ export async function fetchCycleMasterData(startTime = '2010-07-01'): Promise<Cy
   return rows;
 }
 
-// ─── Exchange reserve data (SplyExNtv + SplyCur) ─────────────────────────────
+// â”€â”€â”€ Exchange reserve data (SplyExNtv + SplyCur) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SplyExNtv = BTC held on exchanges (free, available from ~2016)
 // Declining exchange supply = coins moving to cold storage = long-term holding behavior
 
@@ -329,7 +329,7 @@ export async function fetchBTCExchangeReserve(startTime = '2016-01-01'): Promise
   return all;
 }
 
-// Full free-tier on-chain metrics — used by the Skyline Cycle Score computation
+// Full free-tier on-chain metrics â€” used by the Skyline Cycle Score computation
 export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnChainPoint[]> {
   // Only request metrics known to be in the free Community API
   const FREE_METRICS = 'PriceUSD,CapMrktCurUSD,TxCnt,AdrActCnt,IssTotNtv';

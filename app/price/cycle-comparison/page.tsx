@@ -1,4 +1,4 @@
-import { fetchBTCDailyPrice }        from '@/lib/api/coinmetrics';
+﻿import { fetchBTCDailyPrice }        from '@/lib/api/coinmetrics';
 import { PageHeader }                 from '@/components/dashboard/PageHeader';
 import { StatCard }                   from '@/components/dashboard/StatCard';
 import { HalvingCycleChartSection }   from '@/components/charts/HalvingCycleChartSection';
@@ -8,7 +8,7 @@ import {
   computeMedianPath,
 } from '@/lib/indicators/halvingCycleAlign';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 function fmtUSD(n: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -75,7 +75,7 @@ export default async function CycleComparisonPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin Cycle Comparison"
-        subtitle="Halving-aligned BTC price normalized for cross-cycle comparison — day 0 = halving date"
+        subtitle="Halving-aligned BTC price normalized for cross-cycle comparison â€” day 0 = halving date"
       />
 
       {/* Stat cards */}
@@ -99,7 +99,7 @@ export default async function CycleComparisonPage() {
           value={
             vsMedianIndexed !== null
               ? `${vsMedianIndexed >= 0 ? '+' : ''}${vsMedianIndexed.toFixed(1)}%`
-              : '—'
+              : 'â€”'
           }
           sub="Indexed vs prior cycles median"
           accent={
@@ -114,7 +114,7 @@ export default async function CycleComparisonPage() {
         <StatCard
           label="Cycle Phase"
           value={phase.split(' ').slice(0, 2).join(' ')}
-          sub={`Day ${current.daysSince} · ${phase}`}
+          sub={`Day ${current.daysSince} Â· ${phase}`}
           accent="var(--sct-amber)"
           freshness="daily"
         />
@@ -172,7 +172,7 @@ export default async function CycleComparisonPage() {
               Historical Median
             </p>
             <p className="text-xl font-bold font-mono mt-1" style={{ color: '#8B949E' }}>
-              {medianAtToday?.p50.toFixed(1) ?? '—'}
+              {medianAtToday?.p50.toFixed(1) ?? 'â€”'}
             </p>
             <p className="text-[10px] mt-1" style={{ color: 'var(--sct-muted)' }}>
               Prior cycles avg
@@ -207,7 +207,7 @@ export default async function CycleComparisonPage() {
             >
               {vsMedianIndexed !== null
                 ? `${vsMedianIndexed >= 0 ? '+' : ''}${vsMedianIndexed.toFixed(1)}%`
-                : '—'}
+                : 'â€”'}
             </p>
             <p className="text-[10px] mt-1" style={{ color: 'var(--sct-muted)' }}>
               {vsMedianIndexed === null
@@ -272,7 +272,7 @@ export default async function CycleComparisonPage() {
                     {c.daysToPeak !== null ? `Day ${c.daysToPeak}` : 'In Progress'}
                   </td>
                   <td className="text-right py-2.5" style={{ color: '#F85149' }}>
-                    {c.maxDrawdown !== null ? `${c.maxDrawdown.toFixed(1)}%` : '—'}
+                    {c.maxDrawdown !== null ? `${c.maxDrawdown.toFixed(1)}%` : 'â€”'}
                   </td>
                 </tr>
               ))}

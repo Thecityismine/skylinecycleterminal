@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { fetchMacroData } from '@/lib/api/fred';
 
-// 24-hour CDN cache — FRED releases most series once per day
-export const revalidate = 86400;
+// 24-hour CDN cache â€” FRED releases most series once per day
+export const revalidate = 3600;
 
 export async function GET() {
   try {
