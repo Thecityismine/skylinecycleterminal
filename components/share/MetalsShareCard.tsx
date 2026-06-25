@@ -9,14 +9,19 @@ import {
   CartesianGrid,
   ReferenceArea,
 } from 'recharts';
-import type { DxyWeeklyPoint, DxyZone, DxyCurrent } from '@/lib/indicators/dxyTrend';
-import { REGIME_FILL, REGIME_COLOR, REGIME_LABEL } from '@/lib/indicators/dxyTrend';
+import {
+  METAL_CONFIG,
+  REGIME_FILL,
+  MACRO_QUADRANT_LABEL,
+  MACRO_QUADRANT_COLOR,
+} from '@/lib/indicators/metalTrend';
+import type { MetalWeeklyPoint, MetalCurrent, Metal, MetalRegime } from '@/lib/indicators/metalTrend';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
-export type DXYSharePayload = {
-  chartData:   DxyWeeklyPoint[];
-  zones:       DxyZone[];
-  current:     DxyCurrent;
+export type MetalsSharePayload = {
+  metal:       Metal;
+  chartData:   MetalWeeklyPoint[];
+  current:     MetalCurrent;
   show50W:     boolean;
   show200W:    boolean;
   generatedAt: string;
@@ -32,64 +37,102 @@ const FOOTER_H  = 24;
 const CHART_H   = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - STATS_GAP - FOOTER_H - PAD;
 const CHART_W   = SHARE_CARD_WIDTH  - PAD * 2;
 
-export const DXY_CARD_CHART_RECT = {
+export const METALS_CARD_CHART_RECT = {
   x: PAD, y: PAD + HEADER_H + GAP + STATS_H + STATS_GAP, w: CHART_W, h: CHART_H,
 };
+
+type Zone = { start: string; end: string; regime: MetalRegime };
+
+function buildZones(data: MetalWeeklyPoint[]): Zone[] {
+  const zones: Zone[] = [];
+  if (data.length === 0) return zones;
+  let zoneStart = data[0].date;
+  let zoneRegime = data[0].regime;
+  for (let i = 1; i < data.length; i++) {
+    if (data[i].regime !== zoneRegime) {
+      zones.push({ start: zoneStart, end: data[i - 1].date, regime: zoneRegime });
+      zoneStart = data[i].date;
+      zoneRegime = data[i].regime;
+    }
+  }
+  zones.push({ start: zoneStart, end: data[data.length - 1].date, regime: zoneRegime });
+  return zones;
+}
 
 function formatDateTick(v: string): string {
   return new Date(v + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
-  const { chartData, zones, current, show50W, show200W, generatedAt } = payload;
+function fmtPrice(v: number, isGold: boolean): string {
+  if (isGold) return v >= 1000 ? `$${(v / 1000).toFixed(1)}K` : `$${v.toFixed(0)}`;
+  return `$${v.toFixed(0)}`;
+}
 
-  const regimeColor = REGIME_COLOR[current.trendRegime];
-  const regimeLabel = REGIME_LABEL[current.trendRegime];
+export function MetalsShareCard({ payload }: { payload: MetalsSharePayload }) {
+  const { metal, chartData, current, show50W, show200W, generatedAt } = payload;
+  const config   = METAL_CONFIG[metal];
+  const zones    = buildZones(chartData);
+  const isGold   = metal === 'gold';
 
-  const btcContextColor = current.btcContext === 'headwind' ? '#F85149'
-    : current.btcContext === 'tailwind' ? '#35D07F'
+  const regimeColor = current.trendRegime === 'bullish' ? '#35D07F'
+    : current.trendRegime === 'bearish' ? '#F85149'
     : '#EAB84D';
+
+  const quadrantColor = MACRO_QUADRANT_COLOR[current.macroQuadrant];
+  const quadrantLabel = MACRO_QUADRANT_LABEL[current.macroQuadrant];
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   });
 
-  const change90dStr = current.change90d !== null
-    ? `${current.change90d >= 0 ? '+' : ''}${current.change90d.toFixed(1)}%`
+  const priceStr = isGold
+    ? `$${current.price.toFixed(0)} / oz`
+    : `$${current.price.toFixed(2)} / oz`;
+
+  const dist50wStr = current.distFrom50w !== null
+    ? `${current.distFrom50w >= 0 ? '+' : ''}${current.distFrom50w.toFixed(1)}%`
     : '—';
 
-  const change90dColor = current.change90d !== null
-    ? (current.change90d < 0 ? '#35D07F' : '#F85149')
-    : '#6F7A86';
+  const gsRatioStr = current.goldSilverRatio !== null
+    ? current.goldSilverRatio.toFixed(1)
+    : '—';
+
+  const dist50wColor = current.distFrom50w !== null
+    ? (current.distFrom50w >= 0 ? '#35D07F' : current.distFrom50w < -5 ? '#F85149' : '#8B949E')
+    : '#8B949E';
 
   const stats = [
     {
-      label: 'DXY CURRENT',
-      value: current.dxy.toFixed(1),
-      sub:   'DTWEXBGS broad index',
-      color: regimeColor,
+      label: isGold ? 'GOLD PRICE' : 'SILVER PRICE',
+      value: priceStr,
+      sub:   config.symbol,
+      color: config.accent,
     },
     {
-      label: '90D CHANGE',
-      value: change90dStr,
-      sub:   'vs 13 weeks ago',
-      color: change90dColor,
+      label: 'VS 50W MA',
+      value: dist50wStr,
+      sub:   current.ma50w !== null
+        ? (isGold ? `50W: $${current.ma50w.toFixed(0)}` : `50W: $${current.ma50w.toFixed(2)}`)
+        : '50W MA: —',
+      color: dist50wColor,
     },
     {
       label: 'TREND REGIME',
-      value: regimeLabel,
-      sub:   'vs 200-week moving avg',
+      value: current.trendRegime === 'bullish' ? 'Bullish'
+        : current.trendRegime === 'bearish' ? 'Bearish'
+        : 'Neutral',
+      sub:   `Score: ${current.trendScore} / 100`,
       color: regimeColor,
     },
     {
-      label: 'BTC CONTEXT',
-      value: current.btcContext === 'headwind' ? 'Headwind'
-           : current.btcContext === 'tailwind'  ? 'Tailwind'
-           : 'Neutral',
-      sub:   `Score: ${current.trendScore} / 100`,
-      color: btcContextColor,
+      label: 'MACRO CONTEXT',
+      value: quadrantLabel,
+      sub:   `G/S Ratio: ${gsRatioStr}`,
+      color: quadrantColor,
     },
   ];
+
+  const yTickFmt = (v: number) => fmtPrice(v, isGold);
 
   return (
     <div style={{
@@ -120,27 +163,27 @@ export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
             Skyline Cycle Terminal
           </div>
           <div style={{ fontSize: 12, color: '#8B949E', marginTop: 4, letterSpacing: '0.03em' }}>
-            DXY — U.S. Dollar Index · Dollar Trend & Liquidity Pressure
+            {config.label} Macro Chart · {config.symbol} · Weekly
           </div>
           {/* Legend */}
           <div style={{ display: 'flex', gap: 16, marginTop: 10, flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden' }}>
             {([
-              { color: '#7AA2FF', label: 'DXY'    },
-              { color: '#EAB84D', label: '50W MA'  },
-              { color: '#8C6BFF', label: '200W MA' },
-            ] as const).map((item) => (
+              { color: config.accent, label: config.label },
+              ...(show50W  ? [{ color: '#EAB84D', label: '50W MA'  }] : []),
+              ...(show200W ? [{ color: '#5B84FF', label: '200W MA' }] : []),
+            ] as { color: string; label: string }[]).map((item) => (
               <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                 <span style={{ width: 14, height: 2, borderRadius: 1, backgroundColor: item.color, display: 'inline-block' }} />
                 <span style={{ fontSize: 9, color: item.color, letterSpacing: '0.05em' }}>{item.label}</span>
               </div>
             ))}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, display: 'inline-block', backgroundColor: 'rgba(248,81,73,0.2)', border: '1px solid rgba(248,81,73,0.6)' }} />
-              <span style={{ fontSize: 9, color: '#F85149', letterSpacing: '0.05em' }}>BTC Headwind</span>
+              <span style={{ width: 10, height: 10, borderRadius: 2, display: 'inline-block', backgroundColor: 'rgba(53,208,127,0.2)', border: '1px solid rgba(53,208,127,0.6)' }} />
+              <span style={{ fontSize: 9, color: '#35D07F', letterSpacing: '0.05em' }}>Bullish</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, display: 'inline-block', backgroundColor: 'rgba(53,208,127,0.2)', border: '1px solid rgba(53,208,127,0.6)' }} />
-              <span style={{ fontSize: 9, color: '#35D07F', letterSpacing: '0.05em' }}>BTC Tailwind</span>
+              <span style={{ width: 10, height: 10, borderRadius: 2, display: 'inline-block', backgroundColor: 'rgba(248,81,73,0.2)', border: '1px solid rgba(248,81,73,0.6)' }} />
+              <span style={{ fontSize: 9, color: '#F85149', letterSpacing: '0.05em' }}>Bearish</span>
             </div>
           </div>
         </div>
@@ -160,7 +203,7 @@ export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
             fontSize:        10,
             color:           regimeColor,
           }}>
-            {regimeLabel}
+            {current.trendRegime === 'bullish' ? 'Bullish' : current.trendRegime === 'bearish' ? 'Bearish' : 'Neutral'}
           </div>
         </div>
       </div>
@@ -221,20 +264,20 @@ export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
             minTickGap={80}
           />
           <YAxis
-            tickFormatter={(v: number) => v.toFixed(0)}
+            tickFormatter={yTickFmt}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             axisLine={{ stroke: '#21262D' }}
             tickLine={false}
-            width={44}
+            width={52}
             domain={['auto', 'auto']}
           />
 
           <Area
             type="monotone"
-            dataKey="dxy"
-            stroke="#7AA2FF"
+            dataKey="close"
+            stroke={config.accent}
             strokeWidth={2}
-            fill="rgba(122,162,255,0.05)"
+            fill={config.accent + '10'}
             dot={false}
             isAnimationActive={false}
             connectNulls
@@ -256,7 +299,7 @@ export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
             <Line
               type="monotone"
               dataKey="ma200w"
-              stroke="#8C6BFF"
+              stroke="#5B84FF"
               strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}

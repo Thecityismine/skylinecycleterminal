@@ -2,8 +2,8 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { ImageDown, X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { DXYShareCard, DXY_CARD_CHART_RECT } from '@/components/share/DXYShareCard';
-import type { DXYSharePayload } from '@/components/share/DXYShareCard';
+import { MetalsShareCard, METALS_CARD_CHART_RECT } from '@/components/share/MetalsShareCard';
+import type { MetalsSharePayload } from '@/components/share/MetalsShareCard';
 import {
   exportShareCard,
   compositeWatermark,
@@ -15,12 +15,12 @@ import {
 import { shareImageFile, copyImageToClipboard } from '@/lib/share/webShare';
 import { processLogoForWatermark } from '@/lib/share/processLogo';
 
-type Props = { payload: DXYSharePayload };
+type Props = { payload: MetalsSharePayload };
 type ExportState = 'idle' | 'exporting' | 'ready';
 
 const PREVIEW_SCALE = 0.42;
 
-export function DXYShareModal({ payload }: Props) {
+export function MetalsShareModal({ payload }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -40,7 +40,7 @@ export function DXYShareModal({ payload }: Props) {
   );
 }
 
-function Modal({ payload, onClose }: { payload: DXYSharePayload; onClose: () => void }) {
+function Modal({ payload, onClose }: { payload: MetalsSharePayload; onClose: () => void }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [state,    setState]    = useState<ExportState>('idle');
   const [dataUrl,  setDataUrl]  = useState<string | null>(null);
@@ -75,7 +75,7 @@ function Modal({ payload, onClose }: { payload: DXYSharePayload; onClose: () => 
     setState('exporting');
     try {
       const raw = await exportShareCard(cardRef.current);
-      const url = await compositeWatermark(raw, logoSrc ?? '', DXY_CARD_CHART_RECT);
+      const url = await compositeWatermark(raw, logoSrc ?? '', METALS_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
     } catch {
@@ -85,15 +85,17 @@ function Modal({ payload, onClose }: { payload: DXYSharePayload; onClose: () => 
 
   const handleDownload = useCallback(() => {
     if (!dataUrl) return;
-    downloadPng(dataUrl, `skyline-dxy-${Date.now()}.png`);
-  }, [dataUrl]);
+    const label = payload.metal === 'gold' ? 'gold' : 'silver';
+    downloadPng(dataUrl, `skyline-${label}-${Date.now()}.png`);
+  }, [dataUrl, payload.metal]);
 
   const handleShare = useCallback(async () => {
     if (!dataUrl) return;
-    const file = dataUrlToFile(dataUrl, 'skyline-dxy-dollar-index.png');
-    const ok = await shareImageFile(file, 'Skyline Cycle Terminal — DXY Dollar Index');
+    const label = payload.metal === 'gold' ? 'Gold' : 'Silver';
+    const file = dataUrlToFile(dataUrl, `skyline-${payload.metal}-chart.png`);
+    const ok = await shareImageFile(file, `Skyline Cycle Terminal — ${label} Macro Chart`);
     if (!ok) handleDownload();
-  }, [dataUrl, handleDownload]);
+  }, [dataUrl, payload.metal, handleDownload]);
 
   const handleCopy = useCallback(async () => {
     if (!dataUrl) return;
@@ -156,7 +158,7 @@ function Modal({ payload, onClose }: { payload: DXYSharePayload; onClose: () => 
             }}
           >
             <div ref={cardRef}>
-              <DXYShareCard payload={payload} />
+              <MetalsShareCard payload={payload} />
             </div>
           </div>
 

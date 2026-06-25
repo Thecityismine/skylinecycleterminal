@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { PreciousMetalChart } from '@/components/charts/PreciousMetalChart';
 import { StatCard } from '@/components/dashboard/StatCard';
+import { MetalsShareModal } from '@/components/share/MetalsShareModal';
 import {
   METAL_CONFIG,
   MACRO_QUADRANT_LABEL,
@@ -59,6 +60,15 @@ export function PreciousMetalChartSection({ goldResult, silverResult }: Props) {
     const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
     return result.chartData.filter(d => d.date >= cutoff);
   }, [result.chartData, range]);
+
+  const sharePayload = useMemo(() => ({
+    metal,
+    chartData:   filteredData,
+    current:     result.current,
+    show50W,
+    show200W,
+    generatedAt: new Date().toISOString(),
+  }), [metal, filteredData, result.current, show50W, show200W]);
 
   // Stat card helpers
   const priceStr = metal === 'gold'
@@ -271,6 +281,12 @@ export function PreciousMetalChartSection({ goldResult, silverResult }: Props) {
             {showDXY && <LegendDot color="rgba(230,237,243,0.5)" label="DXY" />}
             {showRealYield && <LegendDot color="rgba(248,81,73,0.6)" label="Real Yield" />}
           </div>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, backgroundColor: 'var(--sct-border)' }} />
+
+          {/* Share button (standard pattern) */}
+          <MetalsShareModal payload={sharePayload} />
         </div>
 
         {/* Chart */}
