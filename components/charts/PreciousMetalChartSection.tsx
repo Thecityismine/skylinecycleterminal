@@ -49,6 +49,7 @@ export function PreciousMetalChartSection({ goldResult, silverResult }: Props) {
   const [show200W,      setShow200W]      = useState(true);
   const [showDXY,       setShowDXY]       = useState(false);
   const [showRealYield, setShowRealYield] = useState(false);
+  const [logScale,      setLogScale]      = useState(false);
 
   const result = metal === 'gold' ? goldResult : silverResult;
   const { current } = result;
@@ -270,6 +271,22 @@ export function PreciousMetalChartSection({ goldResult, silverResult }: Props) {
             Real Yield
           </button>
 
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, backgroundColor: 'var(--sct-border)' }} />
+
+          {/* Toggle: Log Scale */}
+          <button
+            onClick={() => setLogScale(v => !v)}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+            style={{
+              backgroundColor: logScale ? 'rgba(139,92,246,0.12)' : 'transparent',
+              borderColor:     logScale ? 'rgba(139,92,246,0.50)' : 'var(--sct-border)',
+              color:           logScale ? 'rgba(167,139,250,0.90)' : 'var(--sct-muted)',
+            }}
+          >
+            LOG
+          </button>
+
           {/* Spacer */}
           <div className="flex-1" />
 
@@ -298,6 +315,7 @@ export function PreciousMetalChartSection({ goldResult, silverResult }: Props) {
             show200W={show200W}
             showDXY={showDXY}
             showRealYield={showRealYield}
+            logScale={logScale}
           />
         </div>
       </div>

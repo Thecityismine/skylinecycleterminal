@@ -22,6 +22,7 @@ type Props = {
   show200W: boolean;
   showDXY: boolean;
   showRealYield: boolean;
+  logScale: boolean;
 };
 
 function formatDateTick(v: string): string {
@@ -142,7 +143,7 @@ function buildZones(data: MetalWeeklyPoint[]): Zone[] {
   return zones;
 }
 
-export function PreciousMetalChart({ data, metal, show50W, show200W, showDXY, showRealYield }: Props) {
+export function PreciousMetalChart({ data, metal, show50W, show200W, showDXY, showRealYield, logScale }: Props) {
   const zones = buildZones(data);
   const config = METAL_CONFIG[metal];
   // Only enable dual-axis when an overlay is actually active — a declared but
@@ -180,7 +181,9 @@ export function PreciousMetalChart({ data, metal, show50W, show200W, showDXY, sh
               yAxisId="price"
               tickFormatter={fmtPrice}
               width={64}
-              domain={['auto', 'auto']}
+              scale={logScale ? 'log' : 'auto'}
+              domain={logScale ? ['auto', 'auto'] : ['auto', 'auto']}
+              allowDataOverflow={logScale}
               tick={{ fill: '#4B5563', fontSize: 10 }}
             />
 
@@ -298,7 +301,9 @@ export function PreciousMetalChart({ data, metal, show50W, show200W, showDXY, sh
             <YAxis
               tickFormatter={fmtPrice}
               width={64}
-              domain={['auto', 'auto']}
+              scale={logScale ? 'log' : 'auto'}
+              domain={logScale ? ['auto', 'auto'] : ['auto', 'auto']}
+              allowDataOverflow={logScale}
               tick={{ fill: '#4B5563', fontSize: 10 }}
             />
 
