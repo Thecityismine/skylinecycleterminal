@@ -24,12 +24,14 @@ export type RegimeSharePayload = {
 const PAD      = 32;
 const HEADER_H = 72;
 const STATS_H  = 52;
+const GAP      = 22;
+const STATS_GAP = 22;
 const FOOTER_H = 28;
-const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - STATS_H - FOOTER_H - PAD;
+const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - STATS_GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH  - PAD * 2;
 
 export const REGIME_CARD_CHART_RECT = {
-  x: PAD, y: PAD + HEADER_H + STATS_H, w: CHART_W, h: CHART_H,
+  x: PAD, y: PAD + HEADER_H + GAP + STATS_H + STATS_GAP, w: CHART_W, h: CHART_H,
 };
 
 const LOG_TICKS  = [100, 1_000, 10_000, 100_000, 1_000_000];
@@ -162,14 +164,14 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
         gap:           0,
         borderTop:     '1px solid #21262D',
         borderBottom:  '1px solid #21262D',
-        marginTop:     8,
+        marginTop:     GAP,
       }}>
         {stats.map((s, i) => (
           <div
             key={s.label}
             style={{
               flex:        1,
-              padding:     '10px 16px',
+              padding:     '4px 16px',
               borderRight: i < stats.length - 1 ? '1px solid #21262D' : 'none',
               display:     'flex',
               flexDirection: 'column',
@@ -185,7 +187,7 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
       </div>
 
       {/* ── Chart ── */}
-      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto' }}>
+      <div style={{ width: CHART_W, height: CHART_H, flex: '0 0 auto', marginTop: STATS_GAP }}>
         <ComposedChart
           width={CHART_W}
           height={CHART_H}
