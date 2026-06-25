@@ -26,9 +26,9 @@ export type WeeklySMASharePayload = {
 
 const PAD      = 32;
 const HEADER_H = 72;
-const STATS_H  = 60;
+const STATS_H  = 52;
 const GAP      = 8;
-const STATS_GAP = 20;
+const STATS_GAP = 36;
 const FOOTER_H = 24;
 const CHART_H  = SHARE_CARD_HEIGHT - PAD - HEADER_H - GAP - STATS_H - STATS_GAP - FOOTER_H - PAD;
 const CHART_W  = SHARE_CARD_WIDTH - PAD * 2;
@@ -145,7 +145,7 @@ export function WeeklySMAShareCard({ payload }: { payload: WeeklySMASharePayload
             backgroundColor: '#161B22',
             border:          '1px solid #21262D',
             borderRadius:    8,
-            padding:         '6px 12px',
+            padding:         '4px 12px',
             display:         'flex',
             flexDirection:   'column',
             justifyContent:  'center',
