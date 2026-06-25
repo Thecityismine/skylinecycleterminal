@@ -150,7 +150,7 @@ export async function fetchMacroData(): Promise<MacroResponse> {
 }
 
 // Fetches FRED series from startDate ascending — returns [] if key not set (graceful)
-async function fredGetFrom(seriesId: string, startDate: string): Promise<MacroDataPoint[]> {
+export async function fredGetFrom(seriesId: string, startDate: string): Promise<MacroDataPoint[]> {
   const key = process.env.FRED_API_KEY?.trim();
   if (!key) return [];
   const url =
