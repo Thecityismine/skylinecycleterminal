@@ -242,8 +242,8 @@ export function LiquidityRegimeSection({ chartData, zones, current }: Props) {
       <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
         <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
           <div>
-            <p className="text-sm font-semibold">BTC Price — Liquidity Regime</p>
-            <p className="text-xs mt-0.5 text-[var(--sct-muted)]">Regime background: green=supportive, amber=mixed, red=restrictive</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>BTC Price — Liquidity Regime</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>Regime background: green=supportive, amber=mixed, red=restrictive</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {RANGES.map(r => (
@@ -326,8 +326,8 @@ export function LiquidityRegimeSection({ chartData, zones, current }: Props) {
 
       {/* Score chart card */}
       <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
-        <p className="text-sm font-semibold mb-1">Composite Liquidity Regime Score</p>
-        <p className="text-xs mb-4 text-[var(--sct-muted)]">0–100 · dim BTC line for context</p>
+        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--sct-text)' }}>Composite Liquidity Regime Score</p>
+        <p className="text-xs mb-4" style={{ color: 'var(--sct-muted)' }}>0–100 · dim BTC line for context</p>
         <LiquidityRegimeScoreChart data={displayedData} />
       </div>
 

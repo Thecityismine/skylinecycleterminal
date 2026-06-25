@@ -74,7 +74,7 @@ export function LiquidityRegimePriceChart({
       style={{
         position:   'relative',
         width:      '100%',
-        height:     380,
+        height:     440,
         cursor:     isSelecting ? 'crosshair' : 'default',
         userSelect: 'none',
       }}
