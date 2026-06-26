@@ -122,7 +122,7 @@ export function SPXRecessionChart({ data, show50w, show200w, showRecessions, log
 
         <YAxis
           scale={logScale ? 'log' : 'auto'}
-          domain={logScale ? [100, 'auto'] : ['auto', 'auto']}
+          domain={['auto', 'auto']}
           ticks={logScale ? LOG_TICKS : undefined}
           tickFormatter={fmtPrice}
           tick={{ fill: 'var(--sct-muted)', fontSize: 11, fontFamily: 'var(--font-geist-mono)' }}

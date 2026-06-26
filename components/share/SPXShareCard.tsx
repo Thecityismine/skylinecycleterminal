@@ -225,7 +225,7 @@ export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
           />
           <YAxis
             scale="log"
-            domain={[100, 'auto']}
+            domain={['auto', 'auto']}
             ticks={LOG_TICKS}
             tickFormatter={fmtPrice}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}

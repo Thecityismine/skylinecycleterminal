@@ -83,9 +83,9 @@ function SignalCard({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function SPXRecessionPage() {
-  // Fetch all FRED series in parallel — SP500 from 1996 to warm up 1000d MA
+  // Fetch all FRED series in parallel — FRED SP500 is weekly (from 2011-01-07)
   const [spxRaw, t10y2yRaw, sahmRaw, unrateRaw, hyRaw, ismRaw] = await Promise.allSettled([
-    fredSince('SP500',         '1996-01-01'),
+    fredSince('SP500',         '2010-01-01'),
     fredSince('T10Y2Y',        '2000-01-01'),
     fredSince('SAHMREALTIME',  '2000-01-01'),
     fredSince('UNRATE',        '1999-01-01'),
@@ -101,9 +101,10 @@ export default async function SPXRecessionPage() {
   const ismSer  = ismRaw.status     === 'fulfilled' ? ismRaw.value     : [];
 
   // ── Build SPX chart data ──────────────────────────────────────────────────
+  // FRED SP500 is weekly — use 50-period and 200-period MAs (not daily 250/1000)
   const prices  = spx.map(d => d.value);
-  const ma50w   = slidingMA(prices, 250);
-  const ma200w  = slidingMA(prices, 1000);
+  const ma50w   = slidingMA(prices, 50);
+  const ma200w  = slidingMA(prices, 200);
 
   const allPoints: SPXPoint[] = spx.map((d, i) => ({
     time:   d.date,
