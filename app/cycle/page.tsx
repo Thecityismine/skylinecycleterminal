@@ -174,7 +174,14 @@ export default function CyclePage() {
         <div style={{ height: 420 }}>
           {!history?.points?.length
             ? <ChartSkeleton height="h-full" />
-            : <ScoreHistoryChart points={history.points} />
+            : <ScoreHistoryChart points={
+                cycle
+                  ? [
+                      ...history.points.slice(0, -1),
+                      { ...history.points[history.points.length - 1], score: cycle.score, zone: cycle.zone },
+                    ]
+                  : history.points
+              } />
           }
         </div>
 

@@ -22,11 +22,13 @@ export type HistoricalScorePoint = {
   btcClose: number;
 };
 
-const GENESIS_MS = new Date('2009-01-03').getTime();
+const GENESIS_MS   = new Date('2009-01-03').getTime();
+const PL_SLOPE     = 5.82;
+const PL_INTERCEPT = -16.73;
 
 function powerLawFair(dateStr: string): number {
   const days = (new Date(dateStr + 'T00:00:00').getTime() - GENESIS_MS) / 86_400_000;
-  return Math.pow(10, 5.8 * Math.log10(Math.max(days, 1)) - 17.3);
+  return Math.pow(10, PL_SLOPE * Math.log10(Math.max(days, 1)) + PL_INTERCEPT);
 }
 
 function smaArr(values: number[], period: number): (number | null)[] {

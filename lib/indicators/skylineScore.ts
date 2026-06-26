@@ -110,9 +110,13 @@ function unavailable(name: string, source: string): IndicatorResult {
 
 const GENESIS_MS = new Date('2009-01-03').getTime();
 
+// Same parameters as powerLaw.ts — must stay in sync
+const PL_SLOPE     = 5.82;
+const PL_INTERCEPT = -16.73;
+
 function powerLawAtDate(dateStr: string): number {
   const days = (new Date(dateStr + 'T00:00:00').getTime() - GENESIS_MS) / 86_400_000;
-  return Math.pow(10, 5.8 * Math.log10(Math.max(days, 1)) - 17.3);
+  return Math.pow(10, PL_SLOPE * Math.log10(Math.max(days, 1)) + PL_INTERCEPT);
 }
 
 // ─── Build calibration context (called once per day from the API route) ───────
@@ -259,7 +263,7 @@ function twoYearMAIndicator(prices: number[], ctx?: HistoricalContext): Indicato
 
 function logRegressionIndicator(currentPrice: number, ctx?: HistoricalContext): IndicatorResult {
   const days = (Date.now() - GENESIS_MS) / 86_400_000;
-  const fair = Math.pow(10, 5.8 * Math.log10(days) - 17.3);
+  const fair = Math.pow(10, PL_SLOPE * Math.log10(days) + PL_INTERCEPT);
   const ratio = currentPrice / fair;
   const score = ctx?.powerLawSeries.length
     ? percentileScore(ratio, ctx.powerLawSeries)
@@ -287,7 +291,7 @@ function nvtIndicator(data: Array<{ marketCap: number | null; txCnt: number | nu
   if (ma90 == null || ma90 === 0) return unavailable('NVT Signal', 'CoinMetrics');
 
   const nvt   = valid[valid.length - 1].marketCap / ma90;
-  const score = normalize(nvt, 3_000_000, 30_000_000);
+  const score = normalize(nvt, 500_000, 5_000_000);
 
   return {
     name: 'NVT Signal', score, rawValue: nvt,
