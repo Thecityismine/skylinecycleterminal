@@ -233,7 +233,19 @@ export default async function SPXRecessionPage() {
       </div>
 
       {/* Main chart */}
-      <SPXPageClient data={chartPoints} ath={ath} />
+      <SPXPageClient
+        data={chartPoints}
+        ath={ath}
+        sharePayload={{
+          spxPrice:    spxPrice,
+          pctVs200w:   pctVs200w,
+          athDrawdown: athDrawdown,
+          ath:         ath,
+          riskScore:   riskScore,
+          riskLabel:   regimeMeta.label.split('—')[0].trim(),
+          riskColor:   regimeMeta.color,
+        }}
+      />
 
       {/* Signal grid */}
       <div>

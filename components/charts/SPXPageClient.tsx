@@ -2,15 +2,21 @@
 
 import { useState, useMemo } from 'react';
 import { SPXRecessionChart } from '@/components/charts/SPXRecessionChart';
-import type { SPXPoint }      from '@/lib/indicators/recessionRisk';
+import { SPXShareModal }     from '@/components/share/SPXShareModal';
+import type { SPXPoint }     from '@/lib/indicators/recessionRisk';
+import type { SPXSharePayload } from '@/components/share/SPXShareCard';
 
 type Timeframe = '10Y' | '20Y' | 'All';
 const TIMEFRAMES: Timeframe[] = ['All', '20Y', '10Y'];
 const TF_DAYS: Record<Timeframe, number> = { '10Y': 3650, '20Y': 7300, All: Infinity };
 
-type Props = { data: SPXPoint[]; ath: number };
+type Props = {
+  data:        SPXPoint[];
+  ath:         number;
+  sharePayload: Omit<SPXSharePayload, 'chartData' | 'generatedAt'>;
+};
 
-export function SPXPageClient({ data, ath }: Props) {
+export function SPXPageClient({ data, ath, sharePayload }: Props) {
   const [timeframe, setTimeframe]       = useState<Timeframe>('All');
   const [logScale,  setLogScale]        = useState(true);
   const [show50w,   setShow50w]         = useState(true);
@@ -54,7 +60,7 @@ export function SPXPageClient({ data, ath }: Props) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           {TIMEFRAMES.map(tf => (
             <button
               key={tf}
@@ -74,6 +80,12 @@ export function SPXPageClient({ data, ath }: Props) {
           {toggleBtn(showRecs,  'Recessions', '#FF5C5C', () => setShowRecs(v => !v))}
           {toggleBtn(show50w,   '50W',        '#3B82F6', () => setShow50w(v => !v))}
           {toggleBtn(show200w,  '200W',       '#A855F7', () => setShow200w(v => !v))}
+          <div className="w-px mx-0.5" style={{ backgroundColor: 'var(--sct-border)' }} />
+          <SPXShareModal payload={{
+            ...sharePayload,
+            chartData:   data,
+            generatedAt: new Date().toISOString(),
+          }} />
         </div>
       </div>
 
