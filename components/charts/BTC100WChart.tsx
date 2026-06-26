@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, ReferenceArea,
@@ -18,6 +18,18 @@ const HALVINGS = [
   { date: '2020-05-11', label: 'H3' },
   { date: '2024-04-15', label: 'H4' },
 ];
+
+// Halving-to-halving cycle windows
+const CYCLES = [
+  { id: 'all', label: 'All',    start: '',           end: ''           },
+  { id: 'c1',  label: 'Cycle 1', start: '2010-07-18', end: '2012-11-25' },
+  { id: 'c2',  label: 'Cycle 2', start: '2012-11-26', end: '2016-07-03' },
+  { id: 'c3',  label: 'Cycle 3', start: '2016-07-04', end: '2020-05-10' },
+  { id: 'c4',  label: 'Cycle 4', start: '2020-05-11', end: '2024-04-14' },
+  { id: 'c5',  label: 'Cycle 5', start: '2024-04-15', end: ''           },
+] as const;
+
+type CycleId = (typeof CYCLES)[number]['id'];
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
 
@@ -89,16 +101,37 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
   const [show100,     setShow100]     = useState(true);
   const [show200,     setShow200]     = useState(true);
   const [showShading, setShowShading] = useState(true);
+  const [activeCycle, setActiveCycle] = useState<CycleId>('all');
 
   const visible: Visible = { ma50: show50, ma100: show100, ma200: show200 };
 
   const {
-    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
+    domain, isZoomed, isSelecting, selectionArea, reset, jumpTo, cancel, chartHandlers,
   } = useChartZoom<string>();
 
   useEffect(() => {
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
+
+  const handleCycleClick = useCallback((cycle: typeof CYCLES[number]) => {
+    setActiveCycle(cycle.id);
+    if (cycle.id === 'all') {
+      reset();
+    } else {
+      const end = cycle.end || points[points.length - 1]?.time || '';
+      jumpTo({ start: cycle.start, end });
+    }
+  }, [points, reset, jumpTo]);
+
+  // Clicking drag-zoom clears the cycle tab selection
+  const wrappedHandlers = useMemo(() => ({
+    ...chartHandlers,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onMouseUp: (e: any) => {
+      setActiveCycle('all');
+      chartHandlers.onMouseUp(e);
+    },
+  }), [chartHandlers]);
 
   // Apply zoom filter
   const chartData = useMemo(() => {
@@ -134,6 +167,24 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
+      {/* ── Cycle tabs ────────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-1 mb-2">
+        {CYCLES.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => handleCycleClick(c)}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+            style={{
+              backgroundColor: activeCycle === c.id ? 'rgba(247,147,26,0.15)' : 'transparent',
+              borderColor:     activeCycle === c.id ? '#F7931A'               : 'var(--sct-border)',
+              color:           activeCycle === c.id ? '#F7931A'               : 'var(--sct-muted)',
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       {/* ── Legend + toggles (above chart) ───────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-x-1 gap-y-1 mb-3">
         {/* BTC Price — always on, not a button */}
@@ -186,7 +237,7 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
 
         {/* Zoom controls */}
         {isZoomed && (
-          <button onClick={reset} className="px-3 py-1 rounded text-xs font-mono border transition-all"
+          <button onClick={() => { reset(); setActiveCycle('all'); }} className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
             Reset Zoom
           </button>
@@ -207,7 +258,7 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
         onMouseLeave={cancel}
       >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 4 }} {...chartHandlers}>
+        <ComposedChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 4 }} {...wrappedHandlers}>
           <CartesianGrid strokeDasharray="2 4" stroke="#1E293B" strokeOpacity={0.5} />
 
           {/* ── Regime shading ──────────────────────────────────────────── */}

@@ -37,7 +37,8 @@ export function useChartZoom<T extends string | number = string>() {
     setCursor(null);
   }, [selecting, anchor, cursor]);
 
-  const reset = useCallback(() => setDomain(null), []);
+  const reset  = useCallback(() => setDomain(null), []);
+  const jumpTo = useCallback((d: ZoomDomain<T>) => setDomain(d), []);
 
   const cancel = useCallback(() => {
     setSelecting(false);
@@ -56,6 +57,7 @@ export function useChartZoom<T extends string | number = string>() {
     isSelecting: selecting,
     selectionArea,
     reset,
+    jumpTo,
     cancel,
     chartHandlers: { onMouseDown, onMouseMove, onMouseUp },
   };
