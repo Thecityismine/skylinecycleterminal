@@ -21,6 +21,9 @@ export type SPXSharePayload = {
   riskScore:    number;
   riskLabel:    string;
   riskColor:    string;
+  show50w:      boolean;
+  show200w:     boolean;
+  showRecs:     boolean;
   generatedAt:  string;
 };
 
@@ -53,7 +56,7 @@ function fmtPct(v: number): string {
 }
 
 export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
-  const { chartData, spxPrice, pctVs200w, athDrawdown, riskScore, riskLabel, riskColor, generatedAt } = payload;
+  const { chartData, spxPrice, pctVs200w, athDrawdown, riskScore, riskLabel, riskColor, show50w, show200w, showRecs, generatedAt } = payload;
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -127,20 +130,24 @@ export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
             S&P 500 &amp; Recession Risk · Daily Close · FRED SP500
           </div>
           <div style={{ display: 'flex', gap: 16, marginTop: 10, alignItems: 'center', flexWrap: 'nowrap', overflow: 'hidden' }}>
-            {[
-              { color: 'rgba(247,249,252,0.9)', label: 'S&P 500' },
-              { color: '#3B82F6',               label: '50W MA'  },
-              { color: '#A855F7',               label: '200W MA' },
-            ].map(({ color, label }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                <span style={{ width: 14, height: 2, borderRadius: 1, backgroundColor: color, display: 'inline-block' }} />
-                <span style={{ fontSize: 9, color, letterSpacing: '0.05em' }}>{label}</span>
+            {([
+              { color: 'rgba(247,249,252,0.9)', label: 'S&P 500', show: true },
+              { color: '#3B82F6',               label: '50W MA',  show: show50w  },
+              { color: '#A855F7',               label: '200W MA', show: show200w },
+            ] as { color: string; label: string; show: boolean }[])
+              .filter(i => i.show)
+              .map(({ color, label }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <span style={{ width: 14, height: 2, borderRadius: 1, backgroundColor: color, display: 'inline-block' }} />
+                  <span style={{ fontSize: 9, color, letterSpacing: '0.05em' }}>{label}</span>
+                </div>
+              ))}
+            {showRecs && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                <span style={{ width: 10, height: 10, borderRadius: 2, display: 'inline-block', backgroundColor: 'rgba(220,60,60,0.18)', border: '1px solid rgba(220,60,60,0.4)' }} />
+                <span style={{ fontSize: 9, color: '#FF5C5C', letterSpacing: '0.05em' }}>NBER Recession</span>
               </div>
-            ))}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, display: 'inline-block', backgroundColor: 'rgba(220,60,60,0.18)', border: '1px solid rgba(220,60,60,0.4)' }} />
-              <span style={{ fontSize: 9, color: '#FF5C5C', letterSpacing: '0.05em' }}>NBER Recession</span>
-            </div>
+            )}
           </div>
         </div>
 
@@ -201,7 +208,7 @@ export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
         >
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
 
-          {recessionAreas.map((r) => (
+          {showRecs && recessionAreas.map((r) => (
             <ReferenceArea
               key={r.label}
               x1={r.x1}
@@ -235,10 +242,14 @@ export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
             allowDataOverflow
           />
 
-          <Line type="monotone" dataKey="ma200w" stroke="#A855F7" strokeWidth={1.5}
-            dot={false} isAnimationActive={false} connectNulls={false} />
-          <Line type="monotone" dataKey="ma50w"  stroke="#3B82F6" strokeWidth={1.5}
-            dot={false} isAnimationActive={false} connectNulls={false} />
+          {show200w && (
+            <Line type="monotone" dataKey="ma200w" stroke="#A855F7" strokeWidth={1.5}
+              dot={false} isAnimationActive={false} connectNulls={false} />
+          )}
+          {show50w && (
+            <Line type="monotone" dataKey="ma50w"  stroke="#3B82F6" strokeWidth={1.5}
+              dot={false} isAnimationActive={false} connectNulls={false} />
+          )}
           <Line type="monotone" dataKey="price"  stroke="rgba(247,249,252,0.9)" strokeWidth={1.5}
             dot={false} isAnimationActive={false} />
         </ComposedChart>

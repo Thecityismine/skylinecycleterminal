@@ -13,7 +13,7 @@ const TF_DAYS: Record<Timeframe, number> = { '10Y': 3650, '20Y': 7300, All: Infi
 type Props = {
   data:        SPXPoint[];
   ath:         number;
-  sharePayload: Omit<SPXSharePayload, 'chartData' | 'generatedAt'>;
+  sharePayload: Omit<SPXSharePayload, 'chartData' | 'generatedAt' | 'show50w' | 'show200w' | 'showRecs'>;
 };
 
 export function SPXPageClient({ data, ath, sharePayload }: Props) {
@@ -84,6 +84,9 @@ export function SPXPageClient({ data, ath, sharePayload }: Props) {
           <SPXShareModal payload={{
             ...sharePayload,
             chartData:   data,
+            show50w,
+            show200w,
+            showRecs,
             generatedAt: new Date().toISOString(),
           }} />
         </div>
