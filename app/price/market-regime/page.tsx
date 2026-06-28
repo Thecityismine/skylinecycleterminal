@@ -142,7 +142,7 @@ export default function MarketRegimePage() {
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
         {/* Header row */}
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
           <div>
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
               BTC / USD — Log Scale · Bull & Bear Regime Map
@@ -154,27 +154,6 @@ export default function MarketRegimePage() {
 
           {/* Controls + Legend */}
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Range tabs */}
-            <div className="flex items-center gap-1.5">
-              {RANGES.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRange(r)}
-                  className="px-3 py-1 rounded text-xs font-mono border transition-all"
-                  style={{
-                    backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
-                    borderColor:     'var(--sct-border)',
-                    color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
-                  }}
-                >
-                  {r}
-                </button>
-              ))}
-              <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
-                drag to zoom
-              </span>
-            </div>
-            <div className="w-px h-4" style={{ backgroundColor: 'var(--sct-border)' }} />
             <button
               onClick={() => setShowMA(!showMA)}
               className="text-xs px-2.5 py-1 rounded border transition-colors"
@@ -225,6 +204,27 @@ export default function MarketRegimePage() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Range tabs row */}
+        <div className="flex items-center gap-1.5 mb-4">
+          {RANGES.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className="px-3 py-1 rounded text-xs font-mono border transition-all"
+              style={{
+                backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+              }}
+            >
+              {r}
+            </button>
+          ))}
+          <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+            drag to zoom
+          </span>
         </div>
 
         <div className="h-[480px]">

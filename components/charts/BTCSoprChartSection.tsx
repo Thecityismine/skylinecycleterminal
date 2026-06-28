@@ -67,7 +67,8 @@ export function BTCSoprChartSection({
       className="rounded-xl border p-5"
       style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
     >
-      <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
             Bitcoin SOPR (MVRV Deviation) · BTC Price — Log Scale
@@ -77,29 +78,28 @@ export function BTCSoprChartSection({
             Zero line = MVRV 1.0 (break-even) · Dashed verticals = halvings
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Range tabs */}
-          <div className="flex items-center gap-1.5">
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className="px-3 py-1 rounded text-xs font-mono border transition-all"
-                style={{
-                  backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
-                  borderColor:     'var(--sct-border)',
-                  color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
-                }}
-              >
-                {r}
-              </button>
-            ))}
-            <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
-              drag to zoom
-            </span>
-          </div>
-          <SoprShareModal payload={sharePayload} />
-        </div>
+        <SoprShareModal payload={sharePayload} />
+      </div>
+
+      {/* Range tabs row */}
+      <div className="flex items-center gap-1.5 mb-4">
+        {RANGES.map((r) => (
+          <button
+            key={r}
+            onClick={() => setRange(r)}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{
+              backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+            }}
+          >
+            {r}
+          </button>
+        ))}
+        <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+          drag to zoom
+        </span>
       </div>
       <BTCSoprChart
         points={filteredPoints}

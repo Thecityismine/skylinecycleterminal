@@ -73,7 +73,8 @@ export function BTCValueFloorChartSection({
       className="rounded-xl border p-5"
       style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
     >
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-secondary)' }}>
             Bitcoin Price vs Value Floors — Log Scale
@@ -82,27 +83,7 @@ export function BTCValueFloorChartSection({
             All series in USD. Blue zone = price near realized price (cost basis). Green markers = historical bear market lows.
           </p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Range tabs */}
-          <div className="flex items-center gap-1.5">
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className="px-3 py-1 rounded text-xs font-mono border transition-all"
-                style={{
-                  backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
-                  borderColor:     'var(--sct-border)',
-                  color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
-                }}
-              >
-                {r}
-              </button>
-            ))}
-            <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
-              drag to zoom
-            </span>
-          </div>
+        <div className="flex items-center gap-4 flex-wrap">
           {/* Legend */}
           <div className="flex items-center gap-4 text-[10px] font-mono flex-wrap" style={{ color: 'var(--sct-muted)' }}>
             {[
@@ -120,6 +101,27 @@ export function BTCValueFloorChartSection({
           </div>
           <ValueFloorShareModal payload={sharePayload} />
         </div>
+      </div>
+
+      {/* Range tabs row */}
+      <div className="flex items-center gap-1.5 mb-4">
+        {RANGES.map((r) => (
+          <button
+            key={r}
+            onClick={() => setRange(r)}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{
+              backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+            }}
+          >
+            {r}
+          </button>
+        ))}
+        <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+          drag to zoom
+        </span>
       </div>
 
       <div style={{ height: 460 }}>
