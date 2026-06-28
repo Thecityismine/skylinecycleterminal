@@ -141,7 +141,7 @@ export function RegimeChart({ points, zones, showMA }: Props) {
         />
         <YAxis
           scale="log"
-          domain={[100, 'auto']}
+          domain={['auto', 'auto']}
           ticks={LOG_TICKS}
           tickFormatter={fmtPrice}
           tick={{ fill: 'var(--sct-muted)', fontSize: 11 }}

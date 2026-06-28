@@ -34,10 +34,21 @@ export const REGIME_CARD_CHART_RECT = {
   x: PAD, y: PAD + HEADER_H + GAP + STATS_H + STATS_GAP, w: CHART_W, h: CHART_H,
 };
 
-const LOG_TICKS  = [100, 1_000, 10_000, 100_000, 1_000_000];
-const YEAR_TICKS = Array.from({ length: 14 }, (_, i) =>
-  new Date(`${2012 + i}-01-01`).getTime(),
-);
+const LOG_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
+
+function buildYearTicks(points: RegimePoint[]): number[] {
+  if (!points.length) return [];
+  const minTs = points[0].ts;
+  const maxTs = points[points.length - 1].ts;
+  const minYear = new Date(minTs).getUTCFullYear();
+  const maxYear = new Date(maxTs).getUTCFullYear();
+  const ticks: number[] = [];
+  for (let y = minYear; y <= maxYear + 1; y++) {
+    const t = Date.UTC(y, 0, 1);
+    if (t >= minTs && t <= maxTs) ticks.push(t);
+  }
+  return ticks;
+}
 
 function fmtPrice(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(0)}M`;
@@ -53,6 +64,7 @@ function fmtUSD(n: number): string {
 
 export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
   const { points, zones, current, showMA, generatedAt, logoSrc } = payload;
+  const yearTicks = buildYearTicks(points);
 
   const regimeColor = REGIME_COLOR[current.regime];
   const regimeLabel = REGIME_LABEL[current.regime];
@@ -218,7 +230,7 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
             type="number"
             scale="time"
             domain={['dataMin', 'dataMax']}
-            ticks={YEAR_TICKS}
+            ticks={yearTicks}
             tickFormatter={(ts) => new Date(ts).getFullYear().toString()}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             axisLine={{ stroke: '#21262D' }}
@@ -226,7 +238,7 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
           />
           <YAxis
             scale="log"
-            domain={[100, 'auto']}
+            domain={['auto', 'auto']}
             ticks={LOG_TICKS}
             tickFormatter={fmtPrice}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}

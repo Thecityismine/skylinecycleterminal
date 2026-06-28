@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ImageDown } from 'lucide-react';
+
+type Range = '4Y' | '8Y' | 'All';
+const RANGES: Range[]          = ['4Y', '8Y', 'All'];
+const RANGE_DAYS: Record<Range, number> = { '4Y': 4 * 365.25, '8Y': 8 * 365.25, 'All': Infinity };
 import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -53,8 +57,25 @@ export default function MarketRegimePage() {
   const { data, loading } = useApiData<RegimeResult>('/api/price/regime');
   const [showMA,         setShowMA]         = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [range,          setRange]          = useState<Range>('All');
 
   const cur   = data?.current;
+
+  const cutoff = useMemo(() => {
+    const days = RANGE_DAYS[range];
+    return days === Infinity ? 0 : Date.now() - days * 86_400_000;
+  }, [range]);
+
+  const filteredPoints = useMemo(
+    () => cutoff ? (data?.points ?? []).filter((p) => p.ts >= cutoff) : (data?.points ?? []),
+    [data, cutoff],
+  );
+
+  const filteredZones = useMemo(
+    () => cutoff ? (data?.zones ?? []).filter((z) => z.endTs >= cutoff) : (data?.zones ?? []),
+    [data, cutoff],
+  );
+
   const zones = data?.zones ?? [];
 
   const regimeColor = cur ? REGIME_COLOR[cur.regime] : 'var(--sct-muted)';
@@ -132,7 +153,25 @@ export default function MarketRegimePage() {
           </div>
 
           {/* Controls + Legend */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Range tabs */}
+            <div className="flex items-center gap-1">
+              {RANGES.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+                  style={{
+                    backgroundColor: range === r ? 'rgba(247,147,26,0.15)' : 'transparent',
+                    borderColor:     range === r ? '#F7931A'               : 'var(--sct-border)',
+                    color:           range === r ? '#F7931A'               : 'var(--sct-muted)',
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <div className="w-px h-4" style={{ backgroundColor: 'var(--sct-border)' }} />
             <button
               onClick={() => setShowMA(!showMA)}
               className="text-xs px-2.5 py-1 rounded border transition-colors"
@@ -188,7 +227,7 @@ export default function MarketRegimePage() {
         <div className="h-[480px]">
           {loading || !data
             ? <ChartSkeleton height="h-[480px]" />
-            : <RegimeChart points={data.points} zones={data.zones} showMA={showMA} />
+            : <RegimeChart points={filteredPoints} zones={filteredZones} showMA={showMA} />
           }
         </div>
       </div>
@@ -235,8 +274,8 @@ export default function MarketRegimePage() {
     {showShareModal && data && (
       <RegimeShareModal
         payload={{
-          points:      data.points,
-          zones:       data.zones,
+          points:      filteredPoints,
+          zones:       filteredZones,
           current:     data.current,
           showMA,
           generatedAt: new Date().toISOString(),
