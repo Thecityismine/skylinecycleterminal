@@ -8,7 +8,7 @@ import type { ValueFloorSharePayload } from '@/components/share/ValueFloorShareC
 
 type Range = '4Y' | '8Y' | 'All';
 const RANGES: Range[] = ['4Y', '8Y', 'All'];
-const RANGE_MAP: Record<Range, 'all' | '8y' | '4y'> = { 'All': 'all', '8Y': '8y', '4Y': '4y' };
+const RANGE_DAYS: Record<Range, number> = { '4Y': 4 * 365.25, '8Y': 8 * 365.25, 'All': Infinity };
 
 type Props = {
   points:        ValueFloorPoint[];
@@ -40,12 +40,20 @@ export function BTCValueFloorChartSection({
   const [visible, setVisible] = useState<Record<string, boolean>>(VISIBLE_DEFAULTS);
   const [range, setRange]     = useState<Range>('All');
 
-  // Downsample to ~1500 points for share card performance
+  // Filter by selected range — same data flows to both the chart and share card
+  const filteredPoints = useMemo(() => {
+    const days = RANGE_DAYS[range];
+    if (days === Infinity) return points;
+    const cutoff = Date.now() - days * 86_400_000;
+    return points.filter((p) => p.ts >= cutoff);
+  }, [points, range]);
+
+  // Downsample the FILTERED points for share card performance
   const downsampled = useMemo(() => {
-    if (points.length <= 1500) return points;
-    const step = Math.floor(points.length / 1500);
-    return points.filter((_, i) => i % step === 0 || i === points.length - 1);
-  }, [points]);
+    if (filteredPoints.length <= 1500) return filteredPoints;
+    const step = Math.floor(filteredPoints.length / 1500);
+    return filteredPoints.filter((_, i) => i % step === 0 || i === filteredPoints.length - 1);
+  }, [filteredPoints]);
 
   const sharePayload: ValueFloorSharePayload = {
     points: downsampled,
@@ -120,8 +128,8 @@ export function BTCValueFloorChartSection({
           )
           : (
             <BTCValueFloorChart
-              points={points}
-              range={RANGE_MAP[range]}
+              points={filteredPoints}
+              range="all"
               onVisibleChange={setVisible}
             />
           )
