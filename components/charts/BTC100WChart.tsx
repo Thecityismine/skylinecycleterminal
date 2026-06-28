@@ -173,11 +173,11 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
           <button
             key={c.id}
             onClick={() => handleCycleClick(c)}
-            className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
-              backgroundColor: activeCycle === c.id ? 'rgba(247,147,26,0.15)' : 'transparent',
-              borderColor:     activeCycle === c.id ? '#F7931A'               : 'var(--sct-border)',
-              color:           activeCycle === c.id ? '#F7931A'               : 'var(--sct-muted)',
+              backgroundColor: activeCycle === c.id ? 'var(--sct-border)' : 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           activeCycle === c.id ? 'var(--sct-text)' : 'var(--sct-muted)',
             }}
           >
             {c.label}
