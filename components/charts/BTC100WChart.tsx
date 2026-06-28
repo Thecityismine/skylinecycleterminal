@@ -126,10 +126,9 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
   // Clicking drag-zoom clears the cycle tab selection
   const wrappedHandlers = useMemo(() => ({
     ...chartHandlers,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onMouseUp: (e: any) => {
+    onMouseUp: () => {
       setActiveCycle('all');
-      chartHandlers.onMouseUp(e);
+      chartHandlers.onMouseUp();
     },
   }), [chartHandlers]);
 
