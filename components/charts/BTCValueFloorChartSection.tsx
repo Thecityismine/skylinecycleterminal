@@ -6,6 +6,10 @@ import { ValueFloorShareModal }   from '@/components/share/ValueFloorShareModal'
 import type { ValueFloorPoint }   from '@/lib/indicators/valueFloors';
 import type { ValueFloorSharePayload } from '@/components/share/ValueFloorShareCard';
 
+type Range = '4Y' | '8Y' | 'All';
+const RANGES: Range[] = ['4Y', '8Y', 'All'];
+const RANGE_MAP: Record<Range, 'all' | '8y' | '4y'> = { 'All': 'all', '8Y': '8y', '4Y': '4y' };
+
 type Props = {
   points:        ValueFloorPoint[];
   scoreScore:    number;
@@ -34,6 +38,7 @@ export function BTCValueFloorChartSection({
   btcClose, realizedPrice, vsRealizedPct, drawdownPct,
 }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>(VISIBLE_DEFAULTS);
+  const [range, setRange]     = useState<Range>('All');
 
   // Downsample to ~1500 points for share card performance
   const downsampled = useMemo(() => {
@@ -63,13 +68,30 @@ export function BTCValueFloorChartSection({
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-secondary)' }}>
-            Bitcoin Price vs Value Floors — Full History (Log Scale)
+            Bitcoin Price vs Value Floors — Log Scale
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
             All series in USD. Blue zone = price near realized price (cost basis). Green markers = historical bear market lows.
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Range tabs */}
+          <div className="flex items-center gap-1">
+            {RANGES.map((r) => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+                style={{
+                  backgroundColor: range === r ? 'rgba(247,147,26,0.15)' : 'transparent',
+                  borderColor:     range === r ? '#F7931A'               : 'var(--sct-border)',
+                  color:           range === r ? '#F7931A'               : 'var(--sct-muted)',
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
           {/* Legend */}
           <div className="flex items-center gap-4 text-[10px] font-mono flex-wrap" style={{ color: 'var(--sct-muted)' }}>
             {[
@@ -99,7 +121,7 @@ export function BTCValueFloorChartSection({
           : (
             <BTCValueFloorChart
               points={points}
-              range="all"
+              range={RANGE_MAP[range]}
               onVisibleChange={setVisible}
             />
           )
