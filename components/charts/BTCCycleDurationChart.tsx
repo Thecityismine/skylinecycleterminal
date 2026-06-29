@@ -52,6 +52,7 @@ function CustomTooltip({ active, payload }: any) {
 }
 
 function CycleMarkerLayer({ xAxisMap, yAxisMap, anchors, prices }: any) {
+  if (!xAxisMap || !yAxisMap) return null;
   const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
   const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
   if (!xAxis?.scale || !yAxis?.scale) return null;
