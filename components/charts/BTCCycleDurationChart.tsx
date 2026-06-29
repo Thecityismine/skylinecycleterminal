@@ -28,6 +28,14 @@ const YEAR_TICKS = Array.from({ length: 22 }, (_, i) =>
   new Date(`${2012 + i}-01-01T00:00:00Z`).getTime()
 );
 
+const HALVINGS = [
+  { date: '2012-11-28', label: 'H1' },
+  { date: '2016-07-09', label: 'H2' },
+  { date: '2020-05-11', label: 'H3' },
+  { date: '2024-04-19', label: 'H4' },
+  { date: '2028-04-20', label: 'H5*' },
+].map((h) => ({ ...h, ts: new Date(h.date + 'T00:00:00Z').getTime() }));
+
 function fmtPrice(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;
@@ -181,6 +189,27 @@ export function BTCCycleDurationChart({ prices, anchors, activeCycle, logScale }
               fontWeight: 600,
             }}
           />
+
+          {/* Halving lines */}
+          {HALVINGS.filter((h) => h.ts >= (prices[0]?.ts ?? 0)).map((h) => {
+            const projected = h.ts > now;
+            return (
+              <ReferenceLine
+                key={h.label}
+                x={h.ts}
+                stroke={projected ? 'rgba(255,200,50,0.25)' : 'rgba(255,200,50,0.60)'}
+                strokeDasharray={projected ? '6 4' : '5 3'}
+                strokeWidth={1.2}
+                label={{
+                  value:    h.label,
+                  position: 'insideTopLeft',
+                  fontSize: 9,
+                  fill:     projected ? 'rgba(255,200,50,0.35)' : 'rgba(255,200,50,0.75)',
+                  fontWeight: 600,
+                }}
+              />
+            );
+          })}
 
           {/* Now */}
           <ReferenceLine
