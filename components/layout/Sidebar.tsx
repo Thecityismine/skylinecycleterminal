@@ -35,6 +35,7 @@ import {
   Lock,
   Crosshair,
   ArrowLeftRight,
+  Timer,
 } from "lucide-react";
 
 type NavItem = {
@@ -61,6 +62,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Halving Windows",   href: "/price/halving-windows", icon: Crosshair },
       { label: "Benner Cycle",      href: "/price/benner-cycle",    icon: History },
       { label: "Cycle Comparison",  href: "/price/cycle-comparison", icon: Layers },
+      { label: "Cycle Timer",       href: "/cycle-timer",            icon: Timer },
     ],
   },
   {
