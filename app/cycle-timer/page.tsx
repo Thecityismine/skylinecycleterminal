@@ -41,11 +41,24 @@ function signedDays(n: number): string {
   return `${n > 0 ? '+' : ''}${fmt(n)} days`;
 }
 
+type Range = '4Y' | '8Y' | 'All';
+const RANGES: Range[] = ['4Y', '8Y', 'All'];
+const RANGE_MS: Record<Range, number> = { '4Y': 4 * 365.25 * 86_400_000, '8Y': 8 * 365.25 * 86_400_000, 'All': Infinity };
+
 export default function CycleTimerPage() {
   const [logScale,     setLogScale]     = useState(true);
   const [timingModel,  setTimingModel]  = useState<'fixed' | 'median'>('fixed');
+  const [range,        setRange]        = useState<Range>('All');
 
   const { data, loading } = useApiData<ApiResponse>('/api/cycle-timer');
+
+  const filteredPrices = useMemo(() => {
+    if (!data?.prices.length) return [];
+    const ms = RANGE_MS[range];
+    if (ms === Infinity) return data.prices;
+    const cutoff = Date.now() - ms;
+    return data.prices.filter((p) => p.ts >= cutoff);
+  }, [data?.prices, range]);
 
   const activeCycle  = data?.activeCycle;
   const phase        = activeCycle ? PHASE_CONFIG[activeCycle.currentPhase] : null;
@@ -234,6 +247,24 @@ export default function CycleTimerPage() {
           </div>
         </div>
 
+        {/* Range tabs */}
+        <div className="flex items-center gap-1.5 mb-4">
+          {RANGES.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className="px-3 py-1 rounded text-xs font-mono border transition-all"
+              style={{
+                backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           range === r ? 'var(--sct-text)' : 'var(--sct-muted)',
+              }}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+
         <div style={{ height: 500 }}>
           {loading || !data ? (
             <div className="h-full flex items-center justify-center" style={{ color: 'var(--sct-muted)' }}>
@@ -241,7 +272,7 @@ export default function CycleTimerPage() {
             </div>
           ) : (
             <BTCCycleDurationChart
-              prices={data.prices}
+              prices={filteredPrices}
               anchors={data.anchors}
               activeCycle={data.activeCycle}
               logScale={logScale}
