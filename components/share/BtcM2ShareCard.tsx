@@ -8,6 +8,7 @@ import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard
 
 export type BtcM2SharePayload = {
   points:    BtcM2Point[];
+  range:     string;
   logScale:  boolean;
   ratio:     number | null;
   ema200:    number | null;
@@ -38,7 +39,7 @@ function fmt(v: number | null, d = 2): string {
 
 export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
   const {
-    points, logScale, ratio, ema200, ema400, sma52,
+    points, range, logScale, ratio, ema200, ema400, sma52,
     zoneLabel, zoneColor, generatedAt,
   } = payload;
 
@@ -102,15 +103,20 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             <span style={{ fontSize: 10, color: '#35D07F', letterSpacing: '0.1em' }}>LIVE DATA</span>
           </div>
           <p style={{ fontSize: 11, color: '#8B949E', margin: '3px 0 4px' }}>{dateStr}</p>
-          {zoneLabel && (
-            <span style={{
-              padding: '2px 8px', borderRadius: 4,
-              backgroundColor: resolvedZoneColor + '20',
-              fontSize: 10, color: resolvedZoneColor,
-            }}>
-              {zoneLabel}
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
+            <span style={{ padding: '2px 8px', borderRadius: 4, backgroundColor: '#21262D', fontSize: 10, color: '#8B949E' }}>
+              {range}
             </span>
-          )}
+            {zoneLabel && (
+              <span style={{
+                padding: '2px 8px', borderRadius: 4,
+                backgroundColor: resolvedZoneColor + '20',
+                fontSize: 10, color: resolvedZoneColor,
+              }}>
+                {zoneLabel}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

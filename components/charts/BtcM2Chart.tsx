@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import {
   ComposedChart,
   Line,
@@ -19,8 +19,13 @@ import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 type Props = {
   data: BtcM2Point[];
   logScale: boolean;
+  onRangeChange?: (r: Range) => void;
   onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
+
+export type Range = '4Y' | '8Y' | 'All';
+const RANGES: Range[] = ['4Y', '8Y', 'All'];
+const RANGE_DAYS: Record<Range, number> = { '4Y': 1460, '8Y': 2920, 'All': Infinity };
 
 const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
   new Date(`${2013 + i}-01-01T00:00:00Z`).getTime()
@@ -69,33 +74,75 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function BtcM2Chart({ data, logScale, onZoomChange }: Props) {
+export function BtcM2Chart({ data, logScale, onRangeChange, onZoomChange }: Props) {
+  const [range, setRange] = useState<Range>('All');
+
   const {
-    domain, isSelecting, selectionArea, cancel, chartHandlers,
+    domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
   } = useChartZoom<number>();
 
   useEffect(() => {
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
+  const displayed = useMemo(() => {
+    const days = RANGE_DAYS[range];
+    if (days === Infinity) return data;
+    const cutoff = Date.now() - days * 86_400_000;
+    return data.filter(d => d.ts >= cutoff);
+  }, [data, range]);
+
   const chartData = useMemo(() => {
-    if (!domain) return data;
-    return data.filter(d => d.ts >= domain.start && d.ts <= domain.end);
-  }, [data, domain]);
+    if (!domain) return displayed;
+    return displayed.filter(d => d.ts >= domain.start && d.ts <= domain.end);
+  }, [displayed, domain]);
 
   const yDomain: [number | string, number | string] = logScale
     ? ['auto', 'auto']
     : [0, 'auto'];
 
   return (
-    <div
-      style={{
-        position: 'relative', width: '100%', height: '100%',
-        cursor: isSelecting ? 'crosshair' : 'default',
-        userSelect: 'none',
-      }}
-      onMouseLeave={cancel}
-    >
+    <div>
+      {/* Controls row */}
+      <div className="flex items-center gap-2 mb-4">
+        {RANGES.map(r => (
+          <button
+            key={r}
+            onClick={() => { setRange(r); onRangeChange?.(r); reset(); }}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{
+              backgroundColor: range === r && !isZoomed ? 'var(--sct-border)' : 'transparent',
+              borderColor:     'var(--sct-border)',
+              color:           range === r && !isZoomed ? 'var(--sct-text)' : 'var(--sct-muted)',
+            }}
+          >
+            {r}
+          </button>
+        ))}
+        {isZoomed && (
+          <button
+            onClick={reset}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}
+          >
+            Reset Zoom
+          </button>
+        )}
+        {!isZoomed && (
+          <span className="hidden md:inline text-[10px] font-mono ml-1" style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+            drag to zoom
+          </span>
+        )}
+      </div>
+
+      <div
+        style={{
+          position: 'relative', width: '100%', height: 480,
+          cursor: isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={chartData} margin={{ top: 12, right: 16, bottom: 0, left: 8 }} {...chartHandlers}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
@@ -182,6 +229,7 @@ export function BtcM2Chart({ data, logScale, onZoomChange }: Props) {
       </ComposedChart>
     </ResponsiveContainer>
     <ChartWatermark />
+    </div>
     </div>
   );
 }

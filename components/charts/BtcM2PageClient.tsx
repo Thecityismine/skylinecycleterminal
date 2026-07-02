@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { BtcM2Chart }       from '@/components/charts/BtcM2Chart';
+import type { Range }       from '@/components/charts/BtcM2Chart';
 import { BtcM2ShareModal }  from '@/components/share/BtcM2ShareModal';
 import type { BtcM2Point }  from '@/lib/indicators/btcM2';
 import type { BtcM2SharePayload } from '@/components/share/BtcM2ShareCard';
+import type { ZoomDomain }  from '@/lib/hooks/useChartZoom';
+
+const RANGE_DAYS: Record<Range, number> = { '4Y': 1460, '8Y': 2920, 'All': Infinity };
+
+function fmtZoomLabel(domain: ZoomDomain<number>): string {
+  const fmt = (ts: number) => new Date(ts).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  return `${fmt(domain.start)} – ${fmt(domain.end)}`;
+}
 
 type Props = {
   points:    BtcM2Point[];
@@ -18,9 +27,32 @@ type Props = {
 
 export function BtcM2PageClient({ points, ratio, ema200, ema400, sma52, zoneLabel, zoneColor }: Props) {
   const [logScale, setLogScale] = useState(false);
+  const [range, setRange] = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
+
+  const handleZoomChange = useCallback((d: ZoomDomain<number> | null) => {
+    setZoomDomain(d);
+  }, []);
+
+  const displayed = useMemo(() => {
+    const days = RANGE_DAYS[range];
+    if (days === Infinity) return points;
+    const cutoff = Date.now() - days * 86_400_000;
+    return points.filter(d => d.ts >= cutoff);
+  }, [points, range]);
+
+  // For share: zoom-filter on top of range-filter when zoomed, so the
+  // exported card only shows the chart region currently selected/zoomed.
+  const shareData = useMemo(() => {
+    if (!zoomDomain) return displayed;
+    return displayed.filter(d => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end);
+  }, [displayed, zoomDomain]);
+
+  const shareRange = zoomDomain ? fmtZoomLabel(zoomDomain) : range;
 
   const sharePayload: BtcM2SharePayload = {
-    points,
+    points: shareData,
+    range: shareRange,
     logScale,
     ratio,
     ema200,
@@ -90,9 +122,12 @@ export function BtcM2PageClient({ points, ratio, ema200, ema400, sma52, zoneLabe
         ))}
       </div>
 
-      <div className="relative h-[480px]">
-        <BtcM2Chart data={points} logScale={logScale} />
-      </div>
+      <BtcM2Chart
+        data={points}
+        logScale={logScale}
+        onRangeChange={setRange}
+        onZoomChange={handleZoomChange}
+      />
     </div>
   );
 }
