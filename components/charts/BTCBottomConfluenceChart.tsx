@@ -95,8 +95,6 @@ export function BTCBottomConfluenceChart({ points, periods, range = 'all', onVis
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!points.length) return null;
-
   const cutoff =
     range === '8y' ? Date.now() - 8  * 365.25 * 86_400_000 :
     range === '4y' ? Date.now() - 4  * 365.25 * 86_400_000 :
@@ -107,6 +105,8 @@ export function BTCBottomConfluenceChart({ points, periods, range = 'all', onVis
     if (!domain) return filtered;
     return filtered.filter(d => d.ts >= domain.start && d.ts <= domain.end);
   }, [filtered, domain]);
+
+  if (!points.length) return null;
 
   const allPrices = chartData.flatMap((p) =>
     [p.btcClose, p.ma2y].filter((v): v is number => v != null && v > 0),

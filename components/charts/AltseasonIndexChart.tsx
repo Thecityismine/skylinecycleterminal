@@ -144,14 +144,13 @@ export function AltseasonIndexChart({ data, signalDots, startTs, onZoomChange }:
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!data.length) return null;
-
-  const visible = data.filter((d) => d.ts >= startTs);
-
   const chartData = useMemo(() => {
+    const visible = data.filter((d) => d.ts >= startTs);
     if (!domain) return visible;
     return visible.filter(d => d.ts >= domain.start && d.ts <= domain.end);
-  }, [visible, domain]);
+  }, [data, startTs, domain]);
+
+  if (!data.length) return null;
 
   const withPrice = chartData.filter((d) => d.btcPrice != null);
   const btcMin = withPrice.length > 0 ? Math.min(...withPrice.map((d) => d.btcPrice!)) * 0.9 : 1000;

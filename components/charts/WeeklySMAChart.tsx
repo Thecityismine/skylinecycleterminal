@@ -98,12 +98,12 @@ export function WeeklySMAChart({ points, segments, logScale, onZoomChange }: Pro
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!points.length) return null;
-
   const chartData = useMemo(() => {
     if (!domain) return points;
     return points.filter(d => d.ts >= domain.start && d.ts <= domain.end);
   }, [points, domain]);
+
+  if (!points.length) return null;
 
   const yDomain: [number | string, number | string] = logScale
     ? ['auto', 'auto']

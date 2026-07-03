@@ -155,15 +155,15 @@ export function BTCGoldenDeathCrossChart({
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!data.length) return null;
-
-  const visible   = data.filter((p) => p.ts >= startTs);
-  const yearTicks = YEAR_TICKS.filter((t) => t >= startTs);
-
   const chartData = useMemo(() => {
+    const visible = data.filter((p) => p.ts >= startTs);
     if (!domain) return visible;
     return visible.filter(d => d.ts >= domain.start && d.ts <= domain.end);
-  }, [visible, domain]);
+  }, [data, startTs, domain]);
+
+  if (!data.length) return null;
+
+  const yearTicks = YEAR_TICKS.filter((t) => t >= startTs);
 
   return (
     <div

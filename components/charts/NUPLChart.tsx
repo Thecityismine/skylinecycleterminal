@@ -95,12 +95,12 @@ export function NUPLChart({ data, onZoomChange }: Props) {
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!data.length) return null;
-
   const chartData = useMemo(() => {
     if (!domain) return data;
     return data.filter(d => d.ts >= domain.start && d.ts <= domain.end);
   }, [data, domain]);
+
+  if (!data.length) return null;
 
   return (
     <div

@@ -106,8 +106,6 @@ export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onS
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!points.length) return null;
-
   // Date range filter
   const cutoff = range === 'all' ? 0
     : range === '8y' ? Date.now() - 8 * 365.25 * 86_400_000
@@ -122,6 +120,8 @@ export function BTCHodlWaveChart({ points, range = 'all', onShowPriceChange, onS
     return filtered.filter(p => new Date(p.time + 'T00:00:00').getTime() >= domain.start &&
                                 new Date(p.time + 'T00:00:00').getTime() <= domain.end);
   }, [filtered, domain]);
+
+  if (!points.length) return null;
 
   const prices   = chartData.map((p) => p.btcClose).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(1, Math.min(...prices) * 0.6) : 1;

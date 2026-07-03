@@ -108,8 +108,6 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZ
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  if (!points.length) return null;
-
   // Date range filter
   const cutoff = range === 'all' ? 0
     : range === '8y' ? Date.now() - 8 * 365.25 * 86_400_000
@@ -120,6 +118,8 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZ
     if (!domain) return filtered;
     return filtered.filter(d => d.ts >= domain.start && d.ts <= domain.end);
   }, [filtered, domain]);
+
+  if (!points.length) return null;
 
   // Y-axis domain (log)
   const allPrices = chartData.flatMap((p) => [
