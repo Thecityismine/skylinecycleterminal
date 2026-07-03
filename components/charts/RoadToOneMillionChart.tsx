@@ -45,14 +45,18 @@ type Props = {
   visibleScenarios: Set<Scenario>;
   showHalvings:     boolean;
   showMilestones:   boolean;
+  // Overrides the left edge of the x-axis (e.g. an exact halving timestamp
+  // when zoomed) — otherwise defaults to the first historical sample, which
+  // can land after a zoom-anchor halving date and clip its marker line.
+  xMinOverride?:    number;
 };
 
 export function RoadToOneMillionChart({
-  historical, scenarios, visibleScenarios, showHalvings, showMilestones,
+  historical, scenarios, visibleScenarios, showHalvings, showMilestones, xMinOverride,
 }: Props) {
   if (!historical.length) return null;
 
-  const xMin = historical[0].ts;
+  const xMin = xMinOverride != null ? Math.min(xMinOverride, historical[0].ts) : historical[0].ts;
   const xMax = Math.max(
     ...SCENARIOS.flatMap((s) => scenarios[s]?.length ? [scenarios[s][scenarios[s].length - 1].ts] : []),
     historical[historical.length - 1].ts,

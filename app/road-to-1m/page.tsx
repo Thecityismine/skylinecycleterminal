@@ -17,6 +17,7 @@ import {
   fmtCrossingLabel,
   type Scenario,
 } from '@/lib/indicators/roadToOneMillion';
+import { RoadToOneMillionShareModal } from '@/components/share/RoadToOneMillionShareModal';
 
 type PricePoint = { time: string; ts: number; price: number };
 type ApiResponse = { points: PricePoint[] };
@@ -31,14 +32,34 @@ function fmtCompactUSD(v: number): string {
   return `$${Math.round(v)}`;
 }
 
+const h3Halving = HALVINGS.find((h) => h.number === 3)!;
+const h4Halving = HALVINGS.find((h) => h.number === 4)!;
+
+const ZOOM_OPTIONS = [
+  { key: 'h3',  label: 'H3',  ts: h3Halving.ts },
+  { key: 'h4',  label: 'H4',  ts: h4Halving.ts },
+  { key: 'all', label: 'All', ts: null as number | null },
+] as const;
+type ZoomKey = (typeof ZOOM_OPTIONS)[number]['key'];
+
 export default function RoadToOneMillionPage() {
   const { data, loading } = useApiData<ApiResponse>('/api/price/halving-cycles');
 
   const [visibleScenarios, setVisibleScenarios] = useState<Set<Scenario>>(new Set(SCENARIOS));
   const [showHalvings,     setShowHalvings]     = useState(true);
   const [showMilestones,   setShowMilestones]   = useState(true);
+  const [zoom,              setZoom]            = useState<ZoomKey>('all');
 
   const pos = useMemo(() => getCurrentPosition(), []);
+
+  const zoomTs = ZOOM_OPTIONS.find((z) => z.key === zoom)!.ts;
+
+  const displayHistorical = useMemo(() => {
+    if (!data?.points.length) return [];
+    if (zoomTs == null) return data.points;
+    const filtered = data.points.filter((p) => p.ts >= zoomTs);
+    return filtered.length ? filtered : data.points;
+  }, [data, zoomTs]);
 
   const scenarios = useMemo(() => {
     if (!data?.points.length) return null;
@@ -114,11 +135,30 @@ export default function RoadToOneMillionPage() {
               BTC Price · Historical Cycles + Forward Scenario Map
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Log scale · 2012 → 2034 · Base / Moderate / Optimistic paths through the 2028 &amp; 2032 halvings
+              Log scale · {ZOOM_OPTIONS.find((z) => z.key === zoom)!.label} → 2034 · Base / Moderate / Optimistic paths through the 2028 &amp; 2032 halvings
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex gap-1">
+              {ZOOM_OPTIONS.map((z) => (
+                <button
+                  key={z.key}
+                  onClick={() => setZoom(z.key)}
+                  className="px-2.5 py-1 rounded text-xs font-mono border transition-all duration-150"
+                  style={{
+                    backgroundColor: zoom === z.key ? 'var(--sct-secondary)' : 'transparent',
+                    borderColor:     zoom === z.key ? 'var(--sct-secondary)' : 'var(--sct-border)',
+                    color:           zoom === z.key ? '#000' : 'var(--sct-muted)',
+                  }}
+                >
+                  {z.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ width: 1, height: 20, backgroundColor: 'var(--sct-border)' }} />
+
             {SCENARIOS.map((s) => {
               const meta = SCENARIO_META[s];
               const active = visibleScenarios.has(s);
@@ -159,6 +199,25 @@ export default function RoadToOneMillionPage() {
             >
               Milestones
             </button>
+
+            <div style={{ width: 1, height: 20, backgroundColor: 'var(--sct-border)' }} />
+
+            <RoadToOneMillionShareModal
+              disabled={!data?.points.length || !scenarios}
+              payload={{
+                historical:       displayHistorical,
+                scenarios:        scenarios ?? { base: [], moderate: [], optimistic: [] },
+                visibleScenarios,
+                showHalvings,
+                showMilestones,
+                zoomLabel:        ZOOM_OPTIONS.find((z) => z.key === zoom)!.label,
+                xMinOverride:     zoomTs ?? undefined,
+                lastPrice,
+                roadStatusLabel:  roadStatus.label,
+                roadStatusColor:  roadStatus.color,
+                generatedAt:      new Date().toISOString(),
+              }}
+            />
           </div>
         </div>
 
@@ -167,11 +226,12 @@ export default function RoadToOneMillionPage() {
             <ChartSkeleton height="h-full" />
           ) : data?.points.length && scenarios ? (
             <RoadToOneMillionChart
-              historical={data.points}
+              historical={displayHistorical}
               scenarios={scenarios}
               visibleScenarios={visibleScenarios}
               showHalvings={showHalvings}
               showMilestones={showMilestones}
+              xMinOverride={zoomTs ?? undefined}
             />
           ) : (
             <div className="h-full flex items-center justify-center" style={{ color: 'var(--sct-muted)' }}>
