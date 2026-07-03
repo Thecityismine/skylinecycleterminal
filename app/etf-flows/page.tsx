@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 function fmtFlow(v: number | null): string {
   if (v == null) return '—';
   const abs = Math.abs(v);
-  const sign = v >= 0 ? '+' : '';
+  const sign = v >= 0 ? '+' : '-';
   if (abs >= 1e9) return `${sign}$${(abs / 1e9).toFixed(2)}B`;
   if (abs >= 1e6) return `${sign}$${(abs / 1e6).toFixed(0)}M`;
   return `${sign}$${abs.toFixed(0)}`;
