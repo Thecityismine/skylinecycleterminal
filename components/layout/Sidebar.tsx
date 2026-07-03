@@ -36,6 +36,7 @@ import {
   Crosshair,
   ArrowLeftRight,
   Timer,
+  Rocket,
 } from "lucide-react";
 
 type NavItem = {
@@ -55,6 +56,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "CYCLE",
     items: [
+      { label: "Road to $1M",      href: "/road-to-1m",     icon: Rocket },
       { label: "Skyline Score",    href: "/cycle",          icon: Activity },
       { label: "Cycle Model",      href: "/cycle#model",    icon: TrendingUp },
       { label: "Historical Peaks",   href: "/cycle#history",         icon: History },
