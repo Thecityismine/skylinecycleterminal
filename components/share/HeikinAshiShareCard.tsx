@@ -63,7 +63,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
   const stats = [
     {
       label: 'Monthly HA',
-      value: isSignal ? 'â–² Signal' : isGreen ? 'â–² Green' : 'â–¼ Red',
+      value: isSignal ? '▲ Signal' : isGreen ? '▲ Green' : '▼ Red',
       sub:   latest ? `${latest.month}${latest.partial ? ' · partial' : ''}` : '—',
       color: statusColor,
     },
@@ -87,7 +87,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
     },
   ];
 
-  // â”€â”€â”€ SVG chart math â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── SVG chart math ───────────────────────────────────────────────────────
   const innerW = CHART_W - PL - PR;
   const innerH = CHART_H - PT - PB;
   const n      = candles.length;
@@ -259,11 +259,11 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
             {[
               { color: GREEN, label: 'Bullish HA'       },
               { color: RED,   label: 'Bearish HA'       },
-              { color: GREEN, label: 'â–² Bear-End Signal', isTriangle: true },
+              { color: GREEN, label: '▲ Bear-End Signal', isTriangle: true },
             ].map((l) => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 {l.isTriangle ? (
-                  <span style={{ fontSize: 12, color: l.color, lineHeight: 1 }}>â–²</span>
+                  <span style={{ fontSize: 12, color: l.color, lineHeight: 1 }}>▲</span>
                 ) : (
                   <span style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: l.color, display: 'inline-block' }} />
                 )}

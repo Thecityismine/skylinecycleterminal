@@ -73,7 +73,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
 
   const stats = [
     { label: 'BTC Price',      value: fmtUSD(price),                               sub: 'Current market price',  color: '#F7931A'          },
-    { label: 'MVRV Ratio',     value: mvrv != null ? `${mvrv.toFixed(2)}Ã—` : '—', sub: mvrvSub,                 color: '#A78BFA'          },
+    { label: 'MVRV Ratio',     value: mvrv != null ? `${mvrv.toFixed(2)}×` : '—', sub: mvrvSub,                 color: '#A78BFA'          },
     { label: 'Realized Price', value: fmtUSD(realized),                            sub: 'Avg on-chain cost basis', color: '#3B82F6'         },
     { label: 'Cycle Score',    value: score != null ? `${score.toFixed(0)} / 100` : '—', sub: scoreLabel ?? '—', color: resolvedScoreColor },
   ];

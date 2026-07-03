@@ -64,8 +64,8 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
   const stats = [
     { label: 'BTC Price',        value: fmtUSD(currentPrice),                         sub: 'Latest close',            color: '#F7F9FC'   },
     { label: '150-Day MA',       value: fmtUSD(currentMA150),                         sub: 'Short-term trend line',   color: '#E6B450'   },
-    { label: '471d MA Ã— 0.745',  value: fmtUSD(currentThreshold),                     sub: 'Pi Cycle threshold',      color: '#3B82F6'   },
-    { label: 'Ratio (150d / T)', value: ratio != null ? `${ratio.toFixed(3)}Ã—` : '—', sub: statusLabel,               color: ratioColor  },
+    { label: '471d MA × 0.745',  value: fmtUSD(currentThreshold),                     sub: 'Pi Cycle threshold',      color: '#3B82F6'   },
+    { label: 'Ratio (150d / T)', value: ratio != null ? `${ratio.toFixed(3)}×` : '—', sub: statusLabel,               color: ratioColor  },
   ];
 
   // Compute zone spans from the data
@@ -111,7 +111,7 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
             Pi Cycle Bottom
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            150d MA vs 471d MA Ã— 0.745 · Log scale{range !== 'All' ? ` · ${range}` : ''}
+            150d MA vs 471d MA × 0.745 · Log scale{range !== 'All' ? ` · ${range}` : ''}
           </p>
         </div>
 
@@ -221,11 +221,11 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
             connectNulls
           />
 
-          {/* 471d Ã— 0.745 threshold */}
+          {/* 471d × 0.745 threshold */}
           <Line
             type="monotone"
             dataKey="threshold"
-            name="471d Ã— 0.745"
+            name="471d × 0.745"
             stroke="#3B82F6"
             strokeWidth={1.8}
             dot={false}
@@ -258,7 +258,7 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
             {[
               { color: 'rgba(247,249,252,0.75)', label: 'BTC Price'    },
               { color: '#E6B450',                label: '150d MA'      },
-              { color: '#3B82F6',                label: '471d Ã— 0.745' },
+              { color: '#3B82F6',                label: '471d × 0.745' },
               { color: 'rgba(59,130,246,0.35)',  label: 'Bottom Zone', square: true },
             ].map((l) => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

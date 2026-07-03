@@ -76,7 +76,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
   const stats = [
     { label: 'BTC Price',          value: fmtFull(currentPrice), sub: 'Latest close',            color: '#F7931A'      },
     { label: secondaryLabel,       value: fmtFull(ma200w),       sub: 'Long-term trend floor',   color: secondaryColor },
-    { label: 'Price / 200W MA',    value: ratio != null ? `${ratio.toFixed(2)}Ã—` : '—',          sub: zoneLabel,       color: zoneColor      },
+    { label: 'Price / 200W MA',    value: ratio != null ? `${ratio.toFixed(2)}×` : '—',          sub: zoneLabel,       color: zoneColor      },
     { label: 'Premium to MA',      value: fmtPct(premium),       sub: premium != null && premium < 0 ? 'Below MA — historic buy' : premium != null && premium < 100 ? 'Low risk zone' : 'Elevated premium', color: premium == null ? '#8B949E' : premium < 0 ? '#3B82F6' : premium < 100 ? '#35D07F' : premium < 300 ? '#E6B450' : '#FF5C5C' },
   ];
 

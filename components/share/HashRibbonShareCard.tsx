@@ -84,7 +84,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
     { label: 'BTC Price',        value: fmtUSD(currentPrice),                              sub: 'Latest close',                  color: '#F7F9FC'    },
     { label: `30d ${maLabel} MA`, value: fmtHashRate(currentMA30, dataSource),             sub: '30-day moving average',         color: '#E6B450'    },
     { label: `60d ${maLabel} MA`, value: fmtHashRate(currentMA60, dataSource),             sub: '60-day moving average',         color: '#3B82F6'    },
-    { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}Ã—` : '—', sub: statusLabel,            color: ratioColor   },
+    { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}×` : '—', sub: statusLabel,            color: ratioColor   },
   ];
 
   // Capitulation zones
@@ -201,7 +201,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
             yAxisId="ribbon"
             orientation="right"
             domain={[0, 2.5]}
-            tickFormatter={(v: number) => `${v.toFixed(1)}Ã—`}
+            tickFormatter={(v: number) => `${v.toFixed(1)}×`}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             tickLine={false}
             axisLine={false}

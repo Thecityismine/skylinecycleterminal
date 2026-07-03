@@ -98,8 +98,8 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
   const stats = [
     { label: 'BTC Price',       value: fmtUSD(price), sub: 'Latest close',     color: '#F7F9FC'   },
     { label: 'Fair Value',      value: fmtUSD(fair),  sub: fmtPct(pctVsFair),  color: '#38BDF8'   },
-    { label: 'Floor (Ã—0.42)',   value: fmtUSD(floor), sub: fmtYrs(leadFloor),  color: '#818CF8'   },
-    { label: 'Ceiling (Ã—4.27)', value: fmtUSD(ceil),  sub: fmtYrs(leadCeil),   color: '#F472B6'   },
+    { label: 'Floor (×0.42)',   value: fmtUSD(floor), sub: fmtYrs(leadFloor),  color: '#818CF8'   },
+    { label: 'Ceiling (×4.27)', value: fmtUSD(ceil),  sub: fmtYrs(leadCeil),   color: '#F472B6'   },
   ];
 
   return (
@@ -129,7 +129,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
             Bitcoin Power Law
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            logâ‚â‚€(P) = 5.82 Ã— logâ‚â‚€(days) - 16.73 · Log scale{range !== 'All' ? ` · ${range}` : ''}
+            log₁₀(P) = 5.82 × log₁₀(days) − 16.73 · Log scale{range !== 'All' ? ` · ${range}` : ''}
           </p>
         </div>
 
@@ -285,9 +285,9 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             {[
               { color: 'rgba(247,249,252,0.9)', label: 'BTC Price'       },
-              { color: '#F472B6',              label: 'Ceiling (Ã—4.27)' },
+              { color: '#F472B6',              label: 'Ceiling (×4.27)' },
               { color: '#38BDF8',              label: 'Fair Value'       },
-              { color: '#818CF8',              label: 'Floor (Ã—0.42)'   },
+              { color: '#818CF8',              label: 'Floor (×0.42)'   },
             ].map((l) => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />

@@ -58,9 +58,9 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
   }
 
   const stats = [
-    { label: 'Current Ratio',  value: fmt(ratio),  sub: 'BTC price Ã· M2 (Ã—1000)',    color: '#F7F9FC' },
-    { label: '200 EMA',        value: fmt(ema200), sub: ratio != null && ema200 != null ? (ratio > ema200 ? 'â†‘ Price above' : 'â†“ Price below') : '—', color: '#35D07F' },
-    { label: '400 EMA',        value: fmt(ema400), sub: ratio != null && ema400 != null ? (ratio > ema400 ? 'â†‘ Price above' : 'â†“ Price below') : '—', color: '#FF5C5C' },
+    { label: 'Current Ratio',  value: fmt(ratio),  sub: 'BTC price ÷ M2 (×1000)',    color: '#F7F9FC' },
+    { label: '200 EMA',        value: fmt(ema200), sub: ratio != null && ema200 != null ? (ratio > ema200 ? '↑ Price above' : '↓ Price below') : '—', color: '#35D07F' },
+    { label: '400 EMA',        value: fmt(ema400), sub: ratio != null && ema400 != null ? (ratio > ema400 ? '↑ Price above' : '↓ Price below') : '—', color: '#FF5C5C' },
     { label: '52-Week SMA',    value: fmt(sma52),  sub: '1-year simple average',       color: '#E6B450' },
   ];
 
@@ -93,7 +93,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             BTC / M2 Money Supply
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Weekly BTC price Ã· US M2 · strips out monetary expansion{logScale ? ' · Log scale' : ''}
+            Weekly BTC price ÷ US M2 · strips out monetary expansion{logScale ? ' · Log scale' : ''}
           </p>
         </div>
 
