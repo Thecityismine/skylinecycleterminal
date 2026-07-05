@@ -65,6 +65,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Benner Cycle",      href: "/price/benner-cycle",    icon: History },
       { label: "Cycle Comparison",  href: "/price/cycle-comparison", icon: Layers },
       { label: "Cycle Timer",       href: "/cycle-timer",            icon: Timer },
+      { label: "Crypto Calendar",   href: "/price/calendar",         icon: CalendarDays },
     ],
   },
   {
