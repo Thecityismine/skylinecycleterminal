@@ -5,6 +5,7 @@ import { BTCValueFloorChart }     from '@/components/charts/BTCValueFloorChart';
 import { ValueFloorShareModal }   from '@/components/share/ValueFloorShareModal';
 import type { ValueFloorPoint }   from '@/lib/indicators/valueFloors';
 import type { ValueFloorSharePayload } from '@/components/share/ValueFloorShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Range = '4Y' | '8Y' | 'All';
 const RANGES: Range[] = ['4Y', '8Y', 'All'];
@@ -39,6 +40,7 @@ export function BTCValueFloorChartSection({
 }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>(VISIBLE_DEFAULTS);
   const [range, setRange]     = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
   // Filter by selected range — same data flows to both the chart and share card
   const filteredPoints = useMemo(() => {
@@ -48,12 +50,18 @@ export function BTCValueFloorChartSection({
     return points.filter((p) => p.ts >= cutoff);
   }, [points, range]);
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const zoomFiltered = useMemo(() => {
+    if (!zoomDomain) return filteredPoints;
+    return filteredPoints.filter((p) => p.ts >= zoomDomain.start && p.ts <= zoomDomain.end);
+  }, [filteredPoints, zoomDomain]);
+
   // Downsample the FILTERED points for share card performance
   const downsampled = useMemo(() => {
-    if (filteredPoints.length <= 1500) return filteredPoints;
-    const step = Math.floor(filteredPoints.length / 1500);
-    return filteredPoints.filter((_, i) => i % step === 0 || i === filteredPoints.length - 1);
-  }, [filteredPoints]);
+    if (zoomFiltered.length <= 1500) return zoomFiltered;
+    const step = Math.floor(zoomFiltered.length / 1500);
+    return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
+  }, [zoomFiltered]);
 
   const sharePayload: ValueFloorSharePayload = {
     points: downsampled,
@@ -108,7 +116,7 @@ export function BTCValueFloorChartSection({
         {RANGES.map((r) => (
           <button
             key={r}
-            onClick={() => setRange(r)}
+            onClick={() => { setRange(r); setZoomDomain(null); }}
             className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
               backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
@@ -136,6 +144,7 @@ export function BTCValueFloorChartSection({
               points={filteredPoints}
               range="all"
               onVisibleChange={setVisible}
+              onZoomChange={setZoomDomain}
             />
           )
         }

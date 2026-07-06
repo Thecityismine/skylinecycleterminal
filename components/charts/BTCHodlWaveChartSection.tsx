@@ -5,6 +5,7 @@ import { BTCHodlWaveChart }     from '@/components/charts/BTCHodlWaveChart';
 import { HodlWaveShareModal }   from '@/components/share/HodlWaveShareModal';
 import type { HodlWavePoint }   from '@/lib/indicators/exchangeReserve';
 import type { HodlWaveSharePayload } from '@/components/share/HodlWaveShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:      HodlWavePoint[];
@@ -30,13 +31,23 @@ export function BTCHodlWaveChartSection({
   const [show90d,      setShow90d]      = useState(true);
   const [showHalvings, setShowHalvings] = useState(true);
   const [showEvents,   setShowEvents]   = useState(true);
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
+
+  // Zoom-filter on top of the full series so the share card matches what's on screen
+  const zoomFiltered = useMemo(() => {
+    if (!zoomDomain) return points;
+    return points.filter((p) => {
+      const ts = new Date(p.time + 'T00:00:00').getTime();
+      return ts >= zoomDomain.start && ts <= zoomDomain.end;
+    });
+  }, [points, zoomDomain]);
 
   // Downsample to ~1500 points for share card performance
   const downsampled = useMemo(() => {
-    if (points.length <= 1500) return points;
-    const step = Math.floor(points.length / 1500);
-    return points.filter((_, i) => i % step === 0 || i === points.length - 1);
-  }, [points]);
+    if (zoomFiltered.length <= 1500) return zoomFiltered;
+    const step = Math.floor(zoomFiltered.length / 1500);
+    return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
+  }, [zoomFiltered]);
 
   const sharePayload: HodlWaveSharePayload = {
     points: downsampled,
@@ -107,6 +118,7 @@ export function BTCHodlWaveChartSection({
               onShow90dChange={setShow90d}
               onShowHalvingsChange={setShowHalvings}
               onShowEventsChange={setShowEvents}
+              onZoomChange={setZoomDomain}
             />
           )
         }

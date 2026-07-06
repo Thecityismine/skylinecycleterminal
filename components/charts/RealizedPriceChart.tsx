@@ -91,6 +91,7 @@ export function RealizedPriceChart({
   secondaryLabel = 'Avg Buy Price (Realized)',
   secondaryColor = '#E879F9',
   onPeriodChange,
+  onZoomChange,
   shareButton,
 }: {
   data: RealizedPricePoint[];
@@ -98,6 +99,7 @@ export function RealizedPriceChart({
   secondaryLabel?: string;
   secondaryColor?: string;
   onPeriodChange?: (period: string) => void;
+  onZoomChange?: (d: ZoomDomain<string> | null) => void;
   shareButton?: React.ReactNode;
 }) {
   const [period, setPeriod] = useState<string>('3Y');
@@ -105,6 +107,10 @@ export function RealizedPriceChart({
   const {
     domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
   } = useChartZoom<string>();
+
+  useEffect(() => {
+    onZoomChange?.(domain);
+  }, [domain, onZoomChange]);
 
   function handlePeriodChange(p: string) {
     setPeriod(p);

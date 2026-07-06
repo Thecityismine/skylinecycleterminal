@@ -6,6 +6,7 @@ import { CycleMasterShareModal }  from '@/components/share/CycleMasterShareModal
 import type { CycleMasterPoint }  from '@/lib/indicators/cycleMaster';
 import type { Range }             from '@/components/charts/CycleMasterChart';
 import type { CycleMasterSharePayload } from '@/components/share/CycleMasterShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 const DAYS: Record<Range, number> = { '4Y': 1460, '8Y': 2920, 'All': Infinity };
 
@@ -25,6 +26,7 @@ export function CycleMasterChartSection({
 }: Props) {
   const [range,    setRange]    = useState<Range>('All');
   const [logScale, setLogScale] = useState(true);
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
   const displayed = useMemo(() => {
     const days = DAYS[range];
@@ -33,8 +35,14 @@ export function CycleMasterChartSection({
     return data.filter(d => d.ts >= cutoff);
   }, [data, range]);
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const shareData = useMemo(() => {
+    if (!zoomDomain) return displayed;
+    return displayed.filter(d => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end);
+  }, [displayed, zoomDomain]);
+
   const sharePayload: CycleMasterSharePayload = {
-    data: displayed,
+    data: shareData,
     range,
     logScale,
     price,
@@ -68,6 +76,7 @@ export function CycleMasterChartSection({
         logScale
         onRangeChange={setRange}
         onLogChange={setLogScale}
+        onZoomChange={setZoomDomain}
       />
     </div>
   );

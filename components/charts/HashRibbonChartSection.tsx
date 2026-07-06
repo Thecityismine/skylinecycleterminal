@@ -5,6 +5,7 @@ import { HashRibbonChart } from '@/components/charts/HashRibbonChart';
 import type { HRPoint, Range } from '@/components/charts/HashRibbonChart';
 import { HashRibbonShareModal } from '@/components/share/HashRibbonShareModal';
 import type { HashRibbonSharePayload } from '@/components/share/HashRibbonShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
@@ -25,6 +26,7 @@ export function HashRibbonChartSection({
   currentPrice, currentMA30, currentMA60, currentRatio, dataSource,
 }: Props) {
   const [range, setRange] = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<string> | null>(null);
 
   const displayed = useMemo(() => {
     const days = DAYS[range];
@@ -33,8 +35,14 @@ export function HashRibbonChartSection({
     return data.filter(d => new Date(d.date + 'T00:00:00').getTime() >= cutoff);
   }, [data, range]);
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const shareData = useMemo(() => {
+    if (!zoomDomain) return displayed;
+    return displayed.filter(d => d.date >= zoomDomain.start && d.date <= zoomDomain.end);
+  }, [displayed, zoomDomain]);
+
   const sharePayload: HashRibbonSharePayload = {
-    data: displayed,
+    data: shareData,
     range,
     statusLabel,
     statusColor,
@@ -86,7 +94,7 @@ export function HashRibbonChartSection({
           Unable to load hash rate data — CoinMetrics API unreachable
         </div>
       ) : (
-        <HashRibbonChart data={data} onRangeChange={setRange} />
+        <HashRibbonChart data={data} onRangeChange={setRange} onZoomChange={setZoomDomain} />
       )}
     </div>
   );

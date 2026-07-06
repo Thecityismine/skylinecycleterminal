@@ -8,6 +8,7 @@ import { AltseasonShareModal } from '@/components/share/AltseasonShareModal';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { REGIMES } from '@/lib/indicators/altseasonIndex';
 import type { AltseasonRegime, SectorSummary, SignalDot } from '@/lib/indicators/altseasonIndex';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type ChartPoint = { time: string; ts: number; score: number; btcPrice: number | null };
 
@@ -74,6 +75,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AltseasonPage() {
   const [rangeIdx,       setRangeIdx]       = useState(2);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [zoomDomain,     setZoomDomain]     = useState<ZoomDomain<number> | null>(null);
 
   const { data, loading } = useApiData<ApiResponse>('/api/altseason');
 
@@ -231,7 +233,7 @@ export default function AltseasonPage() {
               {RANGES.map((r, i) => (
                 <button
                   key={r.label}
-                  onClick={() => setRangeIdx(i)}
+                  onClick={() => { setRangeIdx(i); setZoomDomain(null); }}
                   className="px-2.5 py-1 rounded text-xs font-medium border transition-all"
                   style={{
                     backgroundColor: rangeIdx === i ? 'var(--sct-secondary)' : 'transparent',
@@ -280,6 +282,7 @@ export default function AltseasonPage() {
               data={data.chartData}
               signalDots={data.signalDots}
               startTs={startTs}
+              onZoomChange={setZoomDomain}
             />
           ) : (
             <div className="h-full flex items-center justify-center" style={{ color: 'var(--sct-muted)' }}>
@@ -432,10 +435,12 @@ export default function AltseasonPage() {
           ethBtc:             data.ethBtc,
           altcoinsTracked:    data.altcoinsTracked,
           altcoinsBeatingBtc: data.altcoinsBeatingBtc,
-          chartData:          data.chartData,
+          chartData:          zoomDomain
+            ? data.chartData.filter((d) => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end)
+            : data.chartData,
           signalDots:         data.signalDots,
-          startTs,
-          rangeLabel:         RANGES[rangeIdx].label,
+          startTs:            zoomDomain ? zoomDomain.start : startTs,
+          rangeLabel:         zoomDomain ? 'Zoomed' : RANGES[rangeIdx].label,
           generatedAt:        new Date().toISOString(),
         }}
         onClose={() => setShowShareModal(false)}

@@ -5,6 +5,7 @@ import { StablecoinDominanceChart } from '@/components/charts/StablecoinDominanc
 import { StablecoinDominanceShareModal } from '@/components/share/StablecoinDominanceShareModal';
 import type { StablecoinDominancePoint } from '@/lib/indicators/stablecoinDominance';
 import type { StablecoinDominanceSharePayload } from '@/components/share/StablecoinDominanceShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Range = '6M' | '1Y' | '2Y' | '3Y' | 'All';
 
@@ -48,6 +49,7 @@ export function StablecoinDominanceChartSection({
   liquidityScore,
 }: Props) {
   const [range, setRange] = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
   const startTs = useMemo(() => {
     const entry = RANGES.find((r) => r.label === range);
@@ -59,8 +61,14 @@ export function StablecoinDominanceChartSection({
     [points, startTs],
   );
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const shareChartPoints = useMemo(() => {
+    if (!zoomDomain) return chartPoints;
+    return chartPoints.filter((p) => p.ts >= zoomDomain.start && p.ts <= zoomDomain.end);
+  }, [chartPoints, zoomDomain]);
+
   const sharePayload: StablecoinDominanceSharePayload = {
-    points:          chartPoints,
+    points:          shareChartPoints,
     dominance,
     ma30,
     ma90,
@@ -86,7 +94,7 @@ export function StablecoinDominanceChartSection({
             {RANGES.map(({ label }) => (
               <button
                 key={label}
-                onClick={() => setRange(label)}
+                onClick={() => { setRange(label); setZoomDomain(null); }}
                 className="px-2.5 py-1 text-xs font-medium transition-colors"
                 style={{
                   backgroundColor: range === label ? '#21262D' : 'transparent',
@@ -107,7 +115,7 @@ export function StablecoinDominanceChartSection({
         className="rounded-xl border p-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', height: 420 }}
       >
-        <StablecoinDominanceChart data={chartPoints} logBTC startTs={startTs} />
+        <StablecoinDominanceChart data={chartPoints} logBTC startTs={startTs} onZoomChange={setZoomDomain} />
       </div>
 
       <div className="flex items-center gap-4 mt-2 flex-wrap">

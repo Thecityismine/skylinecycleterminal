@@ -5,6 +5,7 @@ import { BTCBottomConfluenceChart }    from '@/components/charts/BTCBottomConflu
 import { BottomConfluenceShareModal }  from '@/components/share/BottomConfluenceShareModal';
 import type { BottomConfluencePoint, ConfluencePeriod } from '@/lib/indicators/bottomConfluence';
 import type { BottomConfluenceSharePayload } from '@/components/share/BottomConfluenceShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:          BottomConfluencePoint[];
@@ -32,13 +33,20 @@ export function BTCBottomConfluenceChartSection({
   btcClose, mvrv, hrRatio, priceTo2y,
 }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>(VISIBLE_DEFAULTS);
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
+
+  // Zoom-filter on top of the full series so the share card matches what's on screen
+  const zoomFiltered = useMemo(() => {
+    if (!zoomDomain) return points;
+    return points.filter((p) => p.ts >= zoomDomain.start && p.ts <= zoomDomain.end);
+  }, [points, zoomDomain]);
 
   // Downsample to ~1500 points for share card performance
   const downsampled = useMemo(() => {
-    if (points.length <= 1500) return points;
-    const step = Math.floor(points.length / 1500);
-    return points.filter((_, i) => i % step === 0 || i === points.length - 1);
-  }, [points]);
+    if (zoomFiltered.length <= 1500) return zoomFiltered;
+    const step = Math.floor(zoomFiltered.length / 1500);
+    return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
+  }, [zoomFiltered]);
 
   const sharePayload: BottomConfluenceSharePayload = {
     points: downsampled,
@@ -70,6 +78,7 @@ export function BTCBottomConfluenceChartSection({
           points={points}
           periods={periods}
           onVisibleChange={setVisible}
+          onZoomChange={setZoomDomain}
         />
       </div>
       <p className="text-[10px] mt-1.5" style={{ color: 'var(--sct-muted)' }}>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { BTC100WChart } from '@/components/charts/BTC100WChart';
 import type { VisibilityState } from '@/components/charts/BTC100WChart';
 import { BTC100WMAShareModal } from '@/components/share/BTC100WMAShareModal';
 import type { BTC100WMASharePayload } from '@/components/share/BTC100WMAShareCard';
 import type { WeeklyPoint, RegimeSegment, MATrendScore } from '@/lib/indicators/weeklyMA';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:        WeeklyPoint[];
@@ -33,14 +34,25 @@ export function BTC100WChartSection({
   const [visibility, setVisibility] = useState<VisibilityState>({
     show50: true, show100: true, show200: true, showShading: true,
   });
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<string> | null>(null);
 
   const handleVisibilityChange = useCallback((v: VisibilityState) => {
     setVisibility(v);
   }, []);
 
+  const sharePoints = useMemo(() => {
+    if (!zoomDomain) return points;
+    return points.filter((p) => p.time >= zoomDomain.start && p.time <= zoomDomain.end);
+  }, [points, zoomDomain]);
+
+  const shareRegimes = useMemo(() => {
+    if (!zoomDomain) return regimes;
+    return regimes.filter((r) => r.end >= zoomDomain.start && r.start <= zoomDomain.end);
+  }, [regimes, zoomDomain]);
+
   const sharePayload: BTC100WMASharePayload = {
-    data:          points,
-    regimes,
+    data:          sharePoints,
+    regimes:       shareRegimes,
     latestClose,
     latestMA100,
     latestMA50,
@@ -77,6 +89,7 @@ export function BTC100WChartSection({
         points={points}
         regimes={regimes}
         onVisibilityChange={handleVisibilityChange}
+        onZoomChange={setZoomDomain}
       />
     </>
   );

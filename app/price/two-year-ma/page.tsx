@@ -1,7 +1,6 @@
 import { fetchBTCDailyPrice } from "@/lib/api/coinmetrics";
 import { calculate2YearMA } from "@/lib/indicators/cycleHelpers";
-import { TwoYearMAChart } from "@/components/charts/TwoYearMAChart";
-import { TwoYearMAShareModal } from "@/components/share/TwoYearMAShareModal";
+import { TwoYearMAPageClient } from "@/components/charts/TwoYearMAPageClient";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
@@ -144,131 +143,97 @@ export default async function TwoYearMAPage() {
       </div>
 
       {/* Main chart */}
-      <div
-        className="rounded-xl border p-5"
-        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              BTC / USD vs 2-Year Moving Average — Log Scale
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Price below orange = historically best buy zone · Price above red = historically cycle top
-            </p>
-          </div>
-          <div className="flex items-center gap-4 flex-wrap">
-            {/* Legend */}
-            <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--sct-muted)' }}>
-              <span className="flex items-center gap-1.5">
-                <span className="w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.9)' }} />
-                BTC Price
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-6 h-0.5" style={{ backgroundColor: '#F7931A' }} />
-                2Y MA
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-6 h-px border-t-2 border-dashed" style={{ borderColor: '#FF5C5C' }} />
-                2Y MA ×5
-              </span>
-            </div>
-            {!fetchError && (
-              <TwoYearMAShareModal payload={{
-                data:        chartData,
-                latestPrice,
-                latestMA,
-                latestMA5,
-                multiplier,
-                zoneLabel:   zone.label,
-                zoneColor:   zone.color,
-                generatedAt: new Date().toISOString(),
-              }} />
-            )}
-          </div>
-        </div>
-
-        {fetchError ? (
+      {fetchError ? (
+        <div
+          className="rounded-xl border p-5"
+          style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+        >
           <div
             className="h-[480px] flex items-center justify-center rounded-lg border text-sm"
             style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
           >
             Unable to load price data — CoinMetrics API unreachable
           </div>
-        ) : (
-          <div className="h-[480px]">
-            <TwoYearMAChart data={chartData} />
-          </div>
-        )}
-
-        {/* Signal interpretation widget */}
-        {maWidget && (
-          <div className="mt-5 pt-5 border-t" style={{ borderColor: 'var(--sct-border)' }}>
-            {/* Zone badge + headline */}
-            <div className="flex items-center gap-2 mb-2.5">
-              <span
-                className="text-[11px] font-semibold px-2 py-0.5 rounded"
-                style={{ backgroundColor: maWidget.color + '25', color: maWidget.color }}
-              >
-                {maWidget.zoneLabel}
-              </span>
-              <span className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-                {maWidget.headline}
-              </span>
-            </div>
-
-            {/* Interpretation body */}
-            <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--sct-muted)' }}>
-              {maWidget.body}
-            </p>
-
-            {/* Zone bar */}
-            <div className="relative mb-1.5">
-              <div className="flex h-1.5 rounded-full overflow-hidden">
-                {/* 0–1× Accumulation */}
-                <div style={{ width: '16.7%', backgroundColor: '#3B82F6' }} />
-                {/* 1–2× Neutral */}
-                <div style={{ width: '16.7%', backgroundColor: '#35D07F' }} />
-                {/* 2–3.5× Elevated */}
-                <div style={{ width: '25.0%', backgroundColor: '#E6B450' }} />
-                {/* 3.5–5× High Risk */}
-                <div style={{ width: '25.0%', backgroundColor: '#F97316' }} />
-                {/* 5×+ Distribution */}
-                <div style={{ width: '16.6%', backgroundColor: '#FF5C5C' }} />
+        </div>
+      ) : (
+        <TwoYearMAPageClient
+          chartData={chartData}
+          latestPrice={latestPrice}
+          latestMA={latestMA}
+          latestMA5={latestMA5}
+          multiplier={multiplier}
+          zoneLabel={zone.label}
+          zoneColor={zone.color}
+        >
+          {/* Signal interpretation widget */}
+          {maWidget && (
+            <div className="mt-5 pt-5 border-t" style={{ borderColor: 'var(--sct-border)' }}>
+              {/* Zone badge + headline */}
+              <div className="flex items-center gap-2 mb-2.5">
+                <span
+                  className="text-[11px] font-semibold px-2 py-0.5 rounded"
+                  style={{ backgroundColor: maWidget.color + '25', color: maWidget.color }}
+                >
+                  {maWidget.zoneLabel}
+                </span>
+                <span className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
+                  {maWidget.headline}
+                </span>
               </div>
-              {/* Position marker */}
-              <div
-                className="absolute rounded-sm"
-                style={{
-                  top: '-3px', width: '3px', height: '12px',
-                  left: `${Math.min(Math.max(maWidget.barPos, 1), 99)}%`,
-                  transform: 'translateX(-50%)',
-                  backgroundColor: '#fff',
-                  boxShadow: `0 0 6px ${maWidget.color}`,
-                }}
-              />
-            </div>
-            <div
-              className="flex justify-between text-[9px] font-mono mb-4"
-              style={{ color: 'var(--sct-muted)' }}
-            >
-              <span>0×</span>
-              <span>1× 2YMA</span>
-              <span>3.5×</span>
-              <span>5× Top</span>
-              <span>6×+</span>
-            </div>
 
-            {/* Historical context note */}
-            <p
-              className="text-[11px] leading-relaxed px-2.5 py-1.5 rounded"
-              style={{ backgroundColor: maWidget.color + '12', color: maWidget.color }}
-            >
-              {maWidget.ctx}
-            </p>
-          </div>
-        )}
-      </div>
+              {/* Interpretation body */}
+              <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--sct-muted)' }}>
+                {maWidget.body}
+              </p>
+
+              {/* Zone bar */}
+              <div className="relative mb-1.5">
+                <div className="flex h-1.5 rounded-full overflow-hidden">
+                  {/* 0–1× Accumulation */}
+                  <div style={{ width: '16.7%', backgroundColor: '#3B82F6' }} />
+                  {/* 1–2× Neutral */}
+                  <div style={{ width: '16.7%', backgroundColor: '#35D07F' }} />
+                  {/* 2–3.5× Elevated */}
+                  <div style={{ width: '25.0%', backgroundColor: '#E6B450' }} />
+                  {/* 3.5–5× High Risk */}
+                  <div style={{ width: '25.0%', backgroundColor: '#F97316' }} />
+                  {/* 5×+ Distribution */}
+                  <div style={{ width: '16.6%', backgroundColor: '#FF5C5C' }} />
+                </div>
+                {/* Position marker */}
+                <div
+                  className="absolute rounded-sm"
+                  style={{
+                    top: '-3px', width: '3px', height: '12px',
+                    left: `${Math.min(Math.max(maWidget.barPos, 1), 99)}%`,
+                    transform: 'translateX(-50%)',
+                    backgroundColor: '#fff',
+                    boxShadow: `0 0 6px ${maWidget.color}`,
+                  }}
+                />
+              </div>
+              <div
+                className="flex justify-between text-[9px] font-mono mb-4"
+                style={{ color: 'var(--sct-muted)' }}
+              >
+                <span>0×</span>
+                <span>1× 2YMA</span>
+                <span>3.5×</span>
+                <span>5× Top</span>
+                <span>6×+</span>
+              </div>
+
+              {/* Historical context note */}
+              <p
+                className="text-[11px] leading-relaxed px-2.5 py-1.5 rounded"
+                style={{ backgroundColor: maWidget.color + '12', color: maWidget.color }}
+              >
+                {maWidget.ctx}
+              </p>
+            </div>
+          )}
+        </TwoYearMAPageClient>
+      )}
 
       {/* Insight panel */}
       <InsightPanel title="Indicator Logic">

@@ -8,6 +8,7 @@ import type { WeeklySMAData, WeeklySMAResult, Zone } from '@/lib/api/weeklySMA';
 import { ZONE_COLOR, ZONE_LABEL, ZONE_FILL } from '@/lib/api/weeklySMA';
 import { WeeklySMAShareModal } from '@/components/share/WeeklySMAShareModal';
 import type { WeeklySMASharePayload } from '@/components/share/WeeklySMAShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 const ASSETS = [
   { key: 'btc' as const, label: 'Bitcoin',  ticker: 'BTC', color: '#F7931A' },
@@ -77,6 +78,7 @@ export default function WeeklySMAPage() {
   const [activeAsset, setActiveAsset] = useState<'btc' | 'eth'>('btc');
   const [rangeIdx,    setRangeIdx]    = useState(3); // 'All' default
   const [logScale,    setLog]         = useState(true);
+  const [zoomDomain,  setZoomDomain]  = useState<ZoomDomain<number> | null>(null);
 
   const { data, loading } = useApiData<WeeklySMAData>('/api/price/weekly-sma');
 
@@ -96,6 +98,19 @@ export default function WeeklySMAPage() {
     return { filteredPoints, filteredSegments };
   }, [result, rangeIdx]);
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const sharePoints = useMemo(() => {
+    if (!zoomDomain) return filteredPoints;
+    return filteredPoints.filter((p) => p.ts >= zoomDomain.start && p.ts <= zoomDomain.end);
+  }, [filteredPoints, zoomDomain]);
+
+  const shareSegments = useMemo(() => {
+    if (!zoomDomain) return filteredSegments;
+    return filteredSegments
+      .filter((s) => s.x2 >= zoomDomain.start && s.x1 <= zoomDomain.end)
+      .map((s) => ({ ...s, x1: Math.max(s.x1, zoomDomain.start), x2: Math.min(s.x2, zoomDomain.end) }));
+  }, [filteredSegments, zoomDomain]);
+
   const cur  = result?.current;
   const zone = (cur?.zone ?? 'none') as Zone;
 
@@ -114,7 +129,7 @@ export default function WeeklySMAPage() {
             asset={a}
             result={data ? data[a.key] : null}
             active={activeAsset === a.key}
-            onClick={() => setActiveAsset(a.key)}
+            onClick={() => { setActiveAsset(a.key); setZoomDomain(null); }}
           />
         ))}
       </div>
@@ -243,7 +258,7 @@ export default function WeeklySMAPage() {
               {RANGES.map((r, i) => (
                 <button
                   key={r.label}
-                  onClick={() => setRangeIdx(i)}
+                  onClick={() => { setRangeIdx(i); setZoomDomain(null); }}
                   className="px-2.5 py-1 rounded text-xs font-medium border transition-all"
                   style={{
                     backgroundColor: rangeIdx === i ? 'var(--sct-secondary)' : 'transparent',
@@ -272,13 +287,13 @@ export default function WeeklySMAPage() {
             {/* Share card */}
             {!loading && filteredPoints.length > 0 && (
               <WeeklySMAShareModal payload={{
-                points:       filteredPoints,
-                segments:     filteredSegments,
+                points:       sharePoints,
+                segments:     shareSegments,
                 asset:        activeAsset,
                 assetLabel:   assetCfg.label,
                 assetColor:   assetCfg.color,
                 logScale,
-                rangeLabel:   RANGES[rangeIdx].label,
+                rangeLabel:   zoomDomain ? 'Zoomed' : RANGES[rangeIdx].label,
                 currentPrice: cur?.price ?? null,
                 ma50w:        cur?.ma50w ?? null,
                 ma200w:       cur?.ma200w ?? null,
@@ -300,6 +315,7 @@ export default function WeeklySMAPage() {
               segments={filteredSegments}
               logScale={logScale}
               asset={activeAsset}
+              onZoomChange={setZoomDomain}
             />
           ) : (
             <div className="h-full flex items-center justify-center" style={{ color: 'var(--sct-muted)' }}>

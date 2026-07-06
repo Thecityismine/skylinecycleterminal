@@ -220,18 +220,13 @@ export function LiquidityRegimeSection({ chartData, zones, current }: Props) {
     reset();
   }, [reset]);
 
-  const sharePayload: LiquidityRegimeSharePayload = useMemo(() => {
-    const last2Y = chartData.filter(d => {
-      const ms = new Date(d.date + 'T00:00:00').getTime();
-      return ms >= Date.now() - 730 * 86_400_000;
-    });
-    return {
-      chartData:   last2Y,
-      zones,
-      current,
-      generatedAt: new Date().toISOString(),
-    };
-  }, [chartData, zones, current]);
+  // Share the exact range/zoom currently on screen, not a hardcoded window
+  const sharePayload: LiquidityRegimeSharePayload = useMemo(() => ({
+    chartData:   displayedData,
+    zones:       displayedZones,
+    current,
+    generatedAt: new Date().toISOString(),
+  }), [displayedData, displayedZones, current]);
 
   // Suppress unused import warning — REGIME_FILL is used via prop drilling to charts
   void REGIME_FILL;

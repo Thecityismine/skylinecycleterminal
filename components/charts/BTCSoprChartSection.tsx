@@ -5,6 +5,7 @@ import { BTCSoprChart }    from '@/components/charts/BTCSoprChart';
 import { SoprShareModal }  from '@/components/share/SoprShareModal';
 import type { SoprPoint }  from '@/lib/indicators/sopr';
 import type { SoprSharePayload } from '@/components/share/SoprShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Range = '4Y' | '8Y' | 'All';
 const RANGES: Range[] = ['4Y', '8Y', 'All'];
@@ -31,6 +32,7 @@ export function BTCSoprChartSection({
   const [showSma90,   setShowSma90]   = useState(true);
   const [showShading, setShowShading] = useState(true);
   const [range, setRange]             = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<string> | null>(null);
 
   const filteredPoints = useMemo(() => {
     const days = RANGE_DAYS[range];
@@ -39,12 +41,18 @@ export function BTCSoprChartSection({
     return points.filter((p) => p.time >= cutoff);
   }, [points, range]);
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const zoomFiltered = useMemo(() => {
+    if (!zoomDomain) return filteredPoints;
+    return filteredPoints.filter((p) => p.time >= zoomDomain.start && p.time <= zoomDomain.end);
+  }, [filteredPoints, zoomDomain]);
+
   // Downsample to ~1500 points for share card performance
   const downsampled = useMemo(() => {
-    if (filteredPoints.length <= 1500) return filteredPoints;
-    const step = Math.floor(filteredPoints.length / 1500);
-    return filteredPoints.filter((_, i) => i % step === 0 || i === filteredPoints.length - 1);
-  }, [filteredPoints]);
+    if (zoomFiltered.length <= 1500) return zoomFiltered;
+    const step = Math.floor(zoomFiltered.length / 1500);
+    return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
+  }, [zoomFiltered]);
 
   const sharePayload: SoprSharePayload = {
     points: downsampled,
@@ -86,7 +94,7 @@ export function BTCSoprChartSection({
         {RANGES.map((r) => (
           <button
             key={r}
-            onClick={() => setRange(r)}
+            onClick={() => { setRange(r); setZoomDomain(null); }}
             className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
               backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
@@ -107,6 +115,7 @@ export function BTCSoprChartSection({
         onShowSma30Change={setShowSma30}
         onShowSma90Change={setShowSma90}
         onShowShadingChange={setShowShading}
+        onZoomChange={setZoomDomain}
       />
     </div>
   );

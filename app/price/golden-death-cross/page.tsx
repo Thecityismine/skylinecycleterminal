@@ -9,6 +9,7 @@ import { GoldenDeathCrossShareModal } from '@/components/share/GoldenDeathCrossS
 import { REGIMES } from '@/lib/indicators/goldenDeathCross';
 import { useApiData } from '@/lib/hooks/useApiData';
 import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 // ── API response type ─────────────────────────────────────────────────────────
 type ChartPoint = {
@@ -230,6 +231,7 @@ export default function GoldenDeathCrossPage() {
   const [logScale,  setLogScale]  = useState(true);
   const [showHalv,  setShowHalv]  = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
   const rangeMs = useMemo(() => {
     const r = RANGES.find((x) => x.key === range)!;
@@ -280,8 +282,11 @@ export default function GoldenDeathCrossPage() {
   const isGolden    = (current.regime as string).startsWith('golden');
 
   // ── Share payload ─────────────────────────────────────────────────────────
+  const rangeFilteredPoints = chartPoints.filter((p: ChartPoint) => p.ts >= startTs);
   const sharePayload = {
-    chartPoints:    chartPoints.filter((p: ChartPoint) => p.ts >= startTs),
+    chartPoints:    zoomDomain
+      ? rangeFilteredPoints.filter((p: ChartPoint) => p.ts >= zoomDomain.start && p.ts <= zoomDomain.end)
+      : rangeFilteredPoints,
     crossEvents,
     startTs,
     price:          current.price,
@@ -346,8 +351,8 @@ export default function GoldenDeathCrossPage() {
         <div className="flex flex-wrap items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid var(--sct-border)' }}>
           {/* Timeframe toggle */}
           <div className="flex items-center gap-1 rounded p-0.5" style={{ backgroundColor: 'var(--sct-panel)', border: '1px solid var(--sct-border)' }}>
-            <ToggleButton active={timeframe === 'daily'}  onClick={() => setTimeframe('daily')}  label="Daily 50D/200D" />
-            <ToggleButton active={timeframe === 'weekly'} onClick={() => setTimeframe('weekly')} label="Weekly 10W/40W" />
+            <ToggleButton active={timeframe === 'daily'}  onClick={() => { setTimeframe('daily');  setZoomDomain(null); }}  label="Daily 50D/200D" />
+            <ToggleButton active={timeframe === 'weekly'} onClick={() => { setTimeframe('weekly'); setZoomDomain(null); }} label="Weekly 10W/40W" />
           </div>
 
           {/* Legend */}
@@ -379,7 +384,7 @@ export default function GoldenDeathCrossPage() {
           {/* Range buttons */}
           <div className="flex items-center gap-1">
             {RANGES.map((r) => (
-              <RangeButton key={r.key} label={r.label} active={range === r.key} onClick={() => setRange(r.key)} />
+              <RangeButton key={r.key} label={r.label} active={range === r.key} onClick={() => { setRange(r.key); setZoomDomain(null); }} />
             ))}
           </div>
 
@@ -445,6 +450,7 @@ export default function GoldenDeathCrossPage() {
             startTs={startTs}
             showHalvings={showHalv}
             regime={current.regime}
+            onZoomChange={setZoomDomain}
           />
         </div>
 

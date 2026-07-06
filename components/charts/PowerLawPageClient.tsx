@@ -5,6 +5,7 @@ import { PowerLawChart }        from '@/components/charts/PowerLawChart';
 import { PowerLawShareModal }   from '@/components/share/PowerLawShareModal';
 import type { PowerLawPoint }   from '@/lib/indicators/powerLaw';
 import type { PowerLawSharePayload } from '@/components/share/PowerLawShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Range = '2Y' | '4Y' | 'All';
 const RANGES: Range[] = ['All', '4Y', '2Y'];
@@ -30,6 +31,7 @@ export function PowerLawPageClient({
   zoneLabel, zoneColor,
 }: Props) {
   const [range, setRange] = useState<Range>('All');
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
   const filtered = useMemo(() => {
     const days = RANGE_DAYS[range];
@@ -38,8 +40,14 @@ export function PowerLawPageClient({
     return data.filter(d => d.ts >= cutoff);
   }, [data, range]);
 
+  // Zoom-filter on top of the range-filter so the share card matches what's on screen
+  const shareData = useMemo(() => {
+    if (!zoomDomain) return filtered;
+    return filtered.filter(d => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end);
+  }, [filtered, zoomDomain]);
+
   const sharePayload: PowerLawSharePayload = {
-    data: filtered,
+    data: shareData,
     range,
     price,
     fair,
@@ -77,7 +85,7 @@ export function PowerLawPageClient({
             {RANGES.map(r => (
               <button
                 key={r}
-                onClick={() => setRange(r)}
+                onClick={() => { setRange(r); setZoomDomain(null); }}
                 className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
                 style={{
                   backgroundColor: range === r ? 'var(--sct-border)' : 'transparent',
@@ -113,7 +121,7 @@ export function PowerLawPageClient({
 
       {/* Chart */}
       <div className="relative h-[480px]">
-        <PowerLawChart data={filtered} />
+        <PowerLawChart data={filtered} onZoomChange={setZoomDomain} />
       </div>
     </div>
   );

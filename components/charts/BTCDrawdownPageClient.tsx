@@ -5,6 +5,7 @@ import { BTCDrawdownChart }  from '@/components/charts/BTCDrawdownChart';
 import type { DrawdownPoint } from '@/lib/indicators/drawdownFromATH';
 import { DrawdownShareModal } from '@/components/share/DrawdownShareModal';
 import type { DrawdownSharePayload } from '@/components/share/DrawdownShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Timeframe = 'All' | '4Y' | '2Y';
 const TIMEFRAMES: Timeframe[] = ['All', '4Y', '2Y'];
@@ -31,6 +32,7 @@ export function BTCDrawdownPageClient({
   const [timeframe,    setTimeframe]    = useState<Timeframe>('All');
   const [showHalvings, setShowHalvings] = useState(true);
   const [showCycles,   setShowCycles]   = useState(true);
+  const [zoomDomain,   setZoomDomain]   = useState<ZoomDomain<number> | null>(null);
 
   const displayed = useMemo(() => {
     const days = TF_DAYS[timeframe];
@@ -39,8 +41,14 @@ export function BTCDrawdownPageClient({
     return data.filter(d => d.ts >= cutoff);
   }, [data, timeframe]);
 
+  // Zoom-filter on top of the timeframe-filter so the share card matches what's on screen
+  const shareData = useMemo(() => {
+    if (!zoomDomain) return displayed;
+    return displayed.filter(d => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end);
+  }, [displayed, zoomDomain]);
+
   const sharePayload: DrawdownSharePayload = {
-    data: displayed,
+    data: shareData,
     timeframe,
     showHalvings,
     showCycles,
@@ -90,7 +98,7 @@ export function BTCDrawdownPageClient({
           {TIMEFRAMES.map(tf => (
             <button
               key={tf}
-              onClick={() => setTimeframe(tf)}
+              onClick={() => { setTimeframe(tf); setZoomDomain(null); }}
               className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
               style={{
                 backgroundColor: timeframe === tf ? 'var(--sct-border)' : 'transparent',
@@ -131,6 +139,7 @@ export function BTCDrawdownPageClient({
           data={displayed}
           showHalvings={showHalvings}
           showCycles={showCycles}
+          onZoomChange={setZoomDomain}
         />
       </div>
     </div>

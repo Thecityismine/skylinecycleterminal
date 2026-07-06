@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { NUPLChart } from '@/components/charts/NUPLChart';
 import { NUPLShareModal } from '@/components/share/NUPLShareModal';
 import type { NUPLPoint } from '@/lib/indicators/nupl';
 import type { NUPLSharePayload } from '@/components/share/NUPLShareCard';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 type Props = {
   points:     NUPLPoint[];
@@ -17,11 +18,19 @@ type Props = {
 };
 
 export function NUPLChartSection({ points, nupl, price, ma730, zoneLabel, zoneColor, zone }: Props) {
+  const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
+
+  // Zoom-filter on top of the full series so the share card matches what's on screen
+  const zoomFiltered = useMemo(() => {
+    if (!zoomDomain) return points;
+    return points.filter((p) => p.ts >= zoomDomain.start && p.ts <= zoomDomain.end);
+  }, [points, zoomDomain]);
+
   const downsampled = useMemo(() => {
-    if (points.length <= 1500) return points;
-    const step = Math.floor(points.length / 1500);
-    return points.filter((_, i) => i % step === 0 || i === points.length - 1);
-  }, [points]);
+    if (zoomFiltered.length <= 1500) return zoomFiltered;
+    const step = Math.floor(zoomFiltered.length / 1500);
+    return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
+  }, [zoomFiltered]);
 
   const sharePayload: NUPLSharePayload = {
     points: downsampled,
@@ -46,7 +55,7 @@ export function NUPLChartSection({ points, nupl, price, ma730, zoneLabel, zoneCo
         className="rounded-xl border p-4"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', height: 420 }}
       >
-        <NUPLChart data={points} />
+        <NUPLChart data={points} onZoomChange={setZoomDomain} />
       </div>
       <p className="text-[10px] mt-1.5" style={{ color: 'var(--sct-muted)' }}>
         Top panel: BTC price (log scale). Bottom panel: NUPL using 730-day MA as realized price proxy. Shaded zones indicate historical sentiment regions from Capitulation to Euphoria.
