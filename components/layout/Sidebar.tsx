@@ -132,6 +132,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "DXY Dollar Index", href: "/macro/dxy",            icon: TrendingDown },
       { label: "Precious Metals",  href: "/macro/metals",         icon: CircleDollarSign },
       { label: "Liquidity Regime", href: "/macro/liquidity-regime", icon: Radar },
+      { label: "GLI Liquidity Lag", href: "/macro/gli",              icon: Timer },
       { label: "10Y Yield",        href: "/macro?chart=yield",   icon: LineChart,  exact: true },
     ],
   },
