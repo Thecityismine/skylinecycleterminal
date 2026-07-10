@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { LayoutShell } from "@/components/layout/LayoutShell";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,11 +26,8 @@ export default function RootLayout({
       className={`dark ${inter.variable}`}
       suppressHydrationWarning
     >
-      <body
-        className="h-screen overflow-hidden"
-        style={{ backgroundColor: "var(--sct-bg)" }}
-      >
-        <LayoutShell>{children}</LayoutShell>
+      <body style={{ backgroundColor: "var(--sct-bg)" }}>
+        {children}
       </body>
     </html>
   );

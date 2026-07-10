@@ -1,6 +1,8 @@
 "use client";
 
-import { Menu } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { Menu, ChevronDown, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiData } from '@/lib/hooks/useApiData';
 import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
@@ -27,9 +29,17 @@ function fmtChange(n: number): string {
   return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
 }
 
-export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+export function Header({ onMenuClick, email }: { onMenuClick?: () => void; email?: string | null }) {
   const { data: market } = useApiData<MarketSnapshot>('/api/market');
   const { data: cycle }  = useApiData<CycleScoreResult>('/api/cycle');
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleSignOut = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+    router.refresh();
+  }, [router]);
 
   const tickers = [
     {
@@ -136,6 +146,39 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             {market ? 'Live' : 'Connecting…'}
           </span>
         </div>
+
+        {/* Account menu */}
+        {email && (
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors"
+              style={{ color: 'var(--sct-secondary)' }}
+            >
+              <span className="hidden md:inline text-xs font-mono max-w-[140px] truncate">{email}</span>
+              <ChevronDown size={14} />
+            </button>
+
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                <div
+                  className="absolute right-0 top-full mt-2 z-50 rounded-md border shadow-xl py-1 min-w-[160px]"
+                  style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+                >
+                  <button
+                    onClick={() => void handleSignOut()}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-left transition-colors"
+                    style={{ color: 'var(--sct-muted)' }}
+                  >
+                    <LogOut size={13} />
+                    Sign out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

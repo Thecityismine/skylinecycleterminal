@@ -52,7 +52,7 @@ type NavSection = {
 };
 
 const nav: (NavItem | NavSection)[] = [
-  { label: "Overview", href: "/", icon: LayoutDashboard, exact: true },
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true },
   {
     section: "CYCLE",
     items: [
@@ -171,12 +171,9 @@ function NavLink({
   onClick?: () => void;
 }) {
   const hrefBase = item.href.split("?")[0].split("#")[0];
-  const active =
-    hrefBase === "/"
-      ? pathname === "/"
-      : item.exact
-      ? pathname === hrefBase
-      : pathname === hrefBase || pathname.startsWith(hrefBase + "/");
+  const active = item.exact
+    ? pathname === hrefBase
+    : pathname === hrefBase || pathname.startsWith(hrefBase + "/");
 
   return (
     <Link

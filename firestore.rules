@@ -2,12 +2,11 @@ rules_version = '2';
 
 // Skyline Cycle Terminal — Firestore Security Rules
 //
-// Architecture: No user auth. Firestore is used purely as a read-through
-// cache for public market data (prices, on-chain metrics, macro data).
-// Vercel API routes write to the cache once per day using the client SDK.
-// The browser reads from the cache to avoid hitting external API rate limits.
-//
-// Data classification: entirely public market data — no PII, no user data.
+// Architecture: Firestore serves two purposes:
+//   1. A read-through cache for public market data (prices, on-chain metrics, macro data).
+//      Vercel API routes write to the cache once per day using the client SDK; the browser
+//      reads from it to avoid hitting external API rate limits. No PII, no user data.
+//   2. Subscriber entitlement records (users/{uid}) — server-only, see below.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -18,6 +17,15 @@ service cloud.firestore {
     match /cache/{document=**} {
       allow read: if true;   // Browser reads cached market data
       allow write: if true;  // Vercel API routes (client SDK) write daily snapshots
+    }
+
+    // ── Subscriber entitlement records ───────────────────────────────────────
+    // Written only by server-side code (firebase-admin, which bypasses rules
+    // entirely) — via webhooks and the auth session route. The client SDK never
+    // reads or writes this collection directly; entitlement is only ever
+    // obtained server-side through the app's requireAccess() DAL.
+    match /users/{uid} {
+      allow read, write: if false;
     }
 
     // ── Block all other paths ────────────────────────────────────────────────

@@ -1,281 +1,200 @@
-﻿"use client";
+import Link from "next/link";
+import {
+  Activity, Waves, Radar, ArrowLeftRight, Layers, LineChart,
+  Check, ArrowRight,
+} from "lucide-react";
 
-import { useApiData } from '@/lib/hooks/useApiData';
-import { PageHeader } from '@/components/dashboard/PageHeader';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
-import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
-import { BTCMiniChart } from '@/components/charts/BTCMiniChart';
-import type { CycleScoreResult, ScoreZone } from '@/lib/indicators/skylineScore';
+const FEATURES = [
+  {
+    icon: Activity,
+    title: "Skyline Cycle Score",
+    desc: "A single 0–100 read on where BTC sits in the cycle, blending MVRV, Fear & Greed, Pi Cycle, and moving-average structure.",
+  },
+  {
+    icon: LineChart,
+    title: "BTC vs GLI Liquidity Lag",
+    desc: "Bitcoin price against a composite global liquidity index, shifted forward by a configurable lag — with a live lag optimizer.",
+  },
+  {
+    icon: Radar,
+    title: "Liquidity Regime Matrix",
+    desc: "Fed balance sheet, DXY, real yields, and stablecoin supply combined into one macro regime read for BTC.",
+  },
+  {
+    icon: ArrowLeftRight,
+    title: "ETF Flows & Dominance",
+    desc: "Daily spot ETF flow tracking alongside BTC and altcoin dominance shifts across the market.",
+  },
+  {
+    icon: Layers,
+    title: "Full On-Chain Suite",
+    desc: "SOPR, NUPL, HODL waves, reserve risk, realized price, and more — the on-chain signals that matter, in one place.",
+  },
+  {
+    icon: Waves,
+    title: "Halving & Seasonality Models",
+    desc: "Historical halving-window overlays, four-year cycle comparison, and monthly seasonality heatmaps.",
+  },
+];
 
-type MarketSnapshot = {
-  btcPrice: number;
-  btcChange24h: number;
-  btcMarketCap: number;
-  ethPrice: number;
-  ethChange24h: number;
-  btcDominance: number;
-  totalMarketCap: number;
-  fearGreedValue: number;
-  fearGreedLabel: string;
-};
+const INCLUDED = [
+  "Every chart and indicator on the terminal",
+  "Skyline Cycle Score & macro liquidity models",
+  "Full on-chain, price, and market-structure suite",
+  "Shareable chart export cards",
+  "New charts and models added over time",
+];
 
-type MacroData = { macroScore: number };
-type PriceHistory = { prices: Array<{ time: string; price: number }> };
-
-function fmtUSD(n: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
-}
-
-function fmtChange(n: number): string {
-  return `${n >= 0 ? '▲' : '▼'} ${Math.abs(n).toFixed(2)}%`;
-}
-
-const ZONE_REGIME: Record<ScoreZone, 'accumulate' | 'hold' | 'caution' | 'distribution'> = {
-  accumulate:   'accumulate',
-  build:        'hold',
-  caution:      'caution',
-  distribution: 'distribution',
-};
-
-function marketRead(cycle: CycleScoreResult | null, market: MarketSnapshot | null): string {
-  if (!cycle || !market) return 'Loading market context…';
-  const { zone, score, indicators } = cycle;
-  const fg = indicators.find((i) => i.name === 'Fear & Greed');
-  const mvrv = indicators.find((i) => i.name === 'MVRV Ratio');
-
-  if (zone === 'accumulate')
-    return `Score ${score}/100 — deep value territory. ${mvrv ? `MVRV at ${mvrv.rawLabel}` : ''} suggests the market is trading below realized value. Historically the strongest long-term entry zone.`;
-  if (zone === 'build')
-    return `Score ${score}/100 — healthy expansion. Market is between key thresholds. ${fg ? `Fear & Greed at ${fg.rawValue}.` : ''} Build positions on pullbacks to key MAs.`;
-  if (zone === 'caution')
-    return `Score ${score}/100 — elevated cycle risk. Begin reducing exposure in tranches. Watch Pi Cycle and MVRV for further deterioration.`;
-  return `Score ${score}/100 — extreme cycle risk. ${fg ? `Sentiment at ${fg.rawValue} (${fg.rawLabel}).` : ''} Historically aligned with cycle top conditions. Protect gains.`;
-}
-
-export default function OverviewPage() {
-  const { data: market, loading: mktLoading } = useApiData<MarketSnapshot>('/api/market');
-  const { data: cycle,  loading: cycLoading  } = useApiData<CycleScoreResult>('/api/cycle');
-  const { data: macro  }                        = useApiData<MacroData>('/api/macro');
-  const { data: priceHistory }                  = useApiData<PriceHistory>('/api/price');
-
-  const loading = mktLoading || cycLoading;
-  const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
-
-  // Derived sub-scores — average only available indicators in each group
-  const onChainGroup = ['MVRV Ratio', 'Puell Multiple', 'NVT Signal', 'Active Addresses', 'Stablecoin Supply', 'Hash Rate Ribbon'];
-  const onChainInds  = cycle?.indicators.filter((i) => onChainGroup.includes(i.name) && i.available) ?? [];
-  const onChainScore = onChainInds.length > 0
-    ? Math.round(onChainInds.reduce((s, i) => s + i.score, 0) / onChainInds.length)
-    : null;
-
-  const priceTrendGroup = ['Pi Cycle Top', '2Y MA Multiplier', 'Log Regression'];
-  const priceTrendInds  = cycle?.indicators.filter((i) => priceTrendGroup.includes(i.name) && i.available) ?? [];
-  const priceTrendScore = priceTrendInds.length > 0
-    ? Math.round(priceTrendInds.reduce((s, i) => s + i.score, 0) / priceTrendInds.length)
-    : null;
-
-  const sentimentScore = cycle?.indicators.find((i) => i.name === 'Fear & Greed')?.score ?? null;
-
-  function subScoreColor(s: number | null): string {
-    if (s == null) return 'var(--sct-muted)';
-    if (s < 25) return '#3B82F6';
-    if (s < 50) return '#35D07F';
-    if (s < 75) return '#E6B450';
-    return '#FF5C5C';
-  }
-
+export default function LandingPage() {
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8">
-      <PageHeader
-        title="Overview"
-        subtitle="Bitcoin & Ethereum macro cycle dashboard"
-        regime={regime}
-      />
-
-      {/* Row 1 — Key stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard
-          label="Bitcoin"
-          value={market ? fmtUSD(market.btcPrice) : '$—'}
-          sub={market ? fmtChange(market.btcChange24h) : 'Loading…'}
-          trend={market ? (market.btcChange24h >= 0 ? 'up' : 'down') : undefined}
-          accent="var(--sct-btc)"
-          freshness={market ? 'live' : 'cached'}
-          source="CoinGecko"
+    <div style={{ backgroundColor: "var(--sct-bg)" }}>
+      {/* Nav */}
+      <header className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/skyline-full.png"
+          alt="Skyline Cycle Terminal"
+          style={{ width: 160, height: "auto", filter: "invert(1) brightness(1.8)", opacity: 0.92 }}
         />
-        <StatCard
-          label="Ethereum"
-          value={market ? fmtUSD(market.ethPrice) : '$—'}
-          sub={market ? fmtChange(market.ethChange24h) : 'Loading…'}
-          trend={market ? (market.ethChange24h >= 0 ? 'up' : 'down') : undefined}
-          accent="var(--sct-eth)"
-          freshness={market ? 'live' : 'cached'}
-          source="CoinGecko"
-        />
-        <StatCard
-          label="Fear & Greed"
-          value={market ? String(market.fearGreedValue) : '—'}
-          sub={market ? market.fearGreedLabel : 'Loading…'}
-          accent={
-            market
-              ? market.fearGreedValue < 30 ? '#3B82F6'
-              : market.fearGreedValue < 55 ? '#35D07F'
-              : market.fearGreedValue < 75 ? '#E6B450'
-              : '#FF5C5C'
-              : 'var(--sct-muted)'
-          }
-          freshness="daily"
-          source="Alternative.me"
-        />
-        <StatCard
-          label="BTC Dominance"
-          value={market ? `${market.btcDominance.toFixed(1)}%` : '—%'}
-          sub={market ? `Total mkt cap $${(market.totalMarketCap / 1e12).toFixed(2)}T` : 'Loading…'}
-          accent="var(--sct-secondary)"
-          freshness={market ? 'live' : 'cached'}
-          source="CoinGecko"
-        />
-      </div>
-
-      {/* Row 2 — Cycle score + market read */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        {/* Score gauge */}
-        <div
-          className="lg:col-span-2 rounded-xl border p-6 lg:p-8 flex flex-col items-center justify-center gap-5 min-h-[220px]"
-          style={{
-            backgroundColor: 'var(--sct-card)',
-            borderColor: cycle ? cycle.zoneColor + '40' : 'var(--sct-border)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-            transition: 'border-color 0.6s ease',
-          }}
-        >
-          <p className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>
-            Skyline Cycle Score
-          </p>
-
-          <div
-            className="text-7xl font-mono font-bold transition-all duration-700"
-            style={{ color: cycle ? cycle.zoneColor : 'var(--sct-muted)' }}
+        <nav className="flex items-center gap-6">
+          <a href="#features" className="hidden sm:inline text-sm" style={{ color: "var(--sct-secondary)" }}>
+            Features
+          </a>
+          <a href="#pricing" className="hidden sm:inline text-sm" style={{ color: "var(--sct-secondary)" }}>
+            Pricing
+          </a>
+          <Link
+            href="/login"
+            className="text-sm font-medium px-4 py-2 rounded-md border transition-colors"
+            style={{ borderColor: "var(--sct-border)", color: "var(--sct-text)" }}
           >
-            {cycle ? cycle.score : '—'}
-          </div>
+            Login
+          </Link>
+        </nav>
+      </header>
 
-          {cycle && (
-            <span
-              className="text-sm font-medium tracking-wider uppercase"
-              style={{ color: cycle.zoneColor }}
-            >
-              {cycle.zoneLabel}
-            </span>
-          )}
-
-          {/* Progress bar */}
-          <div className="w-full max-w-sm">
-            <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--sct-border)' }}>
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: cycle ? `${cycle.score}%` : '0%',
-                  backgroundColor: cycle ? cycle.zoneColor : 'var(--sct-blue)',
-                }}
-              />
-            </div>
-            <div className="flex justify-between mt-1.5 text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-              <span style={{ color: '#3B82F6' }}>Accumulate</span>
-              <span style={{ color: '#35D07F' }}>Build</span>
-              <span style={{ color: '#E6B450' }}>Caution</span>
-              <span style={{ color: '#FF5C5C' }}>Distribution</span>
-            </div>
-          </div>
-
-          {!cycle && (
-            <p className="text-sm text-center" style={{ color: 'var(--sct-muted)' }}>
-              Computing score…
-            </p>
-          )}
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-6 pt-16 pb-24 text-center">
+        <p
+          className="inline-block text-[11px] font-medium tracking-widest uppercase px-3 py-1 rounded-full border mb-6"
+          style={{ borderColor: "var(--sct-border)", color: "var(--sct-btc)" }}
+        >
+          Bitcoin &amp; Ethereum Macro Cycle Intelligence
+        </p>
+        <h1
+          className="text-4xl sm:text-5xl font-semibold tracking-tight mb-5"
+          style={{ color: "var(--sct-text)" }}
+        >
+          Institutional-grade cycle analytics,{" "}
+          <span style={{ color: "var(--sct-btc)" }}>without the guesswork.</span>
+        </h1>
+        <p className="text-base sm:text-lg max-w-2xl mx-auto mb-10" style={{ color: "var(--sct-secondary)" }}>
+          Skyline Cycle Terminal blends on-chain data, macro liquidity, and price structure into
+          one dashboard — so you can read where the cycle actually stands, not just where price is.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <a
+            href="#pricing"
+            className="flex items-center gap-2 text-sm font-semibold px-5 py-3 rounded-md transition-transform hover:scale-[1.02]"
+            style={{ backgroundColor: "var(--sct-btc)", color: "#0A0E14" }}
+          >
+            Get Access
+            <ArrowRight size={16} />
+          </a>
+          <Link
+            href="/login"
+            className="text-sm font-medium px-5 py-3 rounded-md border transition-colors"
+            style={{ borderColor: "var(--sct-border)", color: "var(--sct-text)" }}
+          >
+            Login
+          </Link>
         </div>
+      </section>
 
-        {/* Market read */}
-        <InsightPanel title="Current Market Read">
-          <InsightRow
-            label="Cycle Zone"
-            value={cycle ? cycle.zoneLabel : '—'}
-            valueColor={cycle?.zoneColor}
-          />
-          <InsightRow
-            label="Score"
-            value={cycle ? `${cycle.score} / 100` : '—'}
-            valueColor={cycle?.zoneColor}
-          />
-          <InsightRow
-            label="F&G Index"
-            value={market ? `${market.fearGreedValue} · ${market.fearGreedLabel}` : '—'}
-          />
-          <InsightRow
-            label="BTC Trend"
-            value={market ? fmtChange(market.btcChange24h) : '—'}
-            valueColor={market ? (market.btcChange24h >= 0 ? 'var(--sct-green)' : 'var(--sct-red)') : undefined}
-          />
-          <InsightRow
-            label="ETH Trend"
-            value={market ? fmtChange(market.ethChange24h) : '—'}
-            valueColor={market ? (market.ethChange24h >= 0 ? 'var(--sct-green)' : 'var(--sct-red)') : undefined}
-          />
-          {cycle && (
-            <p className="mt-3 text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-              {marketRead(cycle, market)}
-            </p>
-          )}
-        </InsightPanel>
-      </div>
+      {/* Features */}
+      <section id="features" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-16">
+        <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
+          Everything on one terminal
+        </h2>
+        <p className="text-sm text-center mb-12" style={{ color: "var(--sct-muted)" }}>
+          A growing library of charts and models, built for a single purpose: reading the cycle.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="rounded-xl border p-5"
+              style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+            >
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center mb-4"
+                style={{ backgroundColor: "rgba(247,147,26,0.12)" }}
+              >
+                <f.icon size={18} style={{ color: "var(--sct-btc)" }} />
+              </div>
+              <p className="text-sm font-semibold mb-1.5" style={{ color: "var(--sct-text)" }}>
+                {f.title}
+              </p>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--sct-muted)" }}>
+                {f.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Row 3 — Sub-scores */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard
-          label="On-Chain Score"
-          value={onChainScore != null ? `${onChainScore}` : '—'}
-          sub="MVRV · Puell · NVT · Addresses · Stables · Hash"
-          accent={subScoreColor(onChainScore)}
-          freshness={cycle ? 'daily' : 'cached'}
-        />
-        <StatCard
-          label="Price Trend Score"
-          value={priceTrendScore != null ? `${priceTrendScore}` : '—'}
-          sub="Pi Cycle · 2YMA · Log Regression"
-          accent={subScoreColor(priceTrendScore)}
-          freshness={cycle ? 'daily' : 'cached'}
-        />
-        <StatCard
-          label="Sentiment Score"
-          value={sentimentScore != null ? `${sentimentScore}` : '—'}
-          sub="Fear & Greed Index"
-          accent={subScoreColor(sentimentScore)}
-          freshness={market ? 'daily' : 'cached'}
-        />
-        <StatCard
-          label="Macro Score"
-          value={macro ? String(macro.macroScore) : '—'}
-          sub={
-            macro
-              ? macro.macroScore < 30 ? 'Accommodative — tailwind for BTC'
-              : macro.macroScore < 55 ? 'Neutral macro'
-              : macro.macroScore < 75 ? 'Tightening — headwind for BTC'
-              : 'Restrictive — bearish macro'
-              : 'DXY · Fed · CPI · M2 · 10Y'
-          }
-          accent={subScoreColor(macro?.macroScore ?? null)}
-          freshness={macro ? 'daily' : 'cached'}
-          source="FRED"
-        />
-      </div>
+      {/* Pricing */}
+      <section id="pricing" className="max-w-2xl mx-auto px-6 py-16 scroll-mt-16">
+        <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
+          Simple, yearly access
+        </h2>
+        <p className="text-sm text-center mb-10" style={{ color: "var(--sct-muted)" }}>
+          One plan. Every chart. Cancel anytime.
+        </p>
 
-      {/* Row 4 — BTC price chart */}
-      {priceHistory
-        ? <BTCMiniChart data={priceHistory.prices} />
-        : <ChartSkeleton height="h-[380px]" />
-      }
+        <div
+          className="rounded-2xl border p-8"
+          style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-btc)" }}
+        >
+          <div className="flex items-baseline justify-center gap-1.5 mb-6">
+            {/* NOTE: placeholder price — update before launch */}
+            <span className="text-4xl font-bold" style={{ color: "var(--sct-text)" }}>$149</span>
+            <span className="text-sm" style={{ color: "var(--sct-muted)" }}>/ year</span>
+          </div>
+
+          <ul className="space-y-2.5 mb-8">
+            {INCLUDED.map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--sct-secondary)" }}>
+                <Check size={16} style={{ color: "var(--sct-green)" }} className="shrink-0 mt-0.5" />
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <button
+            disabled
+            className="w-full rounded-md px-5 py-3 text-sm font-semibold cursor-not-allowed"
+            style={{ backgroundColor: "var(--sct-border)", color: "var(--sct-muted)" }}
+          >
+            Subscribe — Coming Soon
+          </button>
+          <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
+            Card, Cash App, and Bitcoin/Lightning payment coming soon. Already have an account?{" "}
+            <Link href="/login" style={{ color: "var(--sct-btc)" }}>
+              Log in
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="max-w-6xl mx-auto px-6 py-10 border-t" style={{ borderColor: "var(--sct-border)" }}>
+        <p className="text-[11px] text-center" style={{ color: "var(--sct-muted)" }}>
+          Skyline Cycle Terminal is provided for informational purposes only and is not financial
+          advice. &copy; {new Date().getFullYear()} Skyline Cycle Terminal.
+        </p>
+      </footer>
     </div>
   );
 }
-

@@ -4,7 +4,9 @@ import { useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
-export function LayoutShell({ children }: { children: React.ReactNode }) {
+type Props = { children: React.ReactNode; email?: string | null };
+
+export function LayoutShell({ children, email }: Props) {
   const [open, setOpen] = useState(false);
   const close  = useCallback(() => setOpen(false),  []);
   const toggle = useCallback(() => setOpen(v => !v), []);
@@ -24,7 +26,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
       {/* Main column */}
       <div className="flex flex-col h-screen lg:ml-[260px]">
-        <Header onMenuClick={toggle} />
+        <Header onMenuClick={toggle} email={email} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {children}
         </main>
