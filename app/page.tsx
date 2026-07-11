@@ -88,27 +88,30 @@ export default function LandingPage() {
           Institutional-grade cycle analytics,{" "}
           <span style={{ color: "var(--sct-btc)" }}>without the guesswork.</span>
         </h1>
-        <p className="text-base sm:text-lg max-w-2xl mx-auto mb-10" style={{ color: "var(--sct-secondary)" }}>
+        <p className="text-base sm:text-lg max-w-2xl mx-auto mb-8" style={{ color: "var(--sct-secondary)" }}>
           Skyline Cycle Terminal blends on-chain data, macro liquidity, and price structure into
           one dashboard — so you can read where the cycle actually stands, not just where price is.
         </p>
-        <div className="flex items-center justify-center gap-3">
-          <a
-            href="#pricing"
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Link
+            href="/cycle"
             className="flex items-center gap-2 text-sm font-semibold px-5 py-3 rounded-md transition-transform hover:scale-[1.02]"
             style={{ backgroundColor: "var(--sct-btc)", color: "#0A0E14" }}
           >
-            Get Access
+            Try the Cycle Score Free
             <ArrowRight size={16} />
-          </a>
-          <Link
-            href="/login"
+          </Link>
+          <a
+            href="#pricing"
             className="text-sm font-medium px-5 py-3 rounded-md border transition-colors"
             style={{ borderColor: "var(--sct-border)", color: "var(--sct-text)" }}
           >
-            Login
-          </Link>
+            See Pricing
+          </a>
         </div>
+        <p className="text-xs" style={{ color: "var(--sct-muted)" }}>
+          No signup required — Cycle Score, Fear &amp; Greed, BTC Price, and the Overview dashboard are free to explore.
+        </p>
       </section>
 
       {/* Features */}
@@ -157,8 +160,7 @@ export default function LandingPage() {
           style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-btc)" }}
         >
           <div className="flex items-baseline justify-center gap-1.5 mb-6">
-            {/* NOTE: placeholder price — update before launch */}
-            <span className="text-4xl font-bold" style={{ color: "var(--sct-text)" }}>$149</span>
+            <span className="text-4xl font-bold" style={{ color: "var(--sct-text)" }}>$99</span>
             <span className="text-sm" style={{ color: "var(--sct-muted)" }}>/ year</span>
           </div>
 

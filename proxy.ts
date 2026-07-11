@@ -5,7 +5,11 @@ import { SESSION_COOKIE } from "@/lib/auth/constants";
 // Optimistic cookie-presence check only — no JWT verification, no Firestore read.
 // Proxy runs on every request including prefetches, so it stays cheap; the real
 // verify + entitlement check happens in app/(protected)/layout.tsx's requireAccess().
-const PUBLIC_PATHS = ["/", "/login", "/billing"];
+const PUBLIC_PATHS = [
+  "/", "/login", "/billing",
+  // Free-tier pages — app/(free)/... — viewable without signing in or paying
+  "/dashboard", "/cycle", "/price", "/price/fear-greed",
+];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

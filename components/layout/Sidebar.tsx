@@ -44,6 +44,7 @@ type NavItem = {
   href: string;
   icon: React.ElementType;
   exact?: boolean;
+  free?: boolean;
 };
 
 type NavSection = {
@@ -52,12 +53,12 @@ type NavSection = {
 };
 
 const nav: (NavItem | NavSection)[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true },
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true, free: true },
   {
     section: "CYCLE",
     items: [
       { label: "Road to $1M",      href: "/road-to-1m",     icon: Rocket },
-      { label: "Skyline Score",    href: "/cycle",          icon: Activity },
+      { label: "Skyline Score",    href: "/cycle",          icon: Activity, free: true },
       { label: "Cycle Model",      href: "/cycle#model",    icon: TrendingUp },
       { label: "Historical Peaks",   href: "/cycle#history",         icon: History },
       { label: "Halving Cycles",    href: "/price/halving-cycles",  icon: CalendarDays },
@@ -71,7 +72,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "PRICE",
     items: [
-      { label: "BTC / USD",        href: "/price",                    icon: Bitcoin,          exact: true },
+      { label: "BTC / USD",        href: "/price",                    icon: Bitcoin,          exact: true, free: true },
       { label: "ETH / USD",        href: "/price?asset=eth",          icon: Layers,           exact: true },
       { label: "Market Regime",    href: "/price/market-regime",      icon: Radar },
       { label: "4-Year Cycle",     href: "/price/four-year-cycle",    icon: CalendarDays },
@@ -83,7 +84,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Weekly SMA",        href: "/price/weekly-sma",         icon: TrendingUp },
       { label: "Golden/Death Cross", href: "/price/golden-death-cross", icon: TrendingUp },
       { label: "Heikin-Ashi",      href: "/price/heikin-ashi",        icon: BarChart2 },
-      { label: "Fear & Greed",      href: "/price/fear-greed",         icon: Activity },
+      { label: "Fear & Greed",      href: "/price/fear-greed",         icon: Activity, free: true },
       { label: "Drawdown / ATH",   href: "/price/drawdown",           icon: TrendingDown },
       { label: "Yearly Lows",      href: "/price/yearly-lows",        icon: TrendingDown },
       { label: "Liquidity Heatmap", href: "/price/liquidity",          icon: Flame },
@@ -199,6 +200,14 @@ function NavLink({
         )}
       />
       <span className="truncate">{item.label}</span>
+      {item.free && (
+        <span
+          className="ml-auto shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wider"
+          style={{ backgroundColor: "rgba(53,208,127,0.15)", color: "var(--sct-green)" }}
+        >
+          FREE
+        </span>
+      )}
     </Link>
   );
 }
