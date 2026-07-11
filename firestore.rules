@@ -28,6 +28,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Waitlist signups ──────────────────────────────────────────────────────
+    // Written only by app/api/waitlist/route.ts via firebase-admin (bypasses
+    // rules). Never read/written by the client SDK directly.
+    match /waitlist/{email} {
+      allow read, write: if false;
+    }
+
     // ── Block all other paths ────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;

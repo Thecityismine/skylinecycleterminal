@@ -6,7 +6,7 @@ import { SESSION_COOKIE } from "@/lib/auth/constants";
 // Proxy runs on every request including prefetches, so it stays cheap; the real
 // verify + entitlement check happens in app/(protected)/layout.tsx's requireAccess().
 const PUBLIC_PATHS = [
-  "/", "/login", "/billing",
+  "/", "/login", "/billing", "/terms", "/privacy", "/contact",
   // Free-tier pages — app/(free)/... — viewable without signing in or paying
   "/dashboard", "/cycle", "/price", "/price/fear-greed",
 ];
