@@ -85,9 +85,19 @@ export default function LoginPage() {
         });
         window.localStorage.setItem(EMAIL_STORAGE_KEY, email);
         setStatus("sent");
-      } catch {
+      } catch (err) {
+        console.error("sendSignInLinkToEmail failed:", err);
         setStatus("error");
-        setErrorMsg("Couldn't send the sign-in link. Check the email address and try again.");
+        const code = (err as { code?: string })?.code;
+        if (code === "auth/operation-not-allowed") {
+          setErrorMsg("Email link sign-in isn't enabled for this project yet.");
+        } else if (code === "auth/unauthorized-continue-uri" || code === "auth/invalid-continue-uri") {
+          setErrorMsg("This domain isn't authorized for sign-in links yet.");
+        } else if (code === "auth/invalid-email") {
+          setErrorMsg("That email address doesn't look valid.");
+        } else {
+          setErrorMsg(`Couldn't send the sign-in link${code ? ` (${code})` : ""}. Try again.`);
+        }
       }
     },
     [email],
