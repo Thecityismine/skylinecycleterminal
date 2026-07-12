@@ -66,9 +66,19 @@ export default function LoginPage() {
       const idToken = await result.user.getIdToken();
       await establishSession(idToken);
       router.push("/dashboard");
-    } catch {
+    } catch (err) {
+      console.error("Google sign-in failed:", err);
       setStatus("error");
-      setErrorMsg("Google sign-in failed or was cancelled.");
+      const code = (err as { code?: string })?.code;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+        setErrorMsg("Sign-in was cancelled — try again.");
+      } else if (code === "auth/popup-blocked") {
+        setErrorMsg("Your browser blocked the sign-in popup. Allow popups for this site and try again.");
+      } else if (code === "auth/unauthorized-domain") {
+        setErrorMsg("This domain isn't authorized for Google sign-in yet.");
+      } else {
+        setErrorMsg(`Google sign-in failed${code ? ` (${code})` : ""}. Try again.`);
+      }
     }
   }, [router]);
 
