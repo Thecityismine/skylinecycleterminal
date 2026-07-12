@@ -4,16 +4,16 @@ import { useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
-type Props = { children: React.ReactNode; email?: string | null };
+type Props = { children: React.ReactNode; email?: string | null; hideFreeBadges?: boolean };
 
-export function LayoutShell({ children, email }: Props) {
+export function LayoutShell({ children, email, hideFreeBadges }: Props) {
   const [open, setOpen] = useState(false);
   const close  = useCallback(() => setOpen(false),  []);
   const toggle = useCallback(() => setOpen(v => !v), []);
 
   return (
     <>
-      <Sidebar isOpen={open} onClose={close} />
+      <Sidebar isOpen={open} onClose={close} hideFreeBadges={hideFreeBadges} />
 
       {/* Mobile backdrop */}
       {open && (

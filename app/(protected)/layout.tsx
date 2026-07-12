@@ -8,7 +8,7 @@ export default async function ProtectedLayout({
 
   return (
     <div className="h-screen overflow-hidden">
-      <LayoutShell email={session.email}>{children}</LayoutShell>
+      <LayoutShell email={session.email} hideFreeBadges>{children}</LayoutShell>
     </div>
   );
 }

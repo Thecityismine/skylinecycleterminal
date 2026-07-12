@@ -166,10 +166,12 @@ function NavLink({
   item,
   pathname,
   onClick,
+  hideFreeBadges,
 }: {
   item: NavItem;
   pathname: string;
   onClick?: () => void;
+  hideFreeBadges?: boolean;
 }) {
   const hrefBase = item.href.split("?")[0].split("#")[0];
   const active = item.exact
@@ -200,7 +202,7 @@ function NavLink({
         )}
       />
       <span className="truncate">{item.label}</span>
-      {item.free && (
+      {item.free && !hideFreeBadges && (
         <span
           className="ml-auto shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wider"
           style={{ backgroundColor: "rgba(53,208,127,0.15)", color: "var(--sct-green)" }}
@@ -215,9 +217,10 @@ function NavLink({
 type SidebarProps = {
   isOpen:  boolean;
   onClose: () => void;
+  hideFreeBadges?: boolean;
 };
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, hideFreeBadges }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -283,6 +286,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       item={item}
                       pathname={pathname}
                       onClick={onClose}
+                      hideFreeBadges={hideFreeBadges}
                     />
                   ))}
                 </div>
@@ -295,6 +299,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               item={entry}
               pathname={pathname}
               onClick={onClose}
+              hideFreeBadges={hideFreeBadges}
             />
           );
         })}

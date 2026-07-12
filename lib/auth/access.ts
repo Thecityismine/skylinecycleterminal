@@ -37,3 +37,13 @@ export async function requireAccess(): Promise<Session> {
 
   return session;
 }
+
+// Used by the (free) route group to decide whether to still show "FREE" badges in the
+// sidebar — true once someone is an admin or has an active entitlement, since those
+// badges are only meaningful to visitors who don't have full access yet.
+export async function isEntitled(session: Session | null): Promise<boolean> {
+  if (!session) return false;
+  if (isAdminEmail(session.email)) return true;
+  const entitlement = await getEntitlement(session.uid);
+  return entitlement.active;
+}
