@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   ReferenceLine,
   ReferenceArea,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
 } from 'recharts';
 import { HALVINGS } from '@/lib/indicators/halvingCycles';
 import { ZONE_META } from '@/lib/indicators/valuationCycle';
@@ -51,15 +52,14 @@ export function downsampleValuationPoints(points: ValuationPoint[], max: number 
 }
 
 // Draws the deviation line as individually colored segments (one per point pair)
-// so the stroke color can vary continuously with days-until-halving. Recharts has
-// no built-in per-point stroke, so this renders directly into pixel space via the
-// axis scales exposed by <Customized>, the same pattern used for cross markers
-// on the golden/death-cross chart.
-export function DeviationColorLine({ xAxisMap, yAxisMap, points }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0] as any;
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0] as any;
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+// so the stroke color can vary continuously with days-until-halving. Recharts v3
+// has no built-in per-point stroke, so this renders directly into pixel space via
+// useXAxisScale/useYAxisScale — the <Customized xAxisMap/yAxisMap> prop-injection
+// API from Recharts v2 no longer exists (it's a documented no-op stub in v3).
+export function DeviationColorLine({ points }: { points: ValuationPoint[] }) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (!xScale || !yScale) return null;
 
   const segments: React.ReactElement[] = [];
   for (let i = 1; i < points.length; i++) {
@@ -67,11 +67,11 @@ export function DeviationColorLine({ xAxisMap, yAxisMap, points }: any) {
     const b: ValuationPoint = points[i];
     if (a.deviation == null || b.deviation == null) continue;
 
-    const x1 = xAxis.scale(a.ts);
-    const y1 = yAxis.scale(a.deviation);
-    const x2 = xAxis.scale(b.ts);
-    const y2 = yAxis.scale(b.deviation);
-    if (![x1, y1, x2, y2].every(Number.isFinite)) continue;
+    const x1 = xScale(a.ts);
+    const y1 = yScale(a.deviation);
+    const x2 = xScale(b.ts);
+    const y2 = yScale(b.deviation);
+    if (![x1, y1, x2, y2].every((v): v is number => typeof v === 'number' && Number.isFinite(v))) continue;
 
     segments.push(
       <line
@@ -222,7 +222,7 @@ export function ValuationDeviationChart({ points, startTs, onZoomChange }: Props
 
           <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : { stroke: 'var(--sct-border)', strokeWidth: 1 }} />
 
-          <Customized component={(props: any) => <DeviationColorLine {...props} points={chartData} />} />
+          <DeviationColorLine points={chartData} />
         </ComposedChart>
       </ResponsiveContainer>
       <ChartWatermark />

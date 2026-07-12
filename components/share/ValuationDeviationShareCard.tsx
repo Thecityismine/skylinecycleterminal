@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ComposedChart, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine, Customized,
+  ComposedChart, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine,
 } from 'recharts';
 import { DeviationColorLine, downsampleValuationPoints } from '@/components/charts/ValuationDeviationChart';
 import { halvingColor, ZONE_META } from '@/lib/indicators/valuationCycle';
@@ -132,7 +132,7 @@ export function ValuationDeviationShareCard({ payload }: { payload: ValuationDev
             axisLine={{ stroke: '#21262D' }} tickLine={false} width={56}
           />
 
-          <Customized component={(props: any) => <DeviationColorLine {...props} points={chartData} />} />
+          <DeviationColorLine points={chartData} />
         </ComposedChart>
       </div>
 
