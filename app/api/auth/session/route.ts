@@ -26,7 +26,9 @@ export async function POST(req: Request) {
       maxAge: SESSION_MAX_AGE_MS / 1000,
     });
     return res;
-  } catch {
-    return NextResponse.json({ error: "Invalid or expired sign-in" }, { status: 401 });
+  } catch (err) {
+    console.error("Failed to establish session:", err);
+    const message = err instanceof Error ? err.message : "Invalid or expired sign-in";
+    return NextResponse.json({ error: message }, { status: 401 });
   }
 }

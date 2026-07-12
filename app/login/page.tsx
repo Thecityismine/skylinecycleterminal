@@ -19,7 +19,10 @@ async function establishSession(idToken: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ idToken }),
   });
-  if (!res.ok) throw new Error("Failed to establish session");
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? `Failed to establish session (HTTP ${res.status})`);
+  }
 }
 
 type Status = "idle" | "working" | "sent" | "error";
@@ -76,8 +79,11 @@ export default function LoginPage() {
         setErrorMsg("Your browser blocked the sign-in popup. Allow popups for this site and try again.");
       } else if (code === "auth/unauthorized-domain") {
         setErrorMsg("This domain isn't authorized for Google sign-in yet.");
+      } else if (code) {
+        setErrorMsg(`Google sign-in failed (${code}). Try again.`);
       } else {
-        setErrorMsg(`Google sign-in failed${code ? ` (${code})` : ""}. Try again.`);
+        const message = err instanceof Error ? err.message : "Try again.";
+        setErrorMsg(`Google sign-in failed: ${message}`);
       }
     }
   }, [router]);
