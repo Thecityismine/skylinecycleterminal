@@ -7,7 +7,9 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
+  usePlotArea,
 } from 'recharts';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
@@ -73,20 +75,23 @@ function fmtP(v: number | null): string {
 }
 
 // ── Neon cross dots (same as main chart) ────────────────────────────────────
-function CardCrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs, offset }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+// Uses Recharts v3's useXAxisScale/useYAxisScale/usePlotArea hooks — the old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a v2-only pattern that's
+// a deprecated no-op stub in v3, so this must render as a direct chart child.
+function CardCrossDotsLayer({ crossEvents, startTs }: { crossEvents: CrossEvent[]; startTs: number }) {
+  const xScale   = useXAxisScale();
+  const yScale   = useYAxisScale();
+  const plotArea = usePlotArea();
+  if (!xScale || !yScale || !plotArea) return null;
 
-  const chartBottom = (offset?.top ?? 0) + (offset?.height ?? 0);
+  const chartBottom = plotArea.y + plotArea.height;
   const elements: React.ReactElement[] = [];
 
-  for (const ev of crossEvents as CrossEvent[]) {
-    if (ev.ts < (startTs as number)) continue;
-    const cx = xAxis.scale(ev.ts);
-    const cy = yAxis.scale((ev.ma50 + ev.ma200) / 2);
-    if (!isFinite(cx) || !isFinite(cy)) continue;
+  for (const ev of crossEvents) {
+    if (ev.ts < startTs) continue;
+    const cx = xScale(ev.ts);
+    const cy = yScale((ev.ma50 + ev.ma200) / 2);
+    if (cx == null || cy == null || !Number.isFinite(cx) || !Number.isFinite(cy)) continue;
 
     const isGolden = ev.type === 'golden';
     const color    = isGolden ? GREEN : RED;
@@ -275,11 +280,7 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
           <Line type="monotone" dataKey="ma50"  stroke={GOLD}  strokeWidth={2} strokeOpacity={0.9} dot={false} isAnimationActive={false} connectNulls />
           <Area type="monotone" dataKey="price" stroke={PRICE} strokeWidth={2.5} fill="rgba(245,247,250,0.03)" dot={false} isAnimationActive={false} connectNulls />
 
-          <Customized
-            component={(props: any) => (
-              <CardCrossDotsLayer {...props} crossEvents={crossEvents} startTs={startTs} />
-            )}
-          />
+          <CardCrossDotsLayer crossEvents={crossEvents} startTs={startTs} />
         </ComposedChart>
       </div>
 

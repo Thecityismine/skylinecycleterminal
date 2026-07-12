@@ -12,7 +12,9 @@ import {
   CartesianGrid,
   ReferenceLine,
   ReferenceArea,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
+  usePlotArea,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
@@ -75,27 +77,32 @@ function CustomTooltip({ active, payload }: any) {
 
 // Dots are placed at the actual MA crossover point: (ma50 + ma200) / 2
 // A vertical guide line drops from the dot to the x-axis for timeline alignment
-function CrossDotsLayer({ xAxisMap, yAxisMap, crossEvents, startTs, chartId, offset }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+//
+// Uses Recharts v3's useXAxisScale/useYAxisScale/usePlotArea hooks. The old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a Recharts 2.x-only
+// pattern — in v3 it's a deprecated no-op stub that injects nothing, so this
+// layer must be rendered as a direct chart child (not wrapped in <Customized>).
+function CrossDotsLayer({ crossEvents, startTs, chartId }: { crossEvents: CrossEvent[]; startTs: number; chartId?: string }) {
+  const xScale   = useXAxisScale();
+  const yScale   = useYAxisScale();
+  const plotArea = usePlotArea();
+  if (!xScale || !yScale || !plotArea) return null;
 
   const gId = `gdc-glow-g-${chartId ?? 'main'}`;
   const rId = `gdc-glow-r-${chartId ?? 'main'}`;
 
   // Bottom of the chart area (where x-axis sits)
-  const chartBottom = (offset?.top ?? 0) + (offset?.height ?? 0);
+  const chartBottom = plotArea.y + plotArea.height;
 
   const elements: React.ReactElement[] = [];
 
-  for (const ev of crossEvents as CrossEvent[]) {
-    if (ev.ts < (startTs as number)) continue;
-    const cx = xAxis.scale(ev.ts);
+  for (const ev of crossEvents) {
+    if (ev.ts < startTs) continue;
+    const cx = xScale(ev.ts);
     // Place dot at the MA intersection midpoint, not at BTC price
     const crossY = (ev.ma50 + ev.ma200) / 2;
-    const cy = yAxis.scale(crossY);
-    if (!isFinite(cx) || !isFinite(cy)) continue;
+    const cy = yScale(crossY);
+    if (cx == null || cy == null || !Number.isFinite(cx) || !Number.isFinite(cy)) continue;
 
     const isGolden = ev.type === 'golden';
     const color    = isGolden ? GREEN : RED;
@@ -263,15 +270,10 @@ export function BTCGoldenDeathCrossChart({
           />
 
           {/* Neon cross markers at MA intersection point */}
-          <Customized
-            component={(props: any) => (
-              <CrossDotsLayer
-                {...props}
-                crossEvents={crossEvents}
-                startTs={startTs}
-                chartId={chartId}
-              />
-            )}
+          <CrossDotsLayer
+            crossEvents={crossEvents}
+            startTs={startTs}
+            chartId={chartId}
           />
         </ComposedChart>
       </ResponsiveContainer>
