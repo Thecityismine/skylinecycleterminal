@@ -37,6 +37,26 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
   });
 }
 
+// Doesn't change entitlement — Stripe's own retry schedule (dunning) handles that
+// via customer.subscription.updated once retries exhaust and the subscription
+// actually lapses. This just puts a failed renewal charge somewhere visible
+// (Vercel function logs) instead of silently dropping the event, since there's
+// no email/alerting pipeline wired up yet to notify the subscriber directly.
+async function handlePaymentFailed(invoice: Stripe.Invoice) {
+  const custId = customerId(invoice.customer);
+  const uid = custId ? await getUidForStripeCustomer(custId) : null;
+
+  console.error("[stripe/webhook] invoice.payment_failed", {
+    uid,
+    customerId: custId,
+    invoiceId: invoice.id,
+    amountDue: invoice.amount_due,
+    attemptCount: invoice.attempt_count,
+    nextPaymentAttempt: invoice.next_payment_attempt,
+    hostedInvoiceUrl: invoice.hosted_invoice_url,
+  });
+}
+
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
   const custId = customerId(subscription.customer);
   if (!custId) return;
@@ -88,6 +108,9 @@ export async function POST(req: Request) {
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
         await handleSubscriptionChange(event.data.object);
+        break;
+      case "invoice.payment_failed":
+        await handlePaymentFailed(event.data.object);
         break;
       default:
         break;
