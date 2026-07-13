@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, ChevronDown, LogOut } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiData } from '@/lib/hooks/useApiData';
+import { auth } from '@/lib/firebase';
 import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
 
 type MarketSnapshot = {
@@ -33,10 +35,16 @@ export function Header({ onMenuClick, email }: { onMenuClick?: () => void; email
   const { data: market } = useApiData<MarketSnapshot>('/api/market');
   const { data: cycle }  = useApiData<CycleScoreResult>('/api/cycle');
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSignOut = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    // Clear both the server session cookie and the Firebase client SDK's own
+    // persisted auth state — clearing only the cookie leaves auth.currentUser
+    // signed in, so a subsequent "Continue with Google" click can silently
+    // re-authenticate as the same account without showing the account picker.
+    await Promise.all([
+      fetch('/api/auth/logout', { method: 'POST' }),
+      signOut(auth).catch(() => {}),
+    ]);
     router.push('/login');
     router.refresh();
   }, [router]);
@@ -147,37 +155,17 @@ export function Header({ onMenuClick, email }: { onMenuClick?: () => void; email
           </span>
         </div>
 
-        {/* Account menu */}
+        {/* Sign out */}
         {email && (
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors"
-              style={{ color: 'var(--sct-secondary)' }}
-            >
-              <span className="hidden md:inline text-xs font-mono max-w-[140px] truncate">{email}</span>
-              <ChevronDown size={14} />
-            </button>
-
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                <div
-                  className="absolute right-0 top-full mt-2 z-50 rounded-md border shadow-xl py-1 min-w-[160px]"
-                  style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
-                >
-                  <button
-                    onClick={() => void handleSignOut()}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-left transition-colors"
-                    style={{ color: 'var(--sct-muted)' }}
-                  >
-                    <LogOut size={13} />
-                    Sign out
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          <button
+            onClick={() => void handleSignOut()}
+            className="flex items-center justify-center rounded-md p-1.5 transition-colors"
+            style={{ color: 'var(--sct-secondary)' }}
+            title="Sign out"
+            aria-label="Sign out"
+          >
+            <LogOut size={16} />
+          </button>
         )}
       </div>
     </header>
