@@ -1,4 +1,5 @@
 import { fetchDailyPrice } from './coinmetrics';
+import { fetchSoSoValueEtfFlows } from './sosovalue';
 
 export type EtfDailyFlow = {
   time: string;
@@ -41,8 +42,9 @@ export const ETF_ISSUERS: EtfIssuer[] = [
   { key: 'btcMini', ticker: 'BTC',  issuer: 'Grayscale Mini',   color: '#F87171' },
 ];
 
-// Column name → EtfDailyFlow key mapping (handles Farside column names)
-const COL_MAP: Record<string, keyof EtfDailyFlow> = {
+// Column/ticker name → EtfDailyFlow key mapping — shared with the SoSoValue
+// fallback since both sources use the same ETF tickers.
+export const COL_MAP: Record<string, keyof EtfDailyFlow> = {
   IBIT: 'ibit', FBTC: 'fbtc', BITB: 'bitb', ARKB: 'arkb',
   BTCO: 'btco', EZBC: 'ezbc', BRRR: 'brrr', HODL: 'hodl',
   BTCW: 'btcw', MSBT: 'msbt', GBTC: 'gbtc', BTC: 'btcMini',
@@ -197,7 +199,14 @@ async function fetchFarsideHtml(): Promise<string> {
   throw new Error('All Farside fetch strategies failed');
 }
 
-export async function fetchEtfFlows(): Promise<EtfDailyFlow[]> {
+export type EtfFlowsSource = 'farside' | 'sosovalue';
+
+export type EtfFlowsResult = {
+  flows:  EtfDailyFlow[];
+  source: EtfFlowsSource;
+};
+
+export async function fetchEtfFlows(): Promise<EtfFlowsResult> {
   try {
     const html   = await fetchFarsideHtml();
     const flows  = parseFarside(html);
@@ -207,12 +216,21 @@ export async function fetchEtfFlows(): Promise<EtfDailyFlow[]> {
     const prices = await fetchDailyPrice('btc', start);
     const priceMap = new Map(prices.map(p => [p.time, p.price]));
 
-    return flows.map(f => ({
-      ...f,
-      btcClose: priceMap.get(f.time) ?? 0,
-    }));
+    return {
+      source: 'farside',
+      flows: flows.map(f => ({
+        ...f,
+        btcClose: priceMap.get(f.time) ?? 0,
+      })),
+    };
   } catch (err) {
-    console.error('[etfFlows] fetch failed:', err);
-    return [];
+    console.error('[etfFlows] Farside fetch failed, falling back to SoSoValue:', err);
+    try {
+      const flows = await fetchSoSoValueEtfFlows();
+      return { source: 'sosovalue', flows };
+    } catch (fallbackErr) {
+      console.error('[etfFlows] SoSoValue fallback also failed:', fallbackErr);
+      return { source: 'farside', flows: [] };
+    }
   }
 }

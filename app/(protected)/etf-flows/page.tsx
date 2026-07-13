@@ -32,15 +32,21 @@ function flowTrend(v: number | null): 'up' | 'down' | 'neutral' {
 export default async function EtfFlowsPage() {
   let points = [] as Awaited<ReturnType<typeof buildChartPoints>>;
   let fetchError = false;
+  let source: 'farside' | 'sosovalue' = 'farside';
 
   try {
-    const raw = await fetchEtfFlows();
-    if (raw.length > 0) {
-      points = buildChartPoints(raw);
+    const { flows, source: s } = await fetchEtfFlows();
+    source = s;
+    if (flows.length > 0) {
+      points = buildChartPoints(flows);
     }
   } catch {
     fetchError = true;
   }
+
+  const sourceMeta = source === 'sosovalue'
+    ? { label: 'SoSoValue', url: 'https://sosovalue.com/assets/etf/us-btc-spot' }
+    : { label: 'farside.co.uk', url: 'https://farside.co.uk/bitcoin-etf-flow-all-data/' };
 
   const stats      = computeStats(points);
   const score      = computeFlowScore(points);
@@ -140,7 +146,7 @@ export default async function EtfFlowsPage() {
           <StatCard
             label="Cumulative Flows"
             value={fmtFlow(stats.cumTotal)}
-            sub="Since ETF launch (Jan 2024)"
+            sub={source === 'sosovalue' ? `Since ${points[0]?.time ?? 'data start'}` : 'Since ETF launch (Jan 2024)'}
             trend={flowTrend(stats.cumTotal)}
             accent={stats.cumTotal >= 0 ? '#5B84FF' : '#F85149'}
             freshness="daily"
@@ -167,8 +173,8 @@ export default async function EtfFlowsPage() {
               : 'No ETF flow data available.'}
           </p>
           <p className="text-xs mt-2" style={{ color: 'var(--sct-muted)' }}>
-            Data source: <a href="https://farside.co.uk/bitcoin-etf-flow-all-data/" target="_blank" rel="noopener noreferrer"
-              style={{ color: '#5B84FF' }}>farside.co.uk</a>
+            Data source: <a href={sourceMeta.url} target="_blank" rel="noopener noreferrer"
+              style={{ color: '#5B84FF' }}>{sourceMeta.label}</a>
           </p>
         </div>
       )}
@@ -188,6 +194,7 @@ export default async function EtfFlowsPage() {
           negativeIssuers={stats.negativeIssuers}
           totalIssuers={stats.totalIssuers}
           lastDate={lastDate}
+          source={source}
         />
       )}
 
@@ -291,8 +298,10 @@ export default async function EtfFlowsPage() {
           style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
         >
           <span style={{ color: 'var(--sct-text)' }}>Data source: </span>
-          Farside Investors (farside.co.uk) — daily U.S. spot Bitcoin ETF flow data aggregated from
-          ETF issuers. BTC price from CoinMetrics Community API. Data refreshed hourly.
+          {source === 'sosovalue'
+            ? 'SoSoValue (sosovalue.com) — daily U.S. spot Bitcoin ETF flow data. Fallback source: Farside was unreachable, so history is limited to the trailing ~300 days and per-issuer breakdown covers today only.'
+            : 'Farside Investors (farside.co.uk) — daily U.S. spot Bitcoin ETF flow data aggregated from ETF issuers.'}
+          {' '}BTC price from CoinMetrics Community API. Data refreshed hourly.
         </div>
       </div>
     </div>

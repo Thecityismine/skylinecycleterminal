@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { EtfFlowBarChart } from './EtfFlowBarChart';
 import { EtfCumulativeChart } from './EtfCumulativeChart';
 import { ETF_ISSUERS } from '@/lib/api/etfFlows';
+import type { EtfFlowsSource } from '@/lib/api/etfFlows';
 import type { EtfFlowPoint, FlowScore, FlowDivergence } from '@/lib/indicators/etfFlows';
 
 type TimeRange = '1M' | '3M' | '6M' | '1Y' | 'All';
@@ -21,6 +22,7 @@ type Props = {
   negativeIssuers: number;
   totalIssuers: number;
   lastDate: string;
+  source: EtfFlowsSource;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -85,13 +87,20 @@ function RangeBtn({
 
 // ─── Issuer breakdown table ───────────────────────────────────────────────────
 
-function IssuerTable({ points }: { points: EtfFlowPoint[] }) {
+function IssuerTable({ points, source }: { points: EtfFlowPoint[]; source: EtfFlowsSource }) {
   const last = points[points.length - 1];
   if (!last) return null;
 
-  // 30D per-issuer sums
+  // 30D per-issuer sums. SoSoValue's free tier only exposes issuer-level
+  // flows for the current day (see lib/api/sosovalue.ts), so in fallback
+  // mode this collapses to a single day of data — detect that and relabel
+  // the column instead of showing a misleading "30D" figure.
   const last30 = points.slice(-30);
   const issuer30: Record<string, number> = {};
+  let issuerDayCount = 0;
+  for (const p of last30) {
+    if (ETF_ISSUERS.some(k => p[k.key as keyof EtfFlowPoint] != null)) issuerDayCount++;
+  }
   for (const k of ETF_ISSUERS) {
     let sum = 0;
     for (const p of last30) {
@@ -100,6 +109,8 @@ function IssuerTable({ points }: { points: EtfFlowPoint[] }) {
     }
     issuer30[k.key] = sum;
   }
+
+  const hasIssuerHistory = source === 'farside' || issuerDayCount > 1;
 
   const rows = ETF_ISSUERS.map(iss => {
     const daily = last[iss.key as keyof EtfFlowPoint] as number | undefined;
@@ -115,7 +126,7 @@ function IssuerTable({ points }: { points: EtfFlowPoint[] }) {
             <th className="text-left pb-2 pr-4">ETF</th>
             <th className="text-left pb-2 pr-4">Issuer</th>
             <th className="text-right pb-2 pr-4">Daily Flow</th>
-            <th className="text-right pb-2">30D Flow</th>
+            <th className="text-right pb-2">{hasIssuerHistory ? '30D Flow' : 'Today Only'}</th>
           </tr>
         </thead>
         <tbody>
@@ -128,13 +139,18 @@ function IssuerTable({ points }: { points: EtfFlowPoint[] }) {
               <td className="py-2 pr-4 text-right" style={{ color: flowColor(r.daily) }}>
                 {fmtFlow(r.daily)}
               </td>
-              <td className="py-2 text-right" style={{ color: flowColor(r.flow30d) }}>
-                {fmtFlow(r.flow30d)}
+              <td className="py-2 text-right" style={{ color: flowColor(hasIssuerHistory ? r.flow30d : r.daily) }}>
+                {hasIssuerHistory ? fmtFlow(r.flow30d) : '—'}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {!hasIssuerHistory && (
+        <p className="text-[10px] mt-2" style={{ color: 'var(--sct-muted)' }}>
+          Per-issuer history unavailable from the current data source — showing today only.
+        </p>
+      )}
     </div>
   );
 }
@@ -146,7 +162,7 @@ export function EtfFlowChartSection({
   flow7d, flow30d, cumTotal,
   streak, streakDir,
   positiveIssuers, negativeIssuers, totalIssuers,
-  lastDate,
+  lastDate, source,
 }: Props) {
   const [range, setRange]         = useState<TimeRange>('3M');
   const [showRolling7, setR7]     = useState(false);
@@ -196,7 +212,7 @@ export function EtfFlowChartSection({
           <ToggleBtn active={showCumulative} onClick={() => setCum(v => !v)}>CUMULATIVE</ToggleBtn>
 
           <div className="ml-auto text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-            {lastDate} · Farside
+            {lastDate} · {source === 'sosovalue' ? 'SoSoValue' : 'Farside'}
           </div>
         </div>
 
@@ -231,7 +247,7 @@ export function EtfFlowChartSection({
         >
           <div className="px-5 pt-4 pb-2">
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-              Cumulative Net ETF Flows Since Launch
+              {source === 'sosovalue' ? 'Cumulative Net ETF Flows' : 'Cumulative Net ETF Flows Since Launch'}
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
               Running total of all daily ETF net flows · structural demand view vs tactical daily bars
@@ -284,7 +300,7 @@ export function EtfFlowChartSection({
               <span style={{ color: '#F85149' }}>{negativeIssuers}</span>
             </div>
           </div>
-          <IssuerTable points={points} />
+          <IssuerTable points={points} source={source} />
         </div>
 
         {/* Flow streak + regime */}
