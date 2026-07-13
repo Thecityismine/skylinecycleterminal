@@ -43,6 +43,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Contact form submissions ──────────────────────────────────────────────
+    // Written only by app/api/contact/route.ts via firebase-admin. Never
+    // read/written by the client SDK directly.
+    match /contactMessages/{messageId} {
+      allow read, write: if false;
+    }
+
     // ── Block all other paths ────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
