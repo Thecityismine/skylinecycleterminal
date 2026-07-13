@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   "/", "/login", "/billing", "/terms", "/privacy", "/contact",
   // Free-tier pages — app/(free)/... — viewable without signing in or paying
   "/dashboard", "/cycle", "/price", "/price/fear-greed",
+  // Crawler/metadata file-convention routes — must stay reachable without a session
+  "/robots.txt", "/sitemap.xml",
 ];
 
 export function proxy(request: NextRequest) {

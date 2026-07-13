@@ -8,9 +8,32 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL = "https://skylinecycleterminal.com";
+const TITLE = "Skyline Cycle Terminal";
+const DESCRIPTION = "Bitcoin & Ethereum Macro Cycle Intelligence — on-chain, macro liquidity, ETF flows, and price-structure data in one terminal.";
+
 export const metadata: Metadata = {
-  title: "Skyline Cycle Terminal",
-  description: "Bitcoin & Ethereum Macro Cycle Intelligence",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    template: `%s — ${TITLE}`,
+  },
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: TITLE,
+    images: [{ url: "/hero-dashboard-preview.png", width: 1120, height: 730, alt: TITLE }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/hero-dashboard-preview.png"],
+  },
 };
 
 export const viewport: Viewport = {
