@@ -20,9 +20,9 @@ export async function fetchMarketData(): Promise<MarketData> {
     fetch(
       `${BASE}/simple/price?ids=bitcoin,ethereum` +
         `&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`,
-      { signal: AbortSignal.timeout(10000) }
+      { next: { revalidate: 300 }, signal: AbortSignal.timeout(10000) }
     ),
-    fetch(`${BASE}/global`, { signal: AbortSignal.timeout(10000) }),
+    fetch(`${BASE}/global`, { next: { revalidate: 300 }, signal: AbortSignal.timeout(10000) }),
   ]);
 
   if (!priceRes.ok) throw new Error(`CoinGecko prices HTTP ${priceRes.status}`);
