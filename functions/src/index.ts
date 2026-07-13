@@ -8,7 +8,7 @@ import { computeAlerts, toStoredState, type SignalsPayload, type CyclePayload, t
 const TELEGRAM_BOT_TOKEN = defineSecret('TELEGRAM_BOT_TOKEN');
 const TELEGRAM_CHAT_ID   = defineSecret('TELEGRAM_CHAT_ID');
 
-const APP_URL = 'https://skylinecycleterminal.vercel.app';
+const APP_URL = 'https://skylinecycleterminal.com';
 
 function initAdmin() {
   if (getApps().length === 0) initializeApp();
