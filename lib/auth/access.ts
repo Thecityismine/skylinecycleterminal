@@ -1,6 +1,8 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { verifySession, type Session } from "@/lib/auth/session";
+import { getEntitlementRecord } from "@/lib/auth/entitlement";
 
 export type Entitlement = { active: boolean };
 
@@ -16,13 +18,19 @@ function isAdminEmail(email: string | null): boolean {
   return admins.includes(email.toLowerCase());
 }
 
-// Phase 1: every authenticated user is entitled — there's no payment flow yet, so the
-// Firestore `entitlement.accessExpiresAt` check described in the plan doesn't apply until
-// Phase 2 starts writing that field. Swap this out for a real `firebase-admin` Firestore
-// read (users/{uid}.entitlement.accessExpiresAt > now) when Stripe/crypto billing lands.
-async function getEntitlement(_uid: string): Promise<Entitlement> {
-  return { active: true };
-}
+// Phase 2: real Firestore-backed entitlement, written by app/api/stripe/webhook/route.ts.
+// Active is derived from accessExpiresAt > now rather than trusting a stored boolean, so a
+// missed webhook fails safe (access simply lapses at period end) instead of failing open.
+// Memoized per-request — requireAccess() and isEntitled() can both run in one render pass.
+const getEntitlement = cache(async (uid: string): Promise<Entitlement> => {
+  try {
+    const { accessExpiresAt } = await getEntitlementRecord(uid);
+    return { active: accessExpiresAt != null && accessExpiresAt > Date.now() };
+  } catch (err) {
+    console.error("[access] entitlement lookup failed:", err);
+    return { active: false };
+  }
+});
 
 // Single choke point for the (protected) route group: redirects to /login if there's no
 // valid session, or to /billing if the session is valid but the subscription has lapsed.

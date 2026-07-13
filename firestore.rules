@@ -35,6 +35,14 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Stripe customer → uid reverse lookup ─────────────────────────────────
+    // Written only by app/api/stripe/webhook/route.ts via firebase-admin. Needed
+    // because subscription update/delete events only carry the Stripe customer
+    // ID, not the Firebase uid.
+    match /stripeCustomers/{stripeCustomerId} {
+      allow read, write: if false;
+    }
+
     // ── Block all other paths ────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
