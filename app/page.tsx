@@ -4,6 +4,7 @@ import {
   Check, ArrowRight,
 } from "lucide-react";
 import { WaitlistModal } from "@/components/landing/WaitlistModal";
+import { SubscribeButton } from "@/components/billing/SubscribeButton";
 
 const FEATURES = [
   {
@@ -85,10 +86,6 @@ const FAQS = [
     a: "Premium unlocks the full terminal, including on-chain models, macro liquidity dashboards, ETF flows, share cards, and new charts as they ship.",
   },
 ];
-
-const waitlistButtonClass =
-  "w-full flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-semibold transition-transform hover:scale-[1.02]";
-const waitlistButtonStyle: React.CSSProperties = { backgroundColor: "var(--sct-btc)", color: "#0A0E14" };
 
 export default function LandingPage() {
   return (
@@ -330,17 +327,18 @@ export default function LandingPage() {
             ))}
           </ul>
 
-          <WaitlistModal
-            triggerLabel="Join Waitlist"
-            triggerClassName={waitlistButtonClass}
-            triggerStyle={waitlistButtonStyle}
-          />
+          <SubscribeButton />
           <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
-            Stripe and Cash App checkout coming soon. Already have an account?{" "}
-            <Link href="/login" style={{ color: "var(--sct-btc)" }}>
+            Card or Cash App via Stripe. Already have an account?{" "}
+            <Link href="/login?next=/billing" style={{ color: "var(--sct-btc)" }}>
               Log in
             </Link>
-            .
+            {" · "}
+            <WaitlistModal
+              triggerLabel="Not ready? Join the waitlist"
+              triggerClassName="underline"
+              triggerStyle={{ color: "var(--sct-btc)" }}
+            />
           </p>
         </div>
       </section>

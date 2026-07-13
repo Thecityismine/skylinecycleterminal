@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   signInWithPopup,
@@ -27,8 +27,18 @@ async function establishSession(idToken: string) {
 
 type Status = "idle" | "working" | "sent" | "error";
 
-export default function LoginPage() {
+// Only allow same-site relative paths — a bare "/foo", never "//host" or
+// "https://host" — so the ?next= param (attacker-controllable) can't be used
+// to redirect a freshly-authenticated user off-site after sign-in.
+function safeNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
+  return raw;
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -53,13 +63,13 @@ export default function LoginPage() {
         window.localStorage.removeItem(EMAIL_STORAGE_KEY);
         const idToken = await result.user.getIdToken();
         await establishSession(idToken);
-        router.push("/dashboard");
+        router.push(next);
       } catch {
         setStatus("error");
         setErrorMsg("That sign-in link is invalid or has expired. Request a new one below.");
       }
     })();
-  }, [router]);
+  }, [router, next]);
 
   const handleGoogleSignIn = useCallback(async () => {
     setStatus("working");
@@ -68,7 +78,7 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
       await establishSession(idToken);
-      router.push("/dashboard");
+      router.push(next);
     } catch (err) {
       console.error("Google sign-in failed:", err);
       setStatus("error");
@@ -86,7 +96,7 @@ export default function LoginPage() {
         setErrorMsg(`Google sign-in failed: ${message}`);
       }
     }
-  }, [router]);
+  }, [router, next]);
 
   const handleEmailLink = useCallback(
     async (e: React.FormEvent) => {
@@ -216,5 +226,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

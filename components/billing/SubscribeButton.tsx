@@ -12,7 +12,7 @@ export function SubscribeButton() {
     try {
       const res = await fetch("/api/stripe/checkout", { method: "POST" });
       if (res.status === 401) {
-        window.location.href = "/login";
+        window.location.href = "/login?next=/billing";
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
