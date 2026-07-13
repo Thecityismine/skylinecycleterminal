@@ -8,7 +8,8 @@ import {
   CartesianGrid,
   ReferenceArea,
   ReferenceLine,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
 } from 'recharts';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import type { HalvingWindowData } from '@/lib/indicators/halvingWindows';
@@ -48,21 +49,23 @@ const ALL_YEAR_TICKS = Array.from({ length: 22 }, (_, i) =>
   new Date(`${2010 + i}-01-01T00:00:00Z`).getTime()
 );
 
-function CardNeonDots({ xAxisMap, yAxisMap, windows, startTs }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+// Uses Recharts v3's useXAxisScale/useYAxisScale hooks — the old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a v2-only pattern that's
+// a deprecated no-op stub in v3, so this must render as a direct chart child.
+function CardNeonDots({ windows, startTs }: { windows: HalvingWindowData[]; startTs: number }) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (!xScale || !yScale) return null;
 
   const dots: React.ReactElement[] = [];
 
-  for (const w of windows as HalvingWindowData[]) {
+  for (const w of windows) {
     if (w.projected) continue;
 
-    if (w.accumulationPoint && w.accumulationPoint.ts >= (startTs as number)) {
-      const cx = xAxis.scale(w.accumulationPoint.ts);
-      const cy = yAxis.scale(w.accumulationPoint.price);
-      if (isFinite(cx) && isFinite(cy)) {
+    if (w.accumulationPoint && w.accumulationPoint.ts >= startTs) {
+      const cx = xScale(w.accumulationPoint.ts);
+      const cy = yScale(w.accumulationPoint.price);
+      if (cx != null && cy != null && Number.isFinite(cx) && Number.isFinite(cy)) {
         dots.push(
           <g key={`acc-${w.year}`}>
             <circle cx={cx} cy={cy} r={18} fill={CYAN} opacity={0.05} />
@@ -73,10 +76,10 @@ function CardNeonDots({ xAxisMap, yAxisMap, windows, startTs }: any) {
       }
     }
 
-    if (w.deriskPoint && w.deriskPoint.ts >= (startTs as number)) {
-      const cx = xAxis.scale(w.deriskPoint.ts);
-      const cy = yAxis.scale(w.deriskPoint.price);
-      if (isFinite(cx) && isFinite(cy)) {
+    if (w.deriskPoint && w.deriskPoint.ts >= startTs) {
+      const cx = xScale(w.deriskPoint.ts);
+      const cy = yScale(w.deriskPoint.price);
+      if (cx != null && cy != null && Number.isFinite(cx) && Number.isFinite(cy)) {
         dots.push(
           <g key={`risk-${w.year}`}>
             <circle cx={cx} cy={cy} r={18} fill={PINK} opacity={0.05} />
@@ -294,11 +297,7 @@ export function HalvingWindowsShareCard({ payload }: { payload: HalvingWindowsSh
             connectNulls
           />
 
-          <Customized
-            component={(props: any) => (
-              <CardNeonDots {...props} windows={windows} startTs={startTs} />
-            )}
-          />
+          <CardNeonDots windows={windows} startTs={startTs} />
         </ComposedChart>
       </div>
 

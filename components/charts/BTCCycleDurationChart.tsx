@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   ReferenceArea,
   ReferenceLine,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import type { CycleAnchor, ActiveCyclePosition } from '@/lib/indicators/cycleAnchors';
@@ -59,28 +60,30 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-function CycleMarkerLayer({ xAxisMap, yAxisMap, anchors, prices }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+// Uses Recharts v3's useXAxisScale/useYAxisScale hooks — the old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a v2-only pattern that's
+// a deprecated no-op stub in v3, so this must render as a direct chart child.
+function CycleMarkerLayer({ anchors, prices }: { anchors: CycleAnchor[]; prices: PricePoint[] }) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (!xScale || !yScale) return null;
 
   const priceMap = new Map<number, number>(
-    (prices as PricePoint[]).map((p) => [p.ts, p.price])
+    prices.map((p) => [p.ts, p.price])
   );
   const tsMap = new Map<string, number>(
-    (prices as PricePoint[]).map((p) => [p.time, p.ts])
+    prices.map((p) => [p.time, p.ts])
   );
 
   const elements: React.ReactElement[] = [];
 
-  for (const anchor of anchors as CycleAnchor[]) {
+  for (const anchor of anchors) {
     const lowTs    = tsMap.get(anchor.lowDate) ?? new Date(anchor.lowDate + 'T00:00:00Z').getTime();
     const lowPrice = priceMap.get(lowTs) ?? anchor.lowPrice;
-    const cx = xAxis.scale(lowTs);
-    const cy = yAxis.scale(lowPrice);
+    const cx = xScale(lowTs);
+    const cy = yScale(lowPrice);
 
-    if (isFinite(cx) && isFinite(cy) && cy > 0) {
+    if (cx != null && cy != null && Number.isFinite(cx) && Number.isFinite(cy) && cy > 0) {
       elements.push(
         <g key={`low-${anchor.cycleId}`}>
           <circle cx={cx} cy={cy} r={20} fill="#35D07F" opacity={0.05} />
@@ -93,10 +96,10 @@ function CycleMarkerLayer({ xAxisMap, yAxisMap, anchors, prices }: any) {
     if (anchor.highDate && anchor.highPrice != null) {
       const highTs    = tsMap.get(anchor.highDate) ?? new Date(anchor.highDate + 'T00:00:00Z').getTime();
       const highPrice = priceMap.get(highTs) ?? anchor.highPrice;
-      const hx = xAxis.scale(highTs);
-      const hy = yAxis.scale(highPrice);
+      const hx = xScale(highTs);
+      const hy = yScale(highPrice);
 
-      if (isFinite(hx) && isFinite(hy) && hy > 0) {
+      if (hx != null && hy != null && Number.isFinite(hx) && Number.isFinite(hy) && hy > 0) {
         const s = 8;
         elements.push(
           <g key={`high-${anchor.cycleId}`}>
@@ -254,11 +257,7 @@ export function BTCCycleDurationChart({ prices, anchors, activeCycle, logScale }
             connectNulls
           />
 
-          <Customized
-            component={(props: any) => (
-              <CycleMarkerLayer {...props} anchors={anchors} prices={prices} />
-            )}
-          />
+          <CycleMarkerLayer anchors={anchors} prices={prices} />
         </ComposedChart>
       </ResponsiveContainer>
       <ChartWatermark />

@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
-  Customized,
+  useXAxisScale, useYAxisScale,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import { useChartZoom } from '@/lib/hooks/useChartZoom';
@@ -79,27 +79,23 @@ function CustomTooltip({
   );
 }
 
-// Customized component for percentile band
-function PercentileBand({
-  data,
-  xAxisMap,
-  yAxisMap,
-  offset,
-}: {
-  data: MedianPoint[];
-  xAxisMap?: Record<string, { scale: (v: number) => number }>;
-  yAxisMap?: Record<string, { scale: (v: number) => number }>;
-  offset?: { left: number; top: number };
-}) {
-  if (!xAxisMap || !yAxisMap || !offset || data.length < 2) return null;
-
-  const xScale = Object.values(xAxisMap)[0]?.scale;
-  const yScale = Object.values(yAxisMap)[0]?.scale;
-  if (!xScale || !yScale) return null;
+// Uses Recharts v3's useXAxisScale/useYAxisScale hooks — the old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a v2-only pattern that's
+// a deprecated no-op stub in v3, so this must render as a direct chart child.
+// Unlike the v2 xAxisMap/yAxisMap scales (relative to the plot area, requiring
+// manual + offset.left/offset.top), these hook-based scales already return
+// absolute SVG pixel coordinates.
+function PercentileBand({ data }: { data: MedianPoint[] }) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (!xScale || !yScale || data.length < 2) return null;
 
   // Build path: p75 left→right, then p25 right→left
-  const topPts = data.map(pt => ({ x: xScale(pt.day) + offset.left, y: yScale(pt.p75) + offset.top }));
-  const botPts = [...data].reverse().map(pt => ({ x: xScale(pt.day) + offset.left, y: yScale(pt.p25) + offset.top }));
+  const topPts = data.map(pt => ({ x: xScale(pt.day), y: yScale(pt.p75) }))
+    .filter((p): p is { x: number; y: number } => p.x != null && p.y != null);
+  const botPts = [...data].reverse().map(pt => ({ x: xScale(pt.day), y: yScale(pt.p25) }))
+    .filter((p): p is { x: number; y: number } => p.x != null && p.y != null);
+  if (topPts.length < 2 || botPts.length < 2) return null;
 
   const toPath = (pts: { x: number; y: number }[]) =>
     pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
@@ -271,16 +267,7 @@ export function HalvingCycleComparisonChart({
 
             {/* Percentile band (p25–p75) */}
             {showMedian && mode === 'indexed' && (
-              <Customized
-                component={(props: Record<string, unknown>) => (
-                  <PercentileBand
-                    data={displayedMedian}
-                    xAxisMap={props.xAxisMap as Record<string, { scale: (v: number) => number }>}
-                    yAxisMap={props.yAxisMap as Record<string, { scale: (v: number) => number }>}
-                    offset={props.offset as { left: number; top: number }}
-                  />
-                )}
-              />
+              <PercentileBand data={displayedMedian} />
             )}
 
             {/* Historical cycle lines */}

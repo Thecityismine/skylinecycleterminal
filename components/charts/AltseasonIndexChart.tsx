@@ -11,7 +11,8 @@ import {
   CartesianGrid,
   ReferenceArea,
   ReferenceLine,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import type { SignalDot } from '@/lib/indicators/altseasonIndex';
@@ -98,19 +99,23 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-function SignalDotsLayer({ xAxisMap, yAxisMap, signalDots, startTs }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+// Uses Recharts v3's useXAxisScale/useYAxisScale hooks — the old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a v2-only pattern that's
+// a deprecated no-op stub in v3, so this must render as a direct chart child.
+// The chart has two Y-axes ("score" and "btc"), so the id must be explicit —
+// there is no default (id 0) axis to fall back to.
+function SignalDotsLayer({ signalDots, startTs }: { signalDots: SignalDot[]; startTs: number }) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale('score');
+  if (!xScale || !yScale) return null;
 
   const elements: React.ReactElement[] = [];
 
-  for (const dot of signalDots as SignalDot[]) {
-    if (dot.ts < (startTs as number)) continue;
-    const cx = xAxis.scale(dot.ts);
-    const cy = yAxis.scale(dot.score);
-    if (!isFinite(cx) || !isFinite(cy)) continue;
+  for (const dot of signalDots) {
+    if (dot.ts < startTs) continue;
+    const cx = xScale(dot.ts);
+    const cy = yScale(dot.score);
+    if (cx == null || cy == null || !Number.isFinite(cx) || !Number.isFinite(cy)) continue;
 
     const color = SIGNAL_COLORS[dot.type] ?? '#fff';
 
@@ -276,11 +281,7 @@ export function AltseasonIndexChart({ data, signalDots, startTs, onZoomChange }:
           />
 
           {/* Neon signal dots */}
-          <Customized
-            component={(props: any) => (
-              <SignalDotsLayer {...props} signalDots={signalDots} startTs={startTs} />
-            )}
-          />
+          <SignalDotsLayer signalDots={signalDots} startTs={startTs} />
         </ComposedChart>
       </ResponsiveContainer>
       <ChartWatermark />

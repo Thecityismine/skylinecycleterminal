@@ -10,7 +10,8 @@ import {
   CartesianGrid,
   ReferenceArea,
   ReferenceLine,
-  Customized,
+  useXAxisScale,
+  useYAxisScale,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import type { HalvingWindowData } from '@/lib/indicators/halvingWindows';
@@ -61,25 +62,26 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-// Neon glow SVG dots rendered via Recharts Customized
-function NeonDotsLayer({ xAxisMap, yAxisMap, windows, startTs, chartId }: any) {
-  if (!xAxisMap || !yAxisMap) return null;
-  const xAxis = Object.values(xAxisMap as Record<string, any>)[0];
-  const yAxis = Object.values(yAxisMap as Record<string, any>)[0];
-  if (!xAxis?.scale || !yAxis?.scale) return null;
+// Uses Recharts v3's useXAxisScale/useYAxisScale hooks — the old
+// <Customized xAxisMap/yAxisMap> prop-injection API is a v2-only pattern that's
+// a deprecated no-op stub in v3, so this must render as a direct chart child.
+function NeonDotsLayer({ windows, startTs, chartId }: { windows: HalvingWindowData[]; startTs: number; chartId: string }) {
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (!xScale || !yScale) return null;
 
   const cyanFilterId = `glow-cyan-${chartId}`;
   const pinkFilterId = `glow-pink-${chartId}`;
 
   const dots: React.ReactElement[] = [];
 
-  for (const w of windows as HalvingWindowData[]) {
+  for (const w of windows) {
     if (w.projected) continue;
 
-    if (w.accumulationPoint && w.accumulationPoint.ts >= (startTs as number)) {
-      const cx = xAxis.scale(w.accumulationPoint.ts);
-      const cy = yAxis.scale(w.accumulationPoint.price);
-      if (isFinite(cx) && isFinite(cy)) {
+    if (w.accumulationPoint && w.accumulationPoint.ts >= startTs) {
+      const cx = xScale(w.accumulationPoint.ts);
+      const cy = yScale(w.accumulationPoint.price);
+      if (cx != null && cy != null && Number.isFinite(cx) && Number.isFinite(cy)) {
         dots.push(
           <g key={`acc-${w.year}`}>
             <circle cx={cx} cy={cy} r={22} fill={CYAN} opacity={0.05} />
@@ -90,10 +92,10 @@ function NeonDotsLayer({ xAxisMap, yAxisMap, windows, startTs, chartId }: any) {
       }
     }
 
-    if (w.deriskPoint && w.deriskPoint.ts >= (startTs as number)) {
-      const cx = xAxis.scale(w.deriskPoint.ts);
-      const cy = yAxis.scale(w.deriskPoint.price);
-      if (isFinite(cx) && isFinite(cy)) {
+    if (w.deriskPoint && w.deriskPoint.ts >= startTs) {
+      const cx = xScale(w.deriskPoint.ts);
+      const cy = yScale(w.deriskPoint.price);
+      if (cx != null && cy != null && Number.isFinite(cx) && Number.isFinite(cy)) {
         dots.push(
           <g key={`risk-${w.year}`}>
             <circle cx={cx} cy={cy} r={22} fill={PINK} opacity={0.05} />
@@ -243,16 +245,7 @@ export function BTCHalvingWindowsChart({ points, windows, logScale, startTs }: P
           />
 
           {/* Neon signal dots rendered on top */}
-          <Customized
-            component={(props: any) => (
-              <NeonDotsLayer
-                {...props}
-                windows={windows}
-                startTs={startTs}
-                chartId="main"
-              />
-            )}
-          />
+          <NeonDotsLayer windows={windows} startTs={startTs} chartId="main" />
         </ComposedChart>
       </ResponsiveContainer>
       <ChartWatermark />
