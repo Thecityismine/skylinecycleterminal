@@ -84,10 +84,6 @@ const FAQS = [
     q: "What does premium include?",
     a: "Premium unlocks the full terminal, including on-chain models, macro liquidity dashboards, ETF flows, share cards, and new charts as they ship.",
   },
-  {
-    q: "Can I pay with Bitcoin?",
-    a: "Bitcoin and Lightning payment support is coming. Join the waitlist to get notified the moment checkout opens.",
-  },
 ];
 
 const waitlistButtonClass =
@@ -340,7 +336,7 @@ export default function LandingPage() {
             triggerStyle={waitlistButtonStyle}
           />
           <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
-            Stripe, Cash App, and Bitcoin/Lightning payment coming soon. Already have an account?{" "}
+            Stripe and Cash App checkout coming soon. Already have an account?{" "}
             <Link href="/login" style={{ color: "var(--sct-btc)" }}>
               Log in
             </Link>

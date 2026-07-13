@@ -3,13 +3,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { X, Check } from "lucide-react";
 
-type PaymentMethod = "card" | "cashapp" | "btc" | "lightning";
+type PaymentMethod = "card" | "cashapp";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "card", label: "Card" },
   { value: "cashapp", label: "Cash App" },
-  { value: "btc", label: "Bitcoin" },
-  { value: "lightning", label: "Lightning" },
 ];
 
 type Status = "idle" | "submitting" | "done" | "error";

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PAYMENT_METHODS = ["card", "cashapp", "btc", "lightning"] as const;
+const PAYMENT_METHODS = ["card", "cashapp"] as const;
 type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 function isPaymentMethod(v: unknown): v is PaymentMethod {
