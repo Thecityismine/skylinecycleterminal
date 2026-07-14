@@ -49,7 +49,11 @@ export default function ContactPage() {
         ) : (
           <>
             <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--sct-secondary)" }}>
-              Questions, feedback, or support requests — send a message and we&apos;ll get back to you by email.
+              Questions, feedback, or support requests — send a message below, or email{" "}
+              <a href="mailto:support@skylinecycleterminal.com" style={{ color: "var(--sct-btc)" }}>
+                support@skylinecycleterminal.com
+              </a>{" "}
+              directly.
             </p>
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
               <input

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
+import { sendSupportNotification } from "@/lib/email";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Stores contact-form submissions for manual follow-up (no support inbox wired
-// up yet). firebase-admin is loaded dynamically — see lib/auth/firebaseAdmin.ts
-// for why. Uses an auto-generated doc ID per message (unlike waitlist, which
-// upserts by email) since the same person may write in more than once.
+// Stores contact-form submissions in Firestore (source of truth) and best-effort
+// emails a notification to support@skylinecycleterminal.com — a failed send
+// doesn't fail the request since the message is already saved either way.
+// firebase-admin is loaded dynamically — see lib/auth/firebaseAdmin.ts for why.
+// Uses an auto-generated doc ID per message (unlike waitlist, which upserts by
+// email) since the same person may write in more than once.
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as {
     name?: string;
@@ -35,6 +38,15 @@ export async function POST(req: Request) {
       message,
       createdAt: FieldValue.serverTimestamp(),
     });
+
+    try {
+      await sendSupportNotification(
+        `New contact form message from ${name || email}`,
+        `From: ${name || "(no name given)"} <${email}>\n\n${message}`,
+      );
+    } catch (err) {
+      console.error("[contact] failed to send notification email:", err);
+    }
 
     return NextResponse.json({ ok: true });
   } catch {
