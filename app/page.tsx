@@ -10,32 +10,32 @@ const FEATURES = [
   {
     icon: Activity,
     title: "Skyline Cycle Score",
-    desc: "A 0–100 cycle reading that blends on-chain, macro, sentiment, and price structure into one actionable market regime.",
+    desc: "One number that tells you where Bitcoin sits in the four-year cycle.",
   },
   {
     icon: LineChart,
     title: "BTC vs GLI Liquidity Lag",
-    desc: "Track Bitcoin against global liquidity using configurable lag models and correlation testing.",
+    desc: "See how global liquidity leads Bitcoin by weeks or months.",
   },
   {
     icon: Radar,
     title: "Liquidity Regime Matrix",
-    desc: "Read whether macro conditions are acting as a tailwind or headwind for Bitcoin.",
+    desc: "Instantly know whether macro conditions are a tailwind or headwind.",
   },
   {
     icon: ArrowLeftRight,
     title: "ETF Flows & Dominance",
-    desc: "Monitor institutional demand, ETF inflows/outflows, stablecoin dominance, and market rotation.",
+    desc: "Track daily institutional ETF demand, inflows/outflows, and dominance shifts.",
   },
   {
     icon: Layers,
     title: "Full On-Chain Suite",
-    desc: "SOPR, NUPL, HODL waves, realized price, supply in profit, CVDD, and long-term holder behavior.",
+    desc: "Every major on-chain signal — SOPR, NUPL, HODL waves, realized price, and more.",
   },
   {
     icon: Waves,
     title: "Halving & Seasonality Models",
-    desc: "Compare halving cycles, monthly returns, yearly lows, and four-year cycle behavior.",
+    desc: "Compare every Bitcoin halving cycle since 2012, plus monthly and yearly patterns.",
   },
 ];
 
@@ -45,11 +45,11 @@ const TOOLS = [
 ];
 
 const QUESTIONS_ANSWERED = [
-  "Is Bitcoin in accumulation or distribution?",
-  "Is liquidity helping or hurting the cycle?",
-  "Are long-term holders buying or selling?",
-  "Are ETF flows confirming demand?",
-  "Is the current cycle early, mid, or late?",
+  "Are we in accumulation or distribution?",
+  "Is liquidity supporting higher prices?",
+  "Are institutions actually buying?",
+  "Are long-term holders accumulating or distributing?",
+  "How much risk is left in this cycle?",
 ];
 
 const FREE_INCLUDED = [
@@ -71,20 +71,40 @@ const PREMIUM_INCLUDED = [
 const FAQS = [
   {
     q: "What is Skyline Cycle Terminal?",
-    a: "A Bitcoin and Ethereum cycle analytics dashboard combining on-chain, macro, liquidity, ETF, and price-structure data.",
+    a: "A Bitcoin & Ethereum macro intelligence platform that combines on-chain data, liquidity, ETF flows, market structure, and cycle models into one dashboard.",
+  },
+  {
+    q: "Who is Skyline for?",
+    a: "Long-term Bitcoin investors, macro traders, and anyone trying to understand where Bitcoin sits in its four-year cycle — not day traders looking for entry signals.",
   },
   {
     q: "Is this financial advice?",
-    a: "No. Skyline is an analytics tool for education and market research — not financial advice.",
+    a: "No. Skyline provides market analytics and historical cycle models to inform your own research — not financial, investment, or trading advice.",
   },
   {
     q: "Do I need an account to use the free dashboard?",
     a: "No. The free Cycle Score, BTC price, Fear & Greed, and Overview dashboard are available without signup.",
   },
   {
+    q: "How often is data updated?",
+    a: "BTC/ETH prices and dominance update frequently throughout the day. Most other dashboards refresh daily; macro and on-chain indicators update as new source data becomes available.",
+  },
+  {
     q: "What does premium include?",
     a: "Premium unlocks the full terminal, including on-chain models, macro liquidity dashboards, ETF flows, share cards, and new charts as they ship.",
   },
+  {
+    q: "Can I cancel?",
+    a: "Yes — cancel anytime before your renewal date and you won't be charged again.",
+  },
+];
+
+const PROOF_POINTS = [
+  "Cycle models built on every Bitcoin halving and major accumulation zone since 2012",
+  "Tracks institutional ETF demand alongside on-chain and macro signals",
+  "30+ macro, on-chain, and price-structure models in one dashboard",
+  "Most dashboards update daily",
+  "Built specifically around Bitcoin's four-year halving cycle",
 ];
 
 export default function LandingPage() {
@@ -136,13 +156,13 @@ export default function LandingPage() {
           className="text-4xl sm:text-5xl font-semibold tracking-tight mb-5"
           style={{ color: "var(--sct-text)" }}
         >
-          Institutional-grade cycle analytics,{" "}
-          <span style={{ color: "var(--sct-btc)" }}>without the guesswork.</span>
+          Stop reacting to Bitcoin.{" "}
+          <span style={{ color: "var(--sct-btc)" }}>Start reading the cycle.</span>
         </h1>
         <p className="text-base sm:text-lg max-w-2xl mx-auto mb-8" style={{ color: "var(--sct-secondary)" }}>
-          Skyline Cycle Terminal combines on-chain data, macro liquidity, ETF flows, price
-          structure, and cycle models into one clean terminal, helping you see whether Bitcoin is
-          in accumulation, expansion, caution, or distribution.
+          Skyline combines on-chain metrics, macro liquidity, ETF flows, and historical cycle
+          models into one dashboard — so you know when to accumulate, when to stay patient, and
+          when to reduce risk.
         </p>
         <div className="flex items-center justify-center gap-3 mb-4">
           <Link
@@ -150,7 +170,7 @@ export default function LandingPage() {
             className="flex items-center gap-2 text-sm font-semibold px-5 py-3 rounded-md transition-transform hover:scale-[1.02]"
             style={{ backgroundColor: "var(--sct-btc)", color: "#0A0E14", boxShadow: "0 0 40px rgba(247,147,26,0.15)" }}
           >
-            Open Free Dashboard
+            Start Free
             <ArrowRight size={16} />
           </Link>
           <a
@@ -169,7 +189,7 @@ export default function LandingPage() {
       {/* Hero product preview */}
       <section className="max-w-4xl mx-auto px-6 pb-16">
         <div
-          className="rounded-2xl border p-2 sm:p-3"
+          className="relative rounded-2xl border p-2 sm:p-3"
           style={{
             backgroundColor: "rgba(255,255,255,0.02)",
             borderColor: "rgba(247,147,26,0.25)",
@@ -182,13 +202,39 @@ export default function LandingPage() {
             alt="Skyline Cycle Terminal dashboard preview showing live BTC/ETH prices and the Skyline Cycle Score"
             className="w-full rounded-xl"
           />
+          {/* Floating callouts — hidden on small screens where the image is too
+              compressed for them to land on the right spot */}
+          {[
+            { label: "Cycle Score", top: "47%", left: "3%" },
+            { label: "Live Market Data", top: "2.5%", left: "42%" },
+            { label: "Macro Score", top: "89%", left: "76%" },
+          ].map((c) => (
+            <span
+              key={c.label}
+              className="hidden md:inline-flex items-center gap-1.5 absolute px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap backdrop-blur-sm"
+              style={{
+                top: c.top,
+                left: c.left,
+                backgroundColor: "rgba(9,13,19,0.85)",
+                border: "1px solid rgba(247,147,26,0.4)",
+                color: "var(--sct-btc)",
+              }}
+            >
+              <Check size={11} />
+              {c.label}
+            </span>
+          ))}
         </div>
       </section>
 
       {/* Trust row */}
-      <section className="max-w-4xl mx-auto px-6 pb-16 text-center">
-        <p className="text-sm mb-5" style={{ color: "var(--sct-secondary)" }}>
-          Built for Bitcoin cycle investors, macro traders, and long-term allocators.
+      <section className="max-w-3xl mx-auto px-6 pb-16 text-center">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: "var(--sct-text)" }}>
+          Designed for investors who think in years, not days.
+        </h2>
+        <p className="text-sm max-w-xl mx-auto mb-5" style={{ color: "var(--sct-secondary)" }}>
+          Whether you&apos;re stacking Bitcoin every paycheck or managing a seven-figure portfolio,
+          Skyline helps you separate short-term noise from long-term opportunity.
         </p>
         <p className="text-xs font-medium tracking-wide mb-6" style={{ color: "var(--sct-muted)" }}>
           No hype. No price calls. Just cycle data.
@@ -209,7 +255,7 @@ export default function LandingPage() {
       {/* What Skyline helps you answer */}
       <section className="max-w-3xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-semibold text-center mb-8" style={{ color: "var(--sct-text)" }}>
-          Built to answer the questions that matter
+          Every chart answers one question.
         </h2>
         <div
           className="rounded-2xl border p-6 sm:p-8 space-y-3"
@@ -217,10 +263,7 @@ export default function LandingPage() {
         >
           {QUESTIONS_ANSWERED.map((q) => (
             <div key={q} className="flex items-start gap-3">
-              <span
-                className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
-                style={{ backgroundColor: "var(--sct-btc)" }}
-              />
+              <Check size={16} style={{ color: "var(--sct-btc)" }} className="shrink-0 mt-0.5" />
               <p className="text-sm sm:text-base" style={{ color: "var(--sct-secondary)" }}>{q}</p>
             </div>
           ))}
@@ -233,7 +276,7 @@ export default function LandingPage() {
           Everything on one terminal
         </h2>
         <p className="text-sm text-center mb-12" style={{ color: "var(--sct-muted)" }}>
-          A growing library of charts and models, built for a single purpose: reading the cycle.
+          30+ institutional-grade Bitcoin &amp; Ethereum models in one place.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map((f) => (
@@ -259,6 +302,24 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Proof / why investors use Skyline */}
+      <section className="max-w-3xl mx-auto px-6 py-16">
+        <h2 className="text-2xl font-semibold text-center mb-8" style={{ color: "var(--sct-text)" }}>
+          Why investors use Skyline
+        </h2>
+        <div
+          className="rounded-2xl border p-6 sm:p-8 space-y-3"
+          style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+        >
+          {PROOF_POINTS.map((p) => (
+            <div key={p} className="flex items-start gap-3">
+              <Check size={16} style={{ color: "var(--sct-green)" }} className="shrink-0 mt-0.5" />
+              <p className="text-sm sm:text-base" style={{ color: "var(--sct-secondary)" }}>{p}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Free vs Premium */}
       <section className="max-w-4xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
@@ -269,8 +330,11 @@ export default function LandingPage() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}>
-            <p className="text-xs font-medium tracking-widest uppercase mb-4" style={{ color: "var(--sct-muted)" }}>
+            <p className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: "var(--sct-muted)" }}>
               Free
+            </p>
+            <p className="text-xs mb-4" style={{ color: "var(--sct-muted)" }}>
+              Perfect for checking Bitcoin&apos;s current cycle position.
             </p>
             <ul className="space-y-2.5">
               {FREE_INCLUDED.map((item) => (
@@ -282,8 +346,11 @@ export default function LandingPage() {
             </ul>
           </div>
           <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-btc)" }}>
-            <p className="text-xs font-medium tracking-widest uppercase mb-4" style={{ color: "var(--sct-btc)" }}>
+            <p className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: "var(--sct-btc)" }}>
               Premium — $99/yr
+            </p>
+            <p className="text-xs mb-4" style={{ color: "var(--sct-muted)" }}>
+              Everything you need to make long-term allocation decisions.
             </p>
             <ul className="space-y-2.5">
               {PREMIUM_INCLUDED.map((item) => (
@@ -310,12 +377,15 @@ export default function LandingPage() {
           className="rounded-2xl border p-8"
           style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-btc)", boxShadow: "0 0 60px rgba(247,147,26,0.08)" }}
         >
-          <div className="flex items-baseline justify-center gap-1.5 mb-2">
+          <div className="flex items-baseline justify-center gap-1.5 mb-1">
             <span className="text-4xl font-bold" style={{ color: "var(--sct-text)" }}>$99</span>
             <span className="text-sm" style={{ color: "var(--sct-muted)" }}>/ year</span>
           </div>
+          <p className="text-xs text-center mb-1" style={{ color: "var(--sct-secondary)" }}>
+            Less than $9/month.
+          </p>
           <p className="text-xs text-center mb-6" style={{ color: "var(--sct-muted)" }}>
-            One simple plan. Every chart. No upsells.
+            Billed once a year. Cancel anytime.
           </p>
 
           <ul className="space-y-2.5 mb-8">
@@ -356,6 +426,30 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section
+        className="max-w-3xl mx-auto px-6 py-16 text-center relative"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at bottom center, rgba(247,147,26,0.08), transparent 50%)",
+        }}
+      >
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3" style={{ color: "var(--sct-text)" }}>
+          Stop guessing where Bitcoin is.
+        </h2>
+        <p className="text-sm sm:text-base mb-8" style={{ color: "var(--sct-secondary)" }}>
+          Know where the cycle stands before making your next move.
+        </p>
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-3 rounded-md transition-transform hover:scale-[1.02]"
+          style={{ backgroundColor: "var(--sct-btc)", color: "#0A0E14", boxShadow: "0 0 40px rgba(247,147,26,0.15)" }}
+        >
+          Start Free
+          <ArrowRight size={16} />
+        </Link>
       </section>
 
       {/* Footer */}
