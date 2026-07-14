@@ -4,9 +4,14 @@ import { useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
-type Props = { children: React.ReactNode; email?: string | null; hideFreeBadges?: boolean };
+type Props = {
+  children: React.ReactNode;
+  email?: string | null;
+  hideFreeBadges?: boolean;
+  hasBilling?: boolean;
+};
 
-export function LayoutShell({ children, email, hideFreeBadges }: Props) {
+export function LayoutShell({ children, email, hideFreeBadges, hasBilling }: Props) {
   const [open, setOpen] = useState(false);
   const close  = useCallback(() => setOpen(false),  []);
   const toggle = useCallback(() => setOpen(v => !v), []);
@@ -26,7 +31,7 @@ export function LayoutShell({ children, email, hideFreeBadges }: Props) {
 
       {/* Main column */}
       <div className="flex flex-col h-screen lg:ml-[260px]">
-        <Header onMenuClick={toggle} email={email} />
+        <Header onMenuClick={toggle} email={email} hasBilling={hasBilling} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {children}
         </main>

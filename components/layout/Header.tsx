@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiData } from '@/lib/hooks/useApiData';
 import { auth } from '@/lib/firebase';
@@ -31,10 +31,34 @@ function fmtChange(n: number): string {
   return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
 }
 
-export function Header({ onMenuClick, email }: { onMenuClick?: () => void; email?: string | null }) {
+export function Header({
+  onMenuClick,
+  email,
+  hasBilling,
+}: {
+  onMenuClick?: () => void;
+  email?: string | null;
+  hasBilling?: boolean;
+}) {
   const { data: market } = useApiData<MarketSnapshot>('/api/market');
   const { data: cycle }  = useApiData<CycleScoreResult>('/api/cycle');
   const router = useRouter();
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const handleManageBilling = useCallback(async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const body = (await res.json().catch(() => ({}))) as { url?: string };
+      if (res.ok && body.url) {
+        window.location.href = body.url;
+        return;
+      }
+    } catch {
+      // fall through to reset loading state below
+    }
+    setPortalLoading(false);
+  }, []);
 
   const handleSignOut = useCallback(async () => {
     // Clear both the server session cookie and the Firebase client SDK's own
@@ -154,6 +178,20 @@ export function Header({ onMenuClick, email }: { onMenuClick?: () => void; email
             {market ? 'Live' : 'Connecting…'}
           </span>
         </div>
+
+        {/* Manage billing */}
+        {email && hasBilling && (
+          <button
+            onClick={() => void handleManageBilling()}
+            disabled={portalLoading}
+            className="flex items-center justify-center rounded-md p-1.5 transition-colors"
+            style={{ color: 'var(--sct-secondary)', opacity: portalLoading ? 0.6 : 1 }}
+            title="Manage billing"
+            aria-label="Manage billing"
+          >
+            <CreditCard size={16} />
+          </button>
+        )}
 
         {/* Sign out */}
         {email && (

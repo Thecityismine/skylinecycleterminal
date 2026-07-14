@@ -33,6 +33,15 @@ export async function getEntitlementRecord(uid: string): Promise<EntitlementReco
   return { accessExpiresAt: accessExpiresAt ?? null };
 }
 
+// Used by the billing portal route (and to decide whether to show a "Manage
+// billing" entry point at all) — a user only has a Stripe customer once
+// they've completed checkout at least once.
+export async function getStripeCustomerId(uid: string): Promise<string | null> {
+  const db = await getDb();
+  const snap = await db.collection("users").doc(uid).get();
+  return (snap.data()?.stripeCustomerId as string | undefined) ?? null;
+}
+
 export async function setEntitlement(
   uid: string,
   fields: { accessExpiresAt: number; stripeCustomerId: string; stripeSubscriptionId: string; plan: string },
