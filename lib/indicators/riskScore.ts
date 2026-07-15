@@ -9,10 +9,6 @@ export type ModelKey  = FactorKey | 'composite';
 
 export const FACTOR_KEYS: FactorKey[] = ['ma200w', 'powerLaw', 'realizedPrice', 'mvrvZ', 'piCycle', 'cyclePosition'];
 
-// Percentile-ranked factors (all but cyclePosition, which is already bounded 0-1
-// and cyclical, so it's used directly rather than re-ranked against its own history).
-const RANKED_KEYS: Exclude<FactorKey, 'cyclePosition'>[] = ['ma200w', 'powerLaw', 'realizedPrice', 'mvrvZ', 'piCycle'];
-
 export const RISK_WEIGHTS: Record<FactorKey, number> = {
   ma200w:        0.25,
   powerLaw:      0.20,

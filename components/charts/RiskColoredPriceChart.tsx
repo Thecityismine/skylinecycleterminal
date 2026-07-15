@@ -45,9 +45,9 @@ function bandIndex(score: number): number {
   return Math.min(BAND_COUNT - 1, Math.floor(score * BAND_COUNT));
 }
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: ChartPoint }[] }) {
   if (!active || !payload?.length) return null;
-  const d = payload[0]?.payload as ChartPoint;
+  const d = payload[0]?.payload;
   if (!d) return null;
   const color = d.score != null ? riskColor(d.score) : 'var(--sct-muted)';
   const zone  = d.score != null ? ZONE_META[riskZone(d.score)] : null;

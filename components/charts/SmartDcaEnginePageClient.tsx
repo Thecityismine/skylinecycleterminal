@@ -21,11 +21,6 @@ type Props = { prices: PricePoint[]; riskFactorData: RiskFactorPoint[] };
 const DCA_MA_PERIOD = 50;
 const DCA_WIN_WINDOW = 90;
 
-function fmtUSD(v: number | null): string {
-  if (v == null) return '—';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
-}
-
 function fmtPct(v: number | null | undefined): string {
   if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;

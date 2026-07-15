@@ -305,7 +305,7 @@ export function RiskLevelPageClient({ prices, riskFactorData }: Props) {
       >
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>Get the Smart DCA recommendation</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>Combines this risk score with the DCA Optimizer's best-day model into one suggested multiplier</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>Combines this risk score with the DCA Optimizer&apos;s best-day model into one suggested multiplier</p>
         </div>
         <ArrowRight size={16} style={{ color: 'var(--sct-muted)' }} />
       </Link>
