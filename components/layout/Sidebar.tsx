@@ -154,8 +154,9 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "TOOLS",
     items: [
-      { label: "External Links", href: "/links",       icon: ExternalLink },
-      { label: "Methodology",    href: "/methodology", icon: BookOpen },
+      { label: "BTC DCA Optimizer", href: "/tools/dca-optimizer", icon: Crosshair },
+      { label: "External Links",    href: "/links",                icon: ExternalLink },
+      { label: "Methodology",       href: "/methodology",          icon: BookOpen },
     ],
   },
 ];
