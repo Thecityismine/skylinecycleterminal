@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import {
-  ComposedChart, Line, Scatter, XAxis, YAxis, CartesianGrid,
-  ReferenceArea, ReferenceLine, Tooltip, ResponsiveContainer,
+  ComposedChart, Line, XAxis, YAxis, CartesianGrid,
+  ReferenceArea, ReferenceLine, ReferenceDot, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { ChartWatermark } from './ChartWatermark';
 import { useChartZoom } from '@/lib/hooks/useChartZoom';
@@ -47,10 +47,9 @@ function fmtUSD(v: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
 }
 
-function CustomDot(props: { cx?: number; cy?: number; payload?: { kind: 'low' | 'high' } }) {
-  const { cx, cy, payload } = props;
-  if (cx == null || cy == null || !payload) return null;
-  const color = payload.kind === 'low' ? '#38BDF8' : '#FF5C8A';
+function CycleMarkerDot({ cx, cy, kind }: { cx?: number; cy?: number; kind: 'low' | 'high' }) {
+  if (cx == null || cy == null) return null;
+  const color = kind === 'low' ? '#38BDF8' : '#FF5C8A';
   return (
     <g>
       <circle cx={cx} cy={cy} r={9} fill={color} fillOpacity={0.18} />
@@ -80,13 +79,6 @@ export function BTCSevenYearCycleChart({
 }: Props) {
   const zoom = useChartZoom<number>();
   useEffect(() => { onZoomChange?.(zoom.domain); }, [zoom.domain, onZoomChange]);
-
-  // Scatter gets its own sparse data array (rather than a nullable column on
-  // the main series) so Recharts never has to reason about null marker rows.
-  const markerPoints = useMemo(
-    () => cycleMarkers.map((m) => ({ ts: m.ts, price: m.price, kind: m.kind, label: m.label })),
-    [cycleMarkers],
-  );
 
   const prices = points.map((p) => p.price).filter((v) => v > 0);
   const pMin = prices.length ? Math.max(1, Math.min(...prices) * 0.5) : 1;
@@ -221,7 +213,20 @@ export function BTCSevenYearCycleChart({
               connectNulls
             />
 
-            <Scatter data={markerPoints} dataKey="price" shape={<CustomDot />} isAnimationActive={false} />
+            {/* Cycle low/high markers — ReferenceDot rather than a separate
+                Scatter series, so this sparse point set never interferes
+                with the shared Tooltip's hover-index tracking on the main
+                price line. */}
+            {cycleMarkers.map((m) => (
+              <ReferenceDot
+                key={`${m.kind}-${m.ts}`}
+                x={m.ts}
+                y={m.price}
+                r={0}
+                shape={(dotProps: { cx?: number; cy?: number }) => <CycleMarkerDot cx={dotProps.cx} cy={dotProps.cy} kind={m.kind} />}
+                ifOverflow="extendDomain"
+              />
+            ))}
           </ComposedChart>
         </ResponsiveContainer>
         <ChartWatermark />

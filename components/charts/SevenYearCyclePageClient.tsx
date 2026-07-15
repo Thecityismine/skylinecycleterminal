@@ -148,11 +148,10 @@ export function SevenYearCyclePageClient({ btcPrices, crossAsset, liquidity, yie
     fourYearPhase: FOUR_YEAR_PHASE_LABEL[activePosition.currentPhase],
     sevenYearPhase: sevenYearPhaseLabel,
     modelAgreement,
-    scenarioBands: {
-      bullish: scenarioBands.bullish,
-      hybrid:  scenarioBands.hybrid,
-      stress:  scenarioBands.stress,
-    },
+    points: weeklyPoints.map((p) => ({ ts: p.ts, price: p.price })),
+    halvings: halvingMarkers.map((h) => ({ ts: h.ts, label: h.label })),
+    stressWindows,
+    cycleMarkers: cycleMarkers.map((m) => ({ ts: m.ts, price: m.price, kind: m.kind })),
     generatedAt: new Date().toISOString(),
   };
 

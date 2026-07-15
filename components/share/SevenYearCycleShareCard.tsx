@@ -1,5 +1,6 @@
 "use client";
 
+import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine, ReferenceDot } from 'recharts';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
 export type SevenYearCycleSharePayload = {
@@ -7,11 +8,10 @@ export type SevenYearCycleSharePayload = {
   fourYearPhase:  string;
   sevenYearPhase: string;
   modelAgreement: string;
-  scenarioBands: {
-    bullish: { low: number; high: number };
-    hybrid:  { low: number; high: number };
-    stress:  { low: number; high: number };
-  };
+  points:         { ts: number; price: number }[];
+  halvings:       { ts: number; label: string }[];
+  stressWindows:  { startTs: number; endTs: number; label: string; projected: boolean }[];
+  cycleMarkers:   { ts: number; price: number; kind: 'low' | 'high' }[];
   generatedAt:    string;
 };
 
@@ -27,20 +27,29 @@ export const SEVEN_YEAR_CARD_CHART_RECT = {
   x: PAD, y: PAD + HEADER_H + GAP + STATS_H + GAP, w: CARD_W, h: CENTER_H,
 };
 
+const LOG_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
+const YEAR_TICKS = Array.from({ length: 21 }, (_, i) => new Date(`${2010 + i}-01-01T00:00:00Z`).getTime());
+
 function fmtUSD(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;
   return `$${v.toFixed(0)}`;
 }
 
-const SCENARIOS = [
-  { key: 'bullish', label: 'Scenario A — Halving Dominates', color: '#35D07F', desc: '2028 halving liquidity expands, BTC rallies into 2029.' },
-  { key: 'hybrid',  label: 'Scenario C — Hybrid Cycle',      color: '#E6B450', desc: 'Rally into the halving, stress arrives later in 2029.' },
-  { key: 'stress',  label: 'Scenario B — Stress Dominates',  color: '#F85149', desc: 'Macro stress overwhelms the halving tailwind.' },
-] as const;
+function fmtPrice(v: number): string {
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(0)}M`;
+  if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;
+  return `$${v}`;
+}
+
+function MarkerDot({ cx, cy, kind }: { cx?: number; cy?: number; kind: 'low' | 'high' }) {
+  if (cx == null || cy == null) return null;
+  const color = kind === 'low' ? '#38BDF8' : '#FF5C8A';
+  return <circle cx={cx} cy={cy} r={4} fill={color} stroke="#0D1117" strokeWidth={1.5} />;
+}
 
 export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSharePayload }) {
-  const { price, fourYearPhase, sevenYearPhase, modelAgreement, scenarioBands, generatedAt } = payload;
+  const { price, fourYearPhase, sevenYearPhase, modelAgreement, points, halvings, stressWindows, cycleMarkers, generatedAt } = payload;
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -50,6 +59,13 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
     { label: '7-Year Model',    value: sevenYearPhase, sub: 'Stress cycle phase',  color: '#F85149' },
     { label: 'Model Agreement', value: modelAgreement, sub: 'Do models align?',    color: '#5B84FF' },
   ];
+
+  const prices = points.map((p) => p.price).filter((v) => v > 0);
+  const pMin = prices.length ? Math.max(1, Math.min(...prices) * 0.5) : 1;
+  const pMax = prices.length ? Math.max(...prices) * 2 : 200_000;
+  const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
+  const xStart = points[0]?.ts ?? new Date('2010-01-01').getTime();
+  const xEnd   = points.at(-1)?.ts ?? new Date(generatedAt).getTime();
 
   return (
     <div style={{
@@ -61,7 +77,7 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
       <div style={{ height: HEADER_H, flex: `0 0 ${HEADER_H}px`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
           <p style={{ fontSize: 18, fontWeight: 700, color: '#F7F9FC', margin: 0 }}>Bitcoin 7-Year Stress Cycle</p>
-          <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 0' }}>2028–2029 Scenario Map</p>
+          <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 0' }}>Halving cycle vs. financial stress cycle</p>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
@@ -82,29 +98,95 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
         ))}
       </div>
 
-      <div style={{ height: CENTER_H, flex: `0 0 ${CENTER_H}px`, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        {SCENARIOS.map((s) => {
-          const band = scenarioBands[s.key];
-          return (
-            <div
-              key={s.key}
-              style={{
-                backgroundColor: `${s.color}0F`, border: `1px solid ${s.color}4D`, borderRadius: 12,
-                padding: '16px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8,
-              }}
-            >
-              <p style={{ fontSize: 11, fontWeight: 700, color: s.color, margin: 0, lineHeight: 1.4 }}>{s.label}</p>
-              <p style={{ fontSize: 20, fontWeight: 800, color: '#F7F9FC', margin: 0 }}>
-                {fmtUSD(band.low)} – {fmtUSD(band.high)}
-              </p>
-              <p style={{ fontSize: 10, color: '#8B949E', margin: 0, lineHeight: 1.5 }}>{s.desc}</p>
-            </div>
-          );
-        })}
+      <div style={{ flex: '0 0 auto' }}>
+        <ComposedChart data={points} width={CARD_W} height={CENTER_H} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
+
+          {stressWindows.map((w) => (
+            <ReferenceArea
+              key={w.label}
+              x1={w.startTs}
+              x2={w.endTs}
+              fill="#F85149"
+              fillOpacity={w.projected ? 0.06 : 0.1}
+              stroke={w.projected ? '#F85149' : 'none'}
+              strokeOpacity={w.projected ? 0.4 : 0}
+              strokeDasharray={w.projected ? '4 4' : undefined}
+            />
+          ))}
+
+          {halvings.map((h) => (
+            <ReferenceLine
+              key={h.label}
+              x={h.ts}
+              stroke="#F7931A"
+              strokeOpacity={0.55}
+              strokeDasharray="4 4"
+              label={{ value: h.label, position: 'insideTopRight', fill: '#F7931A', fontSize: 10, fillOpacity: 0.8 }}
+            />
+          ))}
+
+          <XAxis
+            dataKey="ts"
+            type="number"
+            scale="time"
+            domain={[xStart, xEnd]}
+            ticks={YEAR_TICKS}
+            tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
+            tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
+            axisLine={{ stroke: '#21262D' }}
+            tickLine={false}
+          />
+          <YAxis
+            scale="log"
+            domain={[pMin, pMax]}
+            ticks={logTicks}
+            tickFormatter={fmtPrice}
+            tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
+            axisLine={{ stroke: '#21262D' }}
+            tickLine={false}
+            width={56}
+            allowDataOverflow
+          />
+
+          <Line
+            type="monotone"
+            dataKey="price"
+            stroke="#F5F7FA"
+            strokeWidth={1.8}
+            dot={false}
+            isAnimationActive={false}
+            connectNulls
+          />
+
+          {cycleMarkers.map((m) => (
+            <ReferenceDot
+              key={`${m.kind}-${m.ts}`}
+              x={m.ts}
+              y={m.price}
+              r={0}
+              shape={(dotProps: { cx?: number; cy?: number }) => <MarkerDot cx={dotProps.cx} cy={dotProps.cy} kind={m.kind} />}
+              ifOverflow="extendDomain"
+            />
+          ))}
+        </ComposedChart>
       </div>
 
       <div style={{ flex: '1 1 auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: GAP }}>
-        <span style={{ fontSize: 10, color: '#6B7280' }}>Illustrative ranges, not a forecast — hypothesis-testing content</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#38BDF8', display: 'inline-block' }} />
+            <span style={{ fontSize: 10, color: '#8B949E' }}>Cycle Low</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#FF5C8A', display: 'inline-block' }} />
+            <span style={{ fontSize: 10, color: '#8B949E' }}>Cycle High</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 10, height: 8, backgroundColor: 'rgba(248,81,73,0.3)', display: 'inline-block', borderRadius: 2 }} />
+            <span style={{ fontSize: 10, color: '#8B949E' }}>Stress Windows</span>
+          </div>
+        </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
           Generated from Skyline Cycle Terminal · Not financial advice
         </span>
