@@ -244,6 +244,45 @@ export async function fetchBTCMVRVData(startTime = '2011-01-01'): Promise<MVRVDa
   return all;
 }
 
+// ─── Risk score factor data (MVRV + market cap, for realized price / MVRV-Z) ──
+
+export type RiskFactorPoint = {
+  time:      string;
+  price:     number;
+  mvrv:      number;
+  marketCap: number;
+};
+
+// CapMVRVCur and CapMrktCurUSD are both confirmed free in the Community API —
+// avoids the CapRealUSD paywall fallback used by fetchBTCRealizedPrice.
+// realizedCap = marketCap / mvrv; realizedPrice = price / mvrv.
+export async function fetchBTCRiskFactorData(startTime = '2011-01-01'): Promise<RiskFactorPoint[]> {
+  const all: RiskFactorPoint[] = [];
+  let nextPageToken: string | null = null;
+
+  do {
+    const params: Record<string, string> = {
+      assets: 'btc', metrics: 'PriceUSD,CapMVRVCur,CapMrktCurUSD', frequency: '1d',
+      start_time: startTime, page_size: '10000',
+    };
+    if (nextPageToken) params.next_page_token = nextPageToken;
+
+    const json = await coinmetricsGet(params);
+    for (const d of json.data ?? []) {
+      if (d.PriceUSD == null || d.CapMVRVCur == null || d.CapMrktCurUSD == null) continue;
+      all.push({
+        time:      d.time.slice(0, 10),
+        price:     Number(d.PriceUSD),
+        mvrv:      Number(d.CapMVRVCur),
+        marketCap: Number(d.CapMrktCurUSD),
+      });
+    }
+    nextPageToken = (json as any).next_page_token ?? null;
+  } while (nextPageToken);
+
+  return all;
+}
+
 // ─── Cycle Master data ────────────────────────────────────────────────────────
 
 export type CycleMasterRaw = {

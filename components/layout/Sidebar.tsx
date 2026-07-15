@@ -155,6 +155,7 @@ const nav: (NavItem | NavSection)[] = [
     section: "TOOLS",
     items: [
       { label: "BTC DCA Optimizer", href: "/tools/dca-optimizer", icon: Crosshair },
+      { label: "BTC Risk Level",    href: "/tools/risk-level",    icon: Gauge },
       { label: "External Links",    href: "/links",                icon: ExternalLink },
       { label: "Methodology",       href: "/methodology",          icon: BookOpen },
     ],
