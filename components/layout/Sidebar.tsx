@@ -69,6 +69,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Cycle Comparison",  href: "/price/cycle-comparison", icon: Layers },
       { label: "Cycle Timer",       href: "/cycle-timer",            icon: Timer },
       { label: "Crypto Calendar",   href: "/price/calendar",         icon: CalendarDays },
+      { label: "7-Year Stress Cycle", href: "/seven-year-cycle",     icon: History },
     ],
   },
   {
