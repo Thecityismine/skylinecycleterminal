@@ -145,13 +145,14 @@ export function SevenYearCyclePageClient({ btcPrices, crossAsset, liquidity, yie
 
   const sharePayload: SevenYearCycleSharePayload = {
     price: currentPrice,
-    stressScore: stressResult.score,
-    stressLabel: band?.label ?? '—',
     fourYearPhase: FOUR_YEAR_PHASE_LABEL[activePosition.currentPhase],
     sevenYearPhase: sevenYearPhaseLabel,
     modelAgreement,
-    thesisOverall: thesisScoreboard.overall,
-    thesisVerdict: thesisScoreboard.verdict,
+    scenarioBands: {
+      bullish: scenarioBands.bullish,
+      hybrid:  scenarioBands.hybrid,
+      stress:  scenarioBands.stress,
+    },
     generatedAt: new Date().toISOString(),
   };
 
