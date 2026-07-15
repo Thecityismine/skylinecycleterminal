@@ -7,6 +7,8 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { BTCCycleDurationChart } from '@/components/charts/BTCCycleDurationChart';
 import { CycleAlignmentChart } from '@/components/charts/CycleAlignmentChart';
+import { CycleTimerShareModal } from '@/components/share/CycleTimerShareModal';
+import type { CycleTimerSharePayload } from '@/components/share/CycleTimerShareCard';
 import type {
   CycleAnchor,
   CompletedCycleStats,
@@ -72,6 +74,24 @@ export default function CycleTimerPage() {
   const projectedLow = activeCycle
     ? (timingModel === 'fixed' ? activeCycle.projectedLowDateFmt : activeCycle.projectedLowDateMedianFmt)
     : '—';
+
+  const sharePayload: CycleTimerSharePayload | null = (activeCycle && phase && metrics) ? {
+    daysSinceLow:           activeCycle.daysSinceLow,
+    lowDateFmt:             activeCycle.lowDateFmt,
+    lowPrice:               activeCycle.lowPrice,
+    phaseLabel:             phase.label,
+    phaseColor:             phase.color,
+    timingDeviation:        activeCycle.timingDeviation,
+    medianLowToHigh:        metrics.lowToHigh.median,
+    medianHighToLow:        metrics.highToLow.median,
+    completedCycles:        metrics.completedCycles,
+    peakWindowStartDate:    activeCycle.peakWindowStartDate,
+    peakWindowEndDate:      activeCycle.peakWindowEndDate,
+    bottomWindowStartDate:  activeCycle.bottomWindowStartDate,
+    bottomWindowEndDate:    activeCycle.bottomWindowEndDate,
+    timingModelLabel:       timingModel === 'fixed' ? 'Fixed 1,064 / 364' : 'Historical Median',
+    generatedAt:            new Date().toISOString(),
+  } : null;
 
   const completedWithCurrent = useMemo(() => {
     if (!activeCycle) return completed;
@@ -244,6 +264,7 @@ export default function CycleTimerPage() {
             >
               LOG
             </button>
+            {sharePayload && <CycleTimerShareModal payload={sharePayload} />}
           </div>
         </div>
 
