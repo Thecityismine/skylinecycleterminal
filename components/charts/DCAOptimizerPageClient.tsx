@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel } from '@/components/dashboard/InsightPanel';
@@ -280,6 +282,19 @@ export function DCAOptimizerPageClient({ prices }: Props) {
           </table>
         </div>
       </div>
+
+      {/* Cross-link */}
+      <Link
+        href="/tools/smart-dca-engine"
+        className="rounded-xl border p-4 flex items-center justify-between gap-3 transition-colors hover:border-[#F7931A]"
+        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+      >
+        <div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>Get the Smart DCA recommendation</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>Combines this best-day model with the Risk Level score into one suggested multiplier</p>
+        </div>
+        <ArrowRight size={16} style={{ color: 'var(--sct-muted)' }} />
+      </Link>
 
       {/* Methodology / disclaimer */}
       <InsightPanel title="How This Works">
