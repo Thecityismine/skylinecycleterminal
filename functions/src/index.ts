@@ -25,8 +25,11 @@ export const dailyAlertCheck = onSchedule(
   async () => {
     initAdmin();
     const db     = getFirestore();
-    const token  = TELEGRAM_BOT_TOKEN.value();
-    const chatId = TELEGRAM_CHAT_ID.value();
+    // .trim() guards against trailing whitespace/newlines in the stored secret
+    // value, which Node's https.request() rejects outright (CRLF-injection
+    // protection) when building the request path.
+    const token  = TELEGRAM_BOT_TOKEN.value().trim();
+    const chatId = TELEGRAM_CHAT_ID.value().trim();
 
     // Fetch signals and cycle score in parallel
     const [signals, cycle] = await Promise.all([
