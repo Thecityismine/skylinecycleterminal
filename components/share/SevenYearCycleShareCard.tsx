@@ -12,6 +12,7 @@ export type SevenYearCycleSharePayload = {
   halvings:       { ts: number; label: string }[];
   stressWindows:  { startTs: number; endTs: number; label: string; projected: boolean }[];
   cycleMarkers:   { ts: number; price: number; kind: 'low' | 'high' }[];
+  scenarioBands:  { bullish: { low: number; high: number }; hybrid: { low: number; high: number }; stress: { low: number; high: number } } | null;
   generatedAt:    string;
 };
 
@@ -29,6 +30,9 @@ export const SEVEN_YEAR_CARD_CHART_RECT = {
 
 const LOG_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
 const YEAR_TICKS = Array.from({ length: 21 }, (_, i) => new Date(`${2010 + i}-01-01T00:00:00Z`).getTime());
+const CHART_END_TS = new Date('2030-06-01T00:00:00Z').getTime();
+const SCENARIO_START_TS = new Date('2028-04-01T00:00:00Z').getTime();
+const SCENARIO_END_TS   = new Date('2029-12-31T00:00:00Z').getTime();
 
 function fmtUSD(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -49,7 +53,7 @@ function MarkerDot({ cx, cy, kind }: { cx?: number; cy?: number; kind: 'low' | '
 }
 
 export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSharePayload }) {
-  const { price, fourYearPhase, sevenYearPhase, modelAgreement, points, halvings, stressWindows, cycleMarkers, generatedAt } = payload;
+  const { price, fourYearPhase, sevenYearPhase, modelAgreement, points, halvings, stressWindows, cycleMarkers, scenarioBands, generatedAt } = payload;
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -62,10 +66,11 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
 
   const prices = points.map((p) => p.price).filter((v) => v > 0);
   const pMin = prices.length ? Math.max(1, Math.min(...prices) * 0.5) : 1;
-  const pMax = prices.length ? Math.max(...prices) * 2 : 200_000;
+  let pMax = prices.length ? Math.max(...prices) * 2 : 200_000;
+  if (scenarioBands) pMax = Math.max(pMax, scenarioBands.bullish.high * 1.2);
   const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
   const xStart = points[0]?.ts ?? new Date('2010-01-01').getTime();
-  const xEnd   = points.at(-1)?.ts ?? new Date(generatedAt).getTime();
+  const xEnd   = Math.max(points.at(-1)?.ts ?? new Date(generatedAt).getTime(), CHART_END_TS);
 
   return (
     <div style={{
@@ -114,6 +119,14 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
               strokeDasharray={w.projected ? '4 4' : undefined}
             />
           ))}
+
+          {scenarioBands && (
+            <>
+              <ReferenceArea x1={SCENARIO_START_TS} x2={SCENARIO_END_TS} y1={scenarioBands.bullish.low} y2={scenarioBands.bullish.high} fill="#35D07F" fillOpacity={0.12} stroke="none" />
+              <ReferenceArea x1={SCENARIO_START_TS} x2={SCENARIO_END_TS} y1={scenarioBands.hybrid.low} y2={scenarioBands.hybrid.high} fill="#E6B450" fillOpacity={0.12} stroke="none" />
+              <ReferenceArea x1={SCENARIO_START_TS} x2={SCENARIO_END_TS} y1={scenarioBands.stress.low} y2={scenarioBands.stress.high} fill="#F85149" fillOpacity={0.12} stroke="none" />
+            </>
+          )}
 
           {halvings.map((h) => (
             <ReferenceLine
@@ -186,6 +199,12 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
             <span style={{ width: 10, height: 8, backgroundColor: 'rgba(248,81,73,0.3)', display: 'inline-block', borderRadius: 2 }} />
             <span style={{ fontSize: 10, color: '#8B949E' }}>Stress Windows</span>
           </div>
+          {scenarioBands && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 10, height: 8, backgroundColor: 'rgba(53,208,127,0.3)', display: 'inline-block', borderRadius: 2 }} />
+              <span style={{ fontSize: 10, color: '#8B949E' }}>Scenario Bands (2028–2029)</span>
+            </div>
+          )}
         </div>
         <span style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.06em' }}>
           Generated from Skyline Cycle Terminal · Not financial advice

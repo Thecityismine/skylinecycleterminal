@@ -152,6 +152,7 @@ export function SevenYearCyclePageClient({ btcPrices, crossAsset, liquidity, yie
     halvings: halvingMarkers.map((h) => ({ ts: h.ts, label: h.label })),
     stressWindows,
     cycleMarkers: cycleMarkers.map((m) => ({ ts: m.ts, price: m.price, kind: m.kind })),
+    scenarioBands: showScenarioBands ? scenarioBands : null,
     generatedAt: new Date().toISOString(),
   };
 
