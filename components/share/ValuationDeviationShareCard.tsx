@@ -4,6 +4,7 @@ import {
   ComposedChart, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine,
 } from 'recharts';
 import { DeviationColorLine, downsampleValuationPoints } from '@/components/charts/ValuationDeviationChart';
+import { HALVINGS } from '@/lib/indicators/halvingCycles';
 import { halvingColor, ZONE_META } from '@/lib/indicators/valuationCycle';
 import type { ValuationPoint } from '@/lib/indicators/valuationCycle';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
@@ -57,6 +58,7 @@ export function ValuationDeviationShareCard({ payload }: { payload: ValuationDev
   const deviations = chartData.map((p) => p.deviation).filter((v): v is number => v != null);
   const yMin = Math.min(-0.5, ...deviations, 0);
   const yMax = Math.max(1.5, ...deviations);
+  const now = Date.now();
 
   const stats = [
     { label: 'BTC Price',       value: current ? fmtPrice(current.close) : '—',                          sub: 'Latest close',            color: '#E6EDF3' },
@@ -115,8 +117,26 @@ export function ValuationDeviationShareCard({ payload }: { payload: ValuationDev
           <ReferenceArea y1={yMin} y2={0.05} fill="rgba(53,208,127,0.08)" stroke="none" />
           <ReferenceArea y1={1.00} y2={yMax} fill="rgba(248,81,73,0.08)" stroke="none" />
 
-          <ReferenceLine y={0} stroke="rgba(91,132,255,0.5)" strokeDasharray="4 3" />
-          <ReferenceLine y={1.0} stroke="rgba(248,81,73,0.45)" strokeDasharray="4 3" />
+          <ReferenceLine y={0} stroke="rgba(91,132,255,0.5)" strokeDasharray="4 3"
+            label={{ value: '200D MA', position: 'insideBottomLeft', fontSize: 10, fill: 'rgba(91,132,255,0.7)' }} />
+          <ReferenceLine y={1.0} stroke="rgba(248,81,73,0.45)" strokeDasharray="4 3"
+            label={{ value: 'Sell Zone', position: 'insideTopLeft', fontSize: 10, fill: 'rgba(248,81,73,0.7)' }} />
+
+          {HALVINGS.filter((h) => h.ts >= startTs).map((h) => (
+            <ReferenceLine
+              key={h.label}
+              x={h.ts}
+              stroke={h.estimated ? 'rgba(255,255,255,0.25)' : 'rgba(255,200,50,0.5)'}
+              strokeDasharray={h.estimated ? '6 4' : '4 3'}
+              strokeWidth={1}
+              label={{ value: h.label, position: 'insideTopRight', fontSize: 9, fill: h.estimated ? 'rgba(255,255,255,0.4)' : 'rgba(255,200,50,0.7)' }}
+            />
+          ))}
+
+          {now >= startTs && (
+            <ReferenceLine x={now} stroke="rgba(247,249,252,0.35)" strokeDasharray="2 4"
+              label={{ value: 'Now', position: 'insideTopRight', fontSize: 10, fill: 'rgba(247,249,252,0.5)' }} />
+          )}
 
           <XAxis
             dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']}

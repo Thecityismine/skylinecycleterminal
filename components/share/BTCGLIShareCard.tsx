@@ -14,6 +14,8 @@ export type BTCGLISharePayload = {
   phaseZones:    GLIPhaseZone[];
   current:       GLICurrentStats;
   rangeLabel:    string;
+  showPhases:        boolean;
+  showTurningPoints: boolean;
   generatedAt:   string;
 };
 
@@ -45,19 +47,23 @@ function fmtP(v: number | null): string {
 }
 
 export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
-  const { rows, turningPoints, phaseZones, current, rangeLabel, generatedAt } = payload;
+  const { rows, turningPoints, phaseZones, current, rangeLabel, showPhases, showTurningPoints, generatedAt } = payload;
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const signalColor = SIGNAL_COLOR[current.signal];
+  const confidenceColor = current.confidence === 'High' ? '#35D07F' : current.confidence === 'Moderate' ? '#E6B450' : '#8B949E';
 
   const first = rows[0]?.time, last = rows[rows.length - 1]?.time;
-  const turningDots = turningPoints.filter(tp => first && last && tp.shiftedTime >= first && tp.shiftedTime <= last);
+  const turningDots = showTurningPoints
+    ? turningPoints.filter(tp => first && last && tp.shiftedTime >= first && tp.shiftedTime <= last)
+    : [];
 
   const stats = [
     { label: 'BTC Price',       value: fmtP(current.btcPrice),                                          sub: 'Latest close',        color: '#F7931A' },
     { label: 'GLI (Shifted)',   value: current.gli != null ? current.gli.toFixed(1) : '—',               sub: `${current.gliTrend} phase`, color: '#F5F7FA' },
     { label: 'Active Lag',      value: `${current.lagDays}D`,                                            sub: 'Forward shift',       color: '#F5F7FA' },
     { label: '90D Correlation', value: current.correlation90d != null ? current.correlation90d.toFixed(2) : '—', sub: 'BTC vs shifted GLI', color: '#8B949E' },
+    { label: 'Model Confidence', value: current.confidence,                                              sub: 'Based on |correlation|', color: confidenceColor },
   ];
 
   return (
@@ -90,7 +96,7 @@ export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
       </div>
 
       {/* Stats strip */}
-      <div style={{ height: STATS_H, flex: `0 0 ${STATS_H}px`, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: GAP, marginBottom: GAP }}>
+      <div style={{ height: STATS_H, flex: `0 0 ${STATS_H}px`, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginTop: GAP, marginBottom: GAP }}>
         {stats.map(s => (
           <div key={s.label} style={{ backgroundColor: '#161B22', border: '1px solid #21262D', borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <p style={{ fontSize: 10, color: '#8B949E', margin: 0 }}>{s.label}</p>
@@ -105,7 +111,7 @@ export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
         <ComposedChart data={rows} width={CHART_W} height={CHART_H} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
 
-          {phaseZones.map(z => (
+          {showPhases && phaseZones.map(z => (
             <ReferenceArea key={z.start} yAxisId="price" x1={z.start} x2={z.end} fill={PHASE_FILL[z.phase]} strokeOpacity={0} />
           ))}
 
@@ -137,7 +143,7 @@ export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
           {[
             { color: '#F7931A', label: 'BTC Price' },
             { color: '#F5F7FA', label: `GLI + ${current.lagDays}D` },
-            { color: '#FDE047', label: 'Turning Point' },
+            ...(showTurningPoints ? [{ color: '#FDE047', label: 'Turning Point' }] : []),
           ].map(l => (
             <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ width: 16, height: 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />

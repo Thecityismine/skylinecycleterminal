@@ -8,10 +8,16 @@ export type SmartDcaEngineSharePayload = {
   score:            number | null;
   zoneLabel:        string;
   bestDayLabel:     string;
+  bestDayAvgDiscount: number | null;
   multiplierLabel:  string;
   actionLabel:      string;
   generatedAt:      string;
 };
+
+function fmtPct(v: number | null): string {
+  if (v == null) return '—';
+  return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+}
 
 const PAD      = 32;
 const HEADER_H = 72;
@@ -33,7 +39,7 @@ function fmtUSD(v: number | null): string {
 }
 
 export function SmartDcaEngineShareCard({ payload }: { payload: SmartDcaEngineSharePayload }) {
-  const { price, score, zoneLabel, bestDayLabel, multiplierLabel, actionLabel, generatedAt } = payload;
+  const { price, score, zoneLabel, bestDayLabel, bestDayAvgDiscount, multiplierLabel, actionLabel, generatedAt } = payload;
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const color = score != null ? riskColor(score) : '#8B949E';
@@ -42,7 +48,7 @@ export function SmartDcaEngineShareCard({ payload }: { payload: SmartDcaEngineSh
   const stats = [
     { label: 'BTC Price',  value: fmtUSD(price),                          sub: 'Latest close',    color: '#F7931A' },
     { label: 'Risk Score', value: score != null ? score.toFixed(3) : '—', sub: zoneLabel,          color },
-    { label: 'Best DCA Day', value: bestDayLabel,                         sub: 'Historical weekday', color: '#5B84FF' },
+    { label: 'Best DCA Day', value: bestDayLabel,                         sub: `Avg discount ${fmtPct(bestDayAvgDiscount)}`, color: '#5B84FF' },
   ];
 
   return (

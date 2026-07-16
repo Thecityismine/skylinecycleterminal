@@ -68,6 +68,7 @@ export function SmartDcaEnginePageClient({ prices, riskFactorData }: Props) {
     score,
     zoneLabel:    zone?.label ?? '—',
     bestDayLabel: bestDay?.label ?? '—',
+    bestDayAvgDiscount: bestDay?.avgDiscount ?? null,
     multiplierLabel: band ? fmtMultiplier(band.multiplier) : '—',
     actionLabel:  band?.label ?? '—',
     generatedAt:  new Date().toISOString(),

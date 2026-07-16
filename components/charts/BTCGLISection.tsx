@@ -78,8 +78,10 @@ export function BTCGLISection({ btcPrices, gliRaw }: Props) {
     phaseZones:    displayedZones,
     current:       result.current,
     rangeLabel:    isZoomed ? 'Zoomed' : range,
+    showPhases,
+    showTurningPoints,
     generatedAt:   new Date().toISOString(),
-  }), [displayedRows, result.turningPoints, displayedZones, result.current, range, isZoomed]);
+  }), [displayedRows, result.turningPoints, displayedZones, result.current, range, isZoomed, showPhases, showTurningPoints]);
 
   const { current } = result;
   const confidenceColor = current.confidence === 'High' ? '#35D07F' : current.confidence === 'Moderate' ? '#E6B450' : '#8B949E';

@@ -1,7 +1,8 @@
 "use client";
 
-import { ComposedChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine } from 'recharts';
 import { riskColor, riskZone, ZONE_META } from '@/lib/indicators/riskScore';
+import { HALVINGS } from '@/lib/indicators/halvingCycles';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
 export type BTCRiskLevelSharePayload = {
@@ -10,8 +11,17 @@ export type BTCRiskLevelSharePayload = {
   currentPrice:      number | null;
   currentScore:      number | null;
   historicalPct:     number | null;
+  confidencePct:     number | null;
   generatedAt:       string;
 };
+
+const ZONE_BANDS = [
+  { y1: 0.0, y2: 0.2, key: 'accumulation' as const },
+  { y1: 0.2, y2: 0.4, key: 'value' as const },
+  { y1: 0.4, y2: 0.6, key: 'neutral' as const },
+  { y1: 0.6, y2: 0.8, key: 'caution' as const },
+  { y1: 0.8, y2: 1.0, key: 'distribution' as const },
+];
 
 const PAD      = 32;
 const HEADER_H = 72;
@@ -43,14 +53,14 @@ function fmtPrice(v: number): string {
 }
 
 export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelSharePayload }) {
-  const { points, modelLabel, currentPrice, currentScore, historicalPct, generatedAt } = payload;
+  const { points, modelLabel, currentPrice, currentScore, historicalPct, confidencePct, generatedAt } = payload;
 
   const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const zone = currentScore != null ? ZONE_META[riskZone(currentScore)] : null;
   const color = currentScore != null ? riskColor(currentScore) : '#8B949E';
 
   const chartData = points.map((p, i) => {
-    const row: Record<string, number | string | null> = { ts: p.ts, price: p.price };
+    const row: Record<string, number | string | null> = { ts: p.ts, price: p.price, score: p.score };
     for (let b = 0; b < BAND_COUNT; b++) row[`price_b${b}`] = null;
     if (p.score != null) {
       const band = bandIndex(p.score);
@@ -67,10 +77,10 @@ export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelShareP
   const bandColors = Array.from({ length: BAND_COUNT }, (_, b) => riskColor((b + 0.5) / BAND_COUNT));
 
   const stats = [
-    { label: 'BTC Price',           value: fmtUSD(currentPrice),                                sub: 'Latest close',      color: '#F7931A' },
-    { label: 'Risk Score',          value: currentScore != null ? currentScore.toFixed(3) : '—', sub: modelLabel,          color },
-    { label: 'Zone',                value: zone?.label ?? '—',                                   sub: 'Historical read',   color: zone?.color ?? '#8B949E' },
+    { label: 'BTC Price',           value: fmtUSD(currentPrice),                                sub: 'Latest close',       color: '#F7931A' },
+    { label: 'Risk Score',          value: currentScore != null ? currentScore.toFixed(3) : '—', sub: zone?.label ?? '—',   color },
     { label: 'Historical Percentile', value: historicalPct != null ? `${historicalPct.toFixed(0)}%` : '—', sub: 'vs full BTC history', color: '#5B84FF' },
+    { label: 'Confidence',          value: confidencePct != null ? `${confidencePct.toFixed(0)}%` : '—', sub: 'Data completeness', color: '#35D07F' },
   ];
 
   return (
@@ -107,6 +117,30 @@ export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelShareP
       <div style={{ flex: '0 0 auto' }}>
         <ComposedChart data={chartData} width={CHART_W} height={CHART_H} margin={{ top: 12, right: 16, bottom: 0, left: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.4)" vertical={false} />
+
+          {ZONE_BANDS.map((b) => (
+            <ReferenceArea
+              key={b.key}
+              yAxisId="risk"
+              y1={b.y1}
+              y2={b.y2}
+              fill={ZONE_META[b.key].color}
+              fillOpacity={0.06}
+              stroke="none"
+            />
+          ))}
+
+          {HALVINGS.filter((h) => !h.estimated).map((h) => (
+            <ReferenceLine
+              key={h.label}
+              yAxisId="risk"
+              x={h.ts}
+              stroke="rgba(255,255,255,0.15)"
+              strokeDasharray="3 5"
+              label={{ value: h.label, position: 'insideTopRight', fill: 'rgba(255,255,255,0.28)', fontSize: 9 }}
+            />
+          ))}
+
           <XAxis
             dataKey="ts"
             type="number"
@@ -115,6 +149,14 @@ export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelShareP
             tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             axisLine={{ stroke: '#21262D' }}
+            tickLine={false}
+          />
+          <YAxis
+            yAxisId="risk"
+            domain={[0, 1]}
+            width={0}
+            tick={false}
+            axisLine={false}
             tickLine={false}
           />
           <YAxis
@@ -127,6 +169,10 @@ export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelShareP
             width={56}
             allowDataOverflow
           />
+          {/* Invisible series bound to yAxisId="risk" — Recharts only registers a
+              named y-axis for ReferenceArea/ReferenceLine positioning when at least
+              one graphical series uses it; this axis otherwise has none. */}
+          <Line yAxisId="risk" dataKey="score" stroke="none" dot={false} isAnimationActive={false} legendType="none" />
           {Array.from({ length: BAND_COUNT }, (_, b) => (
             <Line
               key={b}

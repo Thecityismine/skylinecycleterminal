@@ -208,6 +208,11 @@ export function RiskColoredPriceChart({ points, showBands, onZoomChange }: Props
 
             <Tooltip content={<CustomTooltip />} cursor={zoom.isSelecting ? false : { stroke: 'var(--sct-border)', strokeWidth: 1 }} />
 
+            {/* Invisible series bound to yAxisId="risk" — Recharts only registers a
+                named y-axis for ReferenceArea/ReferenceLine positioning when at least
+                one graphical series uses it; this axis otherwise has none. */}
+            <Line yAxisId="risk" dataKey="score" stroke="none" dot={false} isAnimationActive={false} legendType="none" />
+
             {Array.from({ length: BAND_COUNT }, (_, b) => (
               <Line
                 key={b}

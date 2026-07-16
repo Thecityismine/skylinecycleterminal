@@ -15,6 +15,7 @@ import type {
   ValidationMetrics,
   ActiveCyclePosition,
 } from '@/lib/indicators/cycleAnchors';
+import { HALVINGS } from '@/lib/indicators/halvingCycles';
 
 type PricePoint = { time: string; ts: number; price: number };
 
@@ -75,6 +76,26 @@ export default function CycleTimerPage() {
     ? (timingModel === 'fixed' ? activeCycle.projectedLowDateFmt : activeCycle.projectedLowDateMedianFmt)
     : '—';
 
+  const shareWeeklyPoints = useMemo(
+    () => (data?.prices ?? [])
+      .filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1)
+      .map((p) => ({ ts: p.ts, price: p.price })),
+    [data?.prices],
+  );
+
+  const shareHalvings = useMemo(() => HALVINGS.map((h) => ({ ts: h.ts, label: h.label })), []);
+
+  const shareCycleMarkers = useMemo(() => {
+    const out: { ts: number; price: number; kind: 'low' | 'high' }[] = [];
+    for (const a of data?.anchors ?? []) {
+      out.push({ ts: new Date(a.lowDate + 'T00:00:00Z').getTime(), price: a.lowPrice, kind: 'low' });
+      if (a.highDate && a.highPrice) {
+        out.push({ ts: new Date(a.highDate + 'T00:00:00Z').getTime(), price: a.highPrice, kind: 'high' });
+      }
+    }
+    return out;
+  }, [data?.anchors]);
+
   const sharePayload: CycleTimerSharePayload | null = (activeCycle && phase && metrics) ? {
     daysSinceLow:           activeCycle.daysSinceLow,
     lowDateFmt:             activeCycle.lowDateFmt,
@@ -89,7 +110,12 @@ export default function CycleTimerPage() {
     peakWindowEndDate:      activeCycle.peakWindowEndDate,
     bottomWindowStartDate:  activeCycle.bottomWindowStartDate,
     bottomWindowEndDate:    activeCycle.bottomWindowEndDate,
+    projectedHighDate:      activeCycle.projectedHighDate,
+    projectedLowDate:       activeCycle.projectedLowDate,
     timingModelLabel:       timingModel === 'fixed' ? 'Fixed 1,064 / 364' : 'Historical Median',
+    points:                 shareWeeklyPoints,
+    halvings:               shareHalvings,
+    cycleMarkers:           shareCycleMarkers,
     generatedAt:            new Date().toISOString(),
   } : null;
 

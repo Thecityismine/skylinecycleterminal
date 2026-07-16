@@ -129,6 +129,7 @@ export function RiskLevelPageClient({ prices, riskFactorData }: Props) {
     currentPrice: last?.price ?? null,
     currentScore,
     historicalPct,
+    confidencePct: last?.confidencePct ?? null,
     generatedAt: new Date().toISOString(),
   };
 

@@ -37,6 +37,12 @@ function fmtPct(v: number | null): string {
   return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 }
 
+function fmtMetric(v: number | null, metric: Metric): string {
+  if (v == null) return '—';
+  if (metric === 'winRate') return `${v.toFixed(0)}%`;
+  return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+}
+
 function isDiscountMetric(metric: Metric): boolean {
   return metric === 'avgDiscount' || metric === 'medianDiscount';
 }
@@ -109,6 +115,7 @@ export function BTCDCAOptimizerShareCard({ payload }: { payload: BTCDCAOptimizer
             tickLine={false}
           />
           <YAxis
+            tickFormatter={(v) => fmtMetric(v, metric)}
             tick={{ fill: '#6B7280', fontSize: 11 }}
             axisLine={{ stroke: '#21262D' }}
             tickLine={false}
