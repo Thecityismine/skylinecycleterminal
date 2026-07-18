@@ -126,6 +126,19 @@ const nav: (NavItem | NavSection)[] = [
     ],
   },
   {
+    section: "MARKET ROTATION",
+    items: [
+      { label: "Overview",            href: "/market-rotation?tab=overview",           icon: Radar,          exact: true },
+      { label: "Total Market",        href: "/market-rotation?tab=total",              icon: BarChart2,      exact: true },
+      { label: "Ex-BTC (TOTAL2)",     href: "/market-rotation?tab=total2",             icon: Layers,         exact: true },
+      { label: "Altcoins (TOTAL3)",   href: "/market-rotation?tab=total3",             icon: Waves,          exact: true },
+      { label: "Large Caps",          href: "/market-rotation?tab=largeCaps",          icon: PieChart,       exact: true },
+      { label: "Alt/BTC Strength",    href: "/market-rotation?tab=altBtcStrength",     icon: Scale,          exact: true },
+      { label: "Speculative Alts",    href: "/market-rotation?tab=speculativeAlts",    icon: Flame,          exact: true },
+      { label: "Dominance Rotation",  href: "/market-rotation?tab=dominanceRotation",  icon: ArrowLeftRight, exact: true },
+    ],
+  },
+  {
     section: "MACRO",
     items: [
       { label: "SPX & Recession",  href: "/macro/spx-recession", icon: BarChart2 },
