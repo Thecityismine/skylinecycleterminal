@@ -1,15 +1,10 @@
 export type RotationPoint = {
-  time:       string;
-  ts:         number;
-  value:      number;
-  ma50:       number | null;
-  ma100:      number | null;
-  ma200:      number | null;
-  cloudUpper: number | null;
-  cloudLower: number | null;
-  momentum:   number | null;
-  waveWt1:    number | null;
-  waveWt2:    number | null;
+  time:  string;
+  ts:    number;
+  value: number;
+  ma50:  number | null;
+  ma100: number | null;
+  ma200: number | null;
 };
 
 export type DerivedStats = {
@@ -24,6 +19,8 @@ export type DerivedStats = {
   momentumValue:   number | null;
 };
 
+const MOMENTUM_LOOKBACK = 10;
+
 export function deriveTabStats(points: RotationPoint[], maPeriod: 50 | 100 | 200): DerivedStats {
   const last = points[points.length - 1];
   const ath = points.reduce((m, p) => Math.max(m, p.value), 0);
@@ -32,7 +29,12 @@ export function deriveTabStats(points: RotationPoint[], maPeriod: 50 | 100 | 200
   const distanceFromMA = maValue != null && maValue > 0 && last
     ? ((last.value - maValue) / maValue) * 100
     : null;
-  const momentumValue = last?.momentum ?? null;
+
+  const priorIdx = points.length - 1 - MOMENTUM_LOOKBACK;
+  const prior = priorIdx >= 0 ? points[priorIdx] : null;
+  const momentumValue = last && prior && prior.value !== 0
+    ? ((last.value - prior.value) / Math.abs(prior.value)) * 100
+    : null;
 
   return {
     currentValue:    last?.value ?? 0,

@@ -2,28 +2,22 @@
 
 import { useMemo, useEffect } from 'react';
 import {
-  ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, ReferenceArea, ReferenceLine, ReferenceDot,
+  ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  CartesianGrid, ReferenceArea,
 } from 'recharts';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import { useChartZoom } from '@/lib/hooks/useChartZoom';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 import type { RotationRange, MAPeriod } from './RotationToolbar';
-import type { OverlayKey } from '@/lib/rotation/tabConfig';
 
 export type RotationChartPoint = {
-  time:       string;
-  ts:         number;
-  value:      number;
-  ma50:       number | null;
-  ma100:      number | null;
-  ma200:      number | null;
-  cloudUpper: number | null;
-  cloudLower: number | null;
+  time:  string;
+  ts:    number;
+  value: number;
+  ma50:  number | null;
+  ma100: number | null;
+  ma200: number | null;
 };
-
-type SwingPoint = { ts: number; value: number; type: 'high' | 'low' };
-type ChochEvent = { ts: number; direction: 'bullish' | 'bearish'; brokenLevel: number };
 
 type Props = {
   points:        RotationChartPoint[];
@@ -32,9 +26,6 @@ type Props = {
   range:         RotationRange;
   color:         string;
   isRatio:       boolean;
-  overlays:      OverlayKey[];
-  choch:         ChochEvent[];
-  swings:        SwingPoint[];
   onZoomChange?: (d: ZoomDomain<number> | null) => void;
 };
 
@@ -76,9 +67,7 @@ function CustomTooltip({ active, payload, isRatio, ma }: TooltipProps) {
   );
 }
 
-export function RotationChart({
-  points, ma, logScale, range, color, isRatio, overlays, choch, swings, onZoomChange,
-}: Props) {
+export function RotationChart({ points, ma, logScale, range, color, isRatio, onZoomChange }: Props) {
   const { domain, isSelecting, selectionArea, cancel, chartHandlers } = useChartZoom<number>();
 
   useEffect(() => { onZoomChange?.(domain); }, [domain, onZoomChange]);
@@ -92,27 +81,12 @@ export function RotationChart({
   }, [range, points]);
 
   const chartData = useMemo(() => {
-    const visible = points
-      .filter((p) => p.ts >= startTs)
-      .map((p) => ({
-        ...p,
-        cloudRange: p.cloudUpper != null && p.cloudLower != null ? [p.cloudLower, p.cloudUpper] as [number, number] : null,
-      }));
+    const visible = points.filter((p) => p.ts >= startTs);
     if (!domain) return visible;
     return visible.filter((p) => p.ts >= domain.start && p.ts <= domain.end);
   }, [points, startTs, domain]);
 
   const maKey = ma === 50 ? 'ma50' : ma === 100 ? 'ma100' : 'ma200';
-
-  const visibleChoch = useMemo(() => choch.filter((c) => c.ts >= startTs), [choch, startTs]);
-  const recentSwingHigh = useMemo(() => {
-    const highs = swings.filter((s) => s.type === 'high' && s.ts >= startTs);
-    return highs.length ? highs[highs.length - 1] : null;
-  }, [swings, startTs]);
-  const recentSwingLow = useMemo(() => {
-    const lows = swings.filter((s) => s.type === 'low' && s.ts >= startTs);
-    return lows.length ? lows[lows.length - 1] : null;
-  }, [swings, startTs]);
 
   if (!chartData.length) return null;
 
@@ -148,41 +122,8 @@ export function RotationChart({
 
           <Tooltip content={<CustomTooltip isRatio={isRatio} ma={ma} />} cursor={isSelecting ? false : { stroke: 'var(--sct-border)', strokeWidth: 1 }} />
 
-          {overlays.includes('cloud') && (
-            <Area type="monotone" dataKey="cloudRange" stroke="none" fill={color} fillOpacity={0.08} isAnimationActive={false} connectNulls />
-          )}
-
-          {overlays.includes('swing') && recentSwingHigh && (
-            <ReferenceLine
-              y={recentSwingHigh.value} stroke="rgba(255,92,92,0.4)" strokeDasharray="4 4"
-              label={{ value: 'Swing High', position: 'insideTopRight', fontSize: 9, fill: 'rgba(255,92,92,0.7)' }}
-            />
-          )}
-          {overlays.includes('swing') && recentSwingLow && (
-            <ReferenceLine
-              y={recentSwingLow.value} stroke="rgba(53,208,127,0.4)" strokeDasharray="4 4"
-              label={{ value: 'Swing Low', position: 'insideBottomRight', fontSize: 9, fill: 'rgba(53,208,127,0.7)' }}
-            />
-          )}
-
           <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
-
-          {overlays.includes('trend') && (
-            <Line type="monotone" dataKey={maKey} stroke="#5B84FF" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />
-          )}
-
-          {overlays.includes('choch') && visibleChoch.map((c) => (
-            <ReferenceDot
-              key={`choch-${c.ts}`} x={c.ts} y={c.brokenLevel} r={4}
-              fill={c.direction === 'bullish' ? '#35D07F' : '#FF5C5C'} stroke="none"
-              label={{
-                value:    'CHOCH',
-                position: c.direction === 'bullish' ? 'bottom' : 'top',
-                fontSize: 9,
-                fill:     c.direction === 'bullish' ? '#35D07F' : '#FF5C5C',
-              }}
-            />
-          ))}
+          <Line type="monotone" dataKey={maKey} stroke="#5B84FF" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls />
         </ComposedChart>
       </ResponsiveContainer>
       <ChartWatermark />

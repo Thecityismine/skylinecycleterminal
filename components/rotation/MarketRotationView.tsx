@@ -11,7 +11,6 @@ import { RotationToolbar } from './RotationToolbar';
 import type { RotationRange, RotationTimeframe, MAPeriod } from './RotationToolbar';
 import { RotationChart, fmtRotationValue } from './RotationChart';
 import type { RotationChartPoint } from './RotationChart';
-import { RotationOscillatorPanel } from './RotationOscillatorPanel';
 import { RotationCurrentReading } from './RotationCurrentReading';
 import { RotationTimeline } from './RotationTimeline';
 import { RotationStatusBanner } from './RotationStatusBanner';
@@ -25,24 +24,13 @@ import { getRegime } from '@/lib/indicators/marketRotation';
 import type { CycleSegment, SimilarityMatch } from '@/lib/indicators/marketRotation';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
-type ChochEvent = { idx: number; time: string; ts: number; direction: 'bullish' | 'bearish'; brokenLevel: number };
-type SwingPoint = { idx: number; time: string; ts: number; value: number; type: 'high' | 'low' };
-
-type RotationApiPoint = RotationChartPoint & {
-  momentum: number | null;
-  waveWt1:  number | null;
-  waveWt2:  number | null;
-};
-
 type ApiTab = {
   key:         string;
-  points:      RotationApiPoint[];
+  points:      RotationChartPoint[];
   score:       number;
   regimeKey:   string;
   regimeLabel: string;
   regimeColor: string;
-  swings:      SwingPoint[];
-  choch:       ChochEvent[];
   timeline:    CycleSegment[];
   similarity:  SimilarityMatch[];
 };
@@ -52,7 +40,6 @@ type ApiResponse = {
   resolution:        'weekly' | 'daily';
   current:           { totalMarketCap: number; btcDominance: number; ethDominance: number };
   largeCapCoinCount: number;
-  macroOscillator:   { time: string; value: number }[];
   tabs:              ApiTab[];
 };
 
@@ -130,14 +117,6 @@ export function MarketRotationView() {
   const asOfLabel = activeData
     ? new Date(activeData.asOf).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : '—';
-
-  const oscillatorData = useMemo(() => {
-    if (!activeTab) return { momentum: [], wave: [] };
-    return {
-      momentum: activeTab.points.map((p) => ({ ts: p.ts, time: p.time, a: p.momentum })),
-      wave:     activeTab.points.map((p) => ({ ts: p.ts, time: p.time, a: p.waveWt1, b: p.waveWt2 })),
-    };
-  }, [activeTab]);
 
   return (
     <>
@@ -236,27 +215,9 @@ export function MarketRotationView() {
                   points={activeTab.points}
                   ma={ma} logScale={logScale} range={range}
                   color={cfg.color} isRatio={cfg.isRatio}
-                  overlays={cfg.overlays}
-                  choch={activeTab.choch} swings={activeTab.swings}
                   onZoomChange={setZoomDomain}
                 />
               </div>
-
-              {cfg.overlays.includes('momentum') && oscillatorData.momentum.length > 0 && (
-                <RotationOscillatorPanel data={oscillatorData.momentum} label="Momentum" colorA="#E6B450" labelA="ROC" />
-              )}
-              {cfg.overlays.includes('wave') && oscillatorData.wave.length > 0 && (
-                <RotationOscillatorPanel
-                  data={oscillatorData.wave} label="Skyline Wave Oscillator"
-                  colorA="#45F3FF" colorB="#F7931A" labelA="WT1" labelB="WT2"
-                />
-              )}
-              {cfg.overlays.includes('macro') && activeData && activeData.macroOscillator.length > 0 && (
-                <RotationOscillatorPanel
-                  data={activeData.macroOscillator.map((m) => ({ ts: new Date(m.time).getTime(), time: m.time, a: m.value }))}
-                  label="Macro Oscillator" colorA="#8B5CF6" labelA="Macro" domain={[0, 100]}
-                />
-              )}
             </div>
 
             {/* ── Current reading ─────────────────────────────────────── */}
@@ -269,7 +230,6 @@ export function MarketRotationView() {
                 <InsightRow label="Cycle Position" value={latestPhase ? latestPhase.phase[0].toUpperCase() + latestPhase.phase.slice(1) : '—'} />
                 <InsightRow label={`${ma}W EMA`} value={stats.aboveMA == null ? '—' : stats.aboveMA ? 'Above' : 'Below'} valueColor={stats.aboveMA ? 'var(--sct-green)' : 'var(--sct-red)'} />
                 <InsightRow label="Momentum" value={stats.momentumLabel} />
-                <InsightRow label="Wave Oscillator" value={cfg.overlays.includes('wave') ? 'Enabled' : 'N/A'} />
                 <InsightRow label="Rotation Score" value={`${activeTab.score} / 100`} valueColor={regime.color} />
               </InsightPanel>
 

@@ -11,8 +11,6 @@ export type RotationTabKey =
   | 'speculativeAlts'
   | 'dominanceRotation';
 
-export type OverlayKey = 'cloud' | 'trend' | 'swing' | 'choch' | 'momentum' | 'wave' | 'macro';
-
 export type RotationTabConfig = {
   key:           RotationTabKey;
   ticker:        string;
@@ -25,7 +23,6 @@ export type RotationTabConfig = {
   metrics:       string[];
   insights:      string[];
   regimeTable:   RegimeBand[];
-  overlays:      OverlayKey[];
   getValue:      (p: RotationSeriesPoint) => number;
   isRatio:       boolean; // ratio series (e.g. TOTAL3/BTC) format as decimal, not $
   shareSubtitle: string;
@@ -45,7 +42,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Current Market Cap', 'Distance from ATH', 'Cycle Position', 'Bull/Bear Status', '200W EMA Distance', 'Cycle Score'],
     insights:     ['Current Trend', 'Above 200W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  BULLISH_NEUTRAL_BEARISH,
-    overlays:     ['cloud', 'trend', 'swing', 'choch', 'momentum', 'wave', 'macro'],
     getValue:     (p) => p.total,
     isRatio:      false,
     shareSubtitle: 'BTC Total Market',
@@ -63,7 +59,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Distance from ATH', 'Accumulation Score', 'Expansion Score', 'Market Structure', 'Rotation Score'],
     insights:     ['Current Trend', 'Above 200W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  BULLISH_NEUTRAL_BEARISH,
-    overlays:     ['cloud', 'trend', 'swing', 'momentum'],
     getValue:     (p) => p.total2,
     isRatio:      false,
     shareSubtitle: 'Ethereum, Large Caps & Altcoins',
@@ -81,7 +76,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Altcoin Momentum', 'Breakout Status', 'Historical Expansion %', 'Risk Score', 'Cycle Position'],
     insights:     ['Current Trend', 'Above 100W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  BULLISH_NEUTRAL_BEARISH,
-    overlays:     ['cloud', 'trend', 'swing', 'momentum'],
     getValue:     (p) => p.total3,
     isRatio:      false,
     shareSubtitle: 'Pure altcoin market',
@@ -99,7 +93,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Large Cap Strength', 'Institutional Rotation', 'ETH Leadership', 'Large Cap Relative Strength'],
     insights:     ['Current Trend', 'Above 100W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  BULLISH_NEUTRAL_BEARISH,
-    overlays:     ['cloud', 'trend', 'momentum'],
     getValue:     (p) => p.total3, // TOTAL2 - ETH is mathematically TOTAL3 (TOTAL - BTC - ETH)
     isRatio:      false,
     shareSubtitle: 'Large-cap altcoins ex BTC/ETH',
@@ -117,7 +110,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Alt Strength', 'Rotation Stage', 'Altseason Probability', 'BTC Leadership', 'Trend Strength'],
     insights:     ['Current Trend', 'Above 50W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  WEAK_NEUTRAL_STRONG_EXPLOSIVE,
-    overlays:     ['trend', 'swing', 'choch', 'momentum'],
     getValue:     (p) => p.total3OverBtc,
     isRatio:      true,
     shareSubtitle: 'Altcoins vs Bitcoin',
@@ -135,7 +127,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Risk Appetite', 'Speculation Index', 'Retail Activity', 'Momentum', 'Alt Beta'],
     insights:     ['Current Trend', 'Above 50W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  WEAK_NEUTRAL_STRONG_EXPLOSIVE,
-    overlays:     ['trend', 'swing', 'momentum'],
     getValue:     (p) => p.othersOverBtc,
     isRatio:      true,
     shareSubtitle: 'Small caps vs Bitcoin',
@@ -153,7 +144,6 @@ export const ROTATION_TABS: RotationTabConfig[] = [
     metrics:      ['Dominance Trend', 'Alt Rotation', 'BTC Rotation', 'Risk On', 'Risk Off'],
     insights:     ['Current Trend', 'Above 50W EMA', 'Weekly Momentum', 'Cycle Phase', 'Current Risk', 'Historical Similarity'],
     regimeTable:  WEAK_NEUTRAL_STRONG_EXPLOSIVE,
-    overlays:     ['trend', 'swing', 'momentum'],
     // OTHERS.D / BTC.D as a literal ratio cancels to exactly OTHERS/BTC (both
     // dominance terms divide out the same TOTAL) — mathematically identical to
     // the Speculative Alts tab. The dominance *spread* (percentage-point gap

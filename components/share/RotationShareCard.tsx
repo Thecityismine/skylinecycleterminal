@@ -5,14 +5,12 @@ import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard
 import { fmtRotationValue } from '@/components/rotation/RotationChart';
 
 export type RotationSharePoint = {
-  time:       string;
-  ts:         number;
-  value:      number;
-  ma50:       number | null;
-  ma100:      number | null;
-  ma200:      number | null;
-  cloudUpper: number | null;
-  cloudLower: number | null;
+  time:  string;
+  ts:    number;
+  value: number;
+  ma50:  number | null;
+  ma100: number | null;
+  ma200: number | null;
 };
 
 export type RotationSharePayload = {
