@@ -101,18 +101,7 @@ export function BtcLoanCalculatorPageClient({ livePrice, historicalPrices }: Pro
     return findHistoricalDrawdownsExceeding(historicalPrices, Math.abs(calc.declineToLiquidationPct));
   }, [calc, historicalPrices]);
 
-  if (!calc) {
-    return (
-      <div className="max-w-[1400px] mx-auto space-y-6">
-        <PageHeader title="BTC Loan Risk Calculator" subtitle="Model the risk before borrowing against your Bitcoin." />
-        <div className="rounded-xl border p-6 text-sm" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}>
-          Enter a BTC price and collateral amount above zero to see results.
-        </div>
-      </div>
-    );
-  }
-
-  const riskBand = getLoanRiskBand(calc.riskScore);
+  const riskBand = calc ? getLoanRiskBand(calc.riskScore) : null;
 
   return (
     <>
@@ -124,107 +113,117 @@ export function BtcLoanCalculatorPageClient({ livePrice, historicalPrices }: Pro
           />
           <button
             onClick={() => setShowShareModal(true)}
+            disabled={!calc}
             className="flex items-center gap-1.5 px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
-            style={{ backgroundColor: 'transparent', borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}
+            style={{ backgroundColor: 'transparent', borderColor: 'var(--sct-border)', color: 'var(--sct-muted)', opacity: calc ? 1 : 0.4 }}
           >
             <ImageDown size={13} />
             Share Scenario
           </button>
         </div>
 
+        {/* Always rendered so the inputs are never stranded behind a blank/error state */}
         <LoanInputPanel inputs={displayInputs} onChange={handleInputChange} />
 
-        <div className="rounded-xl border p-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-center" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
-          <div className="flex justify-center">
-            <LoanRiskGauge score={calc.riskScore} label={riskBand.label} color={riskBand.color} size={240} />
+        {!calc || !riskBand ? (
+          <div className="rounded-xl border p-6 text-sm" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)', color: 'var(--sct-muted)' }}>
+            Enter a BTC price and collateral amount above zero to see results.
           </div>
-          <LoanSummaryCards calc={calc} />
-        </div>
+        ) : (
+          <>
+            <div className="rounded-xl border p-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-center" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
+              <div className="flex justify-center">
+                <LoanRiskGauge score={calc.riskScore} label={riskBand.label} color={riskBand.color} size={240} />
+              </div>
+              <LoanSummaryCards calc={calc} />
+            </div>
 
-        <div className="rounded-xl border p-5 space-y-4" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>LTV Curve</p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              How fast risk accelerates as BTC price falls. The curve rises as BTC falls.
-            </p>
-          </div>
-          <LtvPriceCurve
-            points={curvePoints}
-            targetLtv={displayInputs.targetLtvPct / 100}
-            marginCallLtv={displayInputs.marginCallLtvPct / 100}
-            liquidationLtv={displayInputs.liquidationLtvPct / 100}
-            markers={[
-              { price: displayInputs.btcEntryPrice, label: 'Entry', color: '#8B949E' },
-              { price: displayInputs.currentBtcPrice, label: 'Current', color: '#F7931A' },
-              { price: calc.marginCallPrice, label: 'Margin Call', color: '#F7931A' },
-              { price: calc.liquidationPrice, label: 'Liquidation', color: '#F85149' },
-            ]}
-          />
-        </div>
+            <div className="rounded-xl border p-5 space-y-4" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>LTV Curve</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
+                  How fast risk accelerates as BTC price falls. The curve rises as BTC falls.
+                </p>
+              </div>
+              <LtvPriceCurve
+                points={curvePoints}
+                targetLtv={displayInputs.targetLtvPct / 100}
+                marginCallLtv={displayInputs.marginCallLtvPct / 100}
+                liquidationLtv={displayInputs.liquidationLtvPct / 100}
+                markers={[
+                  { price: displayInputs.btcEntryPrice, label: 'Entry', color: '#8B949E' },
+                  { price: displayInputs.currentBtcPrice, label: 'Current', color: '#F7931A' },
+                  { price: calc.marginCallPrice, label: 'Margin Call', color: '#F7931A' },
+                  { price: calc.liquidationPrice, label: 'Liquidation', color: '#F85149' },
+                ]}
+              />
+            </div>
 
-        <PriceStressTable rows={stressRows} onAddPrice={(p) => setCustomStressPrices((prev) => Array.from(new Set([...prev, Math.round(p)])))} />
+            <PriceStressTable rows={stressRows} onAddPrice={(p) => setCustomStressPrices((prev) => Array.from(new Set([...prev, Math.round(p)])))} />
 
-        <div className="rounded-xl border p-5 space-y-2" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
-          <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>Interest-Adjusted Liquidation Price</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--sct-muted)' }}>Today</p>
-              <p className="text-xl font-mono font-bold" style={{ color: 'var(--sct-text)' }}>
-                ${Math.round(calc.liquidationPrice).toLocaleString('en-US')}
+            <div className="rounded-xl border p-5 space-y-2" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
+              <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'var(--sct-muted)' }}>Interest-Adjusted Liquidation Price</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--sct-muted)' }}>Today</p>
+                  <p className="text-xl font-mono font-bold" style={{ color: 'var(--sct-text)' }}>
+                    ${Math.round(calc.liquidationPrice).toLocaleString('en-US')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--sct-muted)' }}>
+                    Estimated after {displayInputs.termMonths} months
+                  </p>
+                  <p className="text-xl font-mono font-bold" style={{ color: 'var(--sct-red)' }}>
+                    ${Math.round(calc.futureLiquidationPrice).toLocaleString('en-US')}
+                  </p>
+                </div>
+              </div>
+              <p className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>
+                Assumes simple interest and fees accrue onto the balance. The exact calculation varies by lender.
               </p>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--sct-muted)' }}>
-                Estimated after {displayInputs.termMonths} months
-              </p>
-              <p className="text-xl font-mono font-bold" style={{ color: 'var(--sct-red)' }}>
-                ${Math.round(calc.futureLiquidationPrice).toLocaleString('en-US')}
-              </p>
+
+            <CollateralActionsPanel
+              loanBalance={displayInputs.loanAmount}
+              btcCollateral={displayInputs.btcCollateral}
+              currentBtcPrice={displayInputs.currentBtcPrice}
+              collateralValue={calc.collateralValue}
+              defaultTargetLtvPct={displayInputs.targetLtvPct}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <EmergencyReservePlanner
+                loanBalance={displayInputs.loanAmount}
+                btcCollateral={displayInputs.btcCollateral}
+                targetLtvPct={displayInputs.targetLtvPct}
+                emergencyCashReserve={displayInputs.emergencyCashReserve}
+                onChangeReserve={(v) => handleInputChange({ emergencyCashReserve: v })}
+                suggestedStressPrice={calc.marginCallPrice}
+              />
+              <ReverseCalculator
+                btcCollateral={displayInputs.btcCollateral}
+                liquidationLtvPct={displayInputs.liquidationLtvPct}
+                defaultDesiredPrice={calc.liquidationPrice}
+              />
             </div>
-          </div>
-          <p className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>
-            Assumes simple interest and fees accrue onto the balance. The exact calculation varies by lender.
-          </p>
-        </div>
 
-        <CollateralActionsPanel
-          loanBalance={displayInputs.loanAmount}
-          btcCollateral={displayInputs.btcCollateral}
-          currentBtcPrice={displayInputs.currentBtcPrice}
-          collateralValue={calc.collateralValue}
-          defaultTargetLtvPct={displayInputs.targetLtvPct}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          <EmergencyReservePlanner
-            loanBalance={displayInputs.loanAmount}
-            btcCollateral={displayInputs.btcCollateral}
-            targetLtvPct={displayInputs.targetLtvPct}
-            emergencyCashReserve={displayInputs.emergencyCashReserve}
-            onChangeReserve={(v) => handleInputChange({ emergencyCashReserve: v })}
-            suggestedStressPrice={calc.marginCallPrice}
-          />
-          <ReverseCalculator
-            btcCollateral={displayInputs.btcCollateral}
-            liquidationLtvPct={displayInputs.liquidationLtvPct}
-            defaultDesiredPrice={calc.liquidationPrice}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          <BorrowingCostPanel inputs={displayInputs} calc={calc} />
-          <HistoricalDrawdownContext
-            entryPrice={displayInputs.btcEntryPrice}
-            liquidationPrice={calc.liquidationPrice}
-            declinePct={calc.declineToLiquidationPct}
-            episodes={drawdownEpisodes}
-          />
-        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <BorrowingCostPanel inputs={displayInputs} calc={calc} />
+              <HistoricalDrawdownContext
+                entryPrice={displayInputs.btcEntryPrice}
+                liquidationPrice={calc.liquidationPrice}
+                declinePct={calc.declineToLiquidationPct}
+                episodes={drawdownEpisodes}
+              />
+            </div>
+          </>
+        )}
 
         <RiskDisclosure />
       </div>
 
-      {showShareModal && (
+      {showShareModal && calc && riskBand && (
         <LoanShareModal
           data={{
             loanAmount:       displayInputs.loanAmount,
