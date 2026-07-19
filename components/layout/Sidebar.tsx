@@ -171,6 +171,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "BTC DCA Optimizer", href: "/tools/dca-optimizer", icon: Crosshair },
       { label: "BTC Risk Level",    href: "/tools/risk-level",    icon: Gauge },
       { label: "Smart DCA Engine",  href: "/tools/smart-dca-engine", icon: Zap },
+      { label: "BTC Loan Calculator", href: "/tools/btc-loan-calculator", icon: Landmark },
       { label: "External Links",    href: "/links",                icon: ExternalLink },
       { label: "Methodology",       href: "/methodology",          icon: BookOpen },
     ],
