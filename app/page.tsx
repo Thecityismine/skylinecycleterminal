@@ -3,7 +3,6 @@ import {
   Activity, Waves, Radar, ArrowLeftRight, Layers, LineChart,
   Check, ArrowRight,
 } from "lucide-react";
-import { WaitlistModal } from "@/components/landing/WaitlistModal";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
 
 const FEATURES = [
@@ -403,12 +402,6 @@ export default function LandingPage() {
             <Link href="/login?next=/billing" style={{ color: "var(--sct-btc)" }}>
               Log in
             </Link>
-            {" · "}
-            <WaitlistModal
-              triggerLabel="Not ready? Join the waitlist"
-              triggerClassName="underline"
-              triggerStyle={{ color: "var(--sct-btc)" }}
-            />
           </p>
         </div>
       </section>
