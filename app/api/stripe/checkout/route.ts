@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifySession } from "@/lib/auth/session";
+import { isEntitled } from "@/lib/auth/access";
 import { getStripe } from "@/lib/stripe";
 
 // Creates a Stripe Checkout Session for the signed-in user and hands the client
@@ -10,6 +11,14 @@ export async function POST(req: Request) {
   const session = await verifySession();
   if (!session) {
     return NextResponse.json({ error: "Sign in first" }, { status: 401 });
+  }
+
+  // The homepage's Subscribe button calls this route immediately after sign-in
+  // (see SubscribeButton.tsx), including for already-subscribed users who just
+  // authenticated on a new device/browser — send them straight to the dashboard
+  // instead of creating a second, redundant subscription.
+  if (await isEntitled(session)) {
+    return NextResponse.json({ url: "/dashboard" });
   }
 
   const priceId = process.env.STRIPE_PRICE_ID;

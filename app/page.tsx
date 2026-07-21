@@ -29,7 +29,7 @@ const FEATURES = [
   {
     icon: Layers,
     title: "Full On-Chain Suite",
-    desc: "Every major on-chain signal — SOPR, NUPL, HODL waves, realized price, and more.",
+    desc: "Every major on-chain signal: SOPR, NUPL, HODL waves, realized price, and more.",
   },
   {
     icon: Waves,
@@ -74,11 +74,11 @@ const FAQS = [
   },
   {
     q: "Who is Skyline for?",
-    a: "Long-term Bitcoin investors, macro traders, and anyone trying to understand where Bitcoin sits in its four-year cycle — not day traders looking for entry signals.",
+    a: "Long-term Bitcoin investors, macro traders, and anyone trying to understand where Bitcoin sits in its four-year cycle, not day traders looking for entry signals.",
   },
   {
     q: "Is this financial advice?",
-    a: "No. Skyline provides market analytics and historical cycle models to inform your own research — not financial, investment, or trading advice.",
+    a: "No. Skyline provides market analytics and historical cycle models to inform your own research, not financial, investment, or trading advice.",
   },
   {
     q: "Do I need an account to use the free dashboard?",
@@ -94,7 +94,7 @@ const FAQS = [
   },
   {
     q: "Can I cancel?",
-    a: "Yes — cancel anytime before your renewal date and you won't be charged again.",
+    a: "Yes. Cancel anytime before your renewal date and you won't be charged again.",
   },
 ];
 
@@ -160,7 +160,7 @@ export default function LandingPage() {
         </h1>
         <p className="text-base sm:text-lg max-w-2xl mx-auto mb-8" style={{ color: "var(--sct-secondary)" }}>
           Skyline combines on-chain metrics, macro liquidity, ETF flows, and historical cycle
-          models into one dashboard — so you know when to accumulate, when to stay patient, and
+          models into one dashboard, so you know when to accumulate, when to stay patient, and
           when to reduce risk.
         </p>
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -346,7 +346,7 @@ export default function LandingPage() {
           </div>
           <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-btc)" }}>
             <p className="text-xs font-medium tracking-widest uppercase mb-1" style={{ color: "var(--sct-btc)" }}>
-              Premium — $99/yr
+              Premium: $99/yr
             </p>
             <p className="text-xs mb-4" style={{ color: "var(--sct-muted)" }}>
               Everything you need to make long-term allocation decisions.
@@ -398,10 +398,7 @@ export default function LandingPage() {
 
           <SubscribeButton />
           <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
-            Card or Cash App via Stripe. Already have an account?{" "}
-            <Link href="/login?next=/billing" style={{ color: "var(--sct-btc)" }}>
-              Log in
-            </Link>
+            Secure checkout powered by Stripe. Card or Cash App accepted.
           </p>
         </div>
       </section>
