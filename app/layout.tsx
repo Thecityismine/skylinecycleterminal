@@ -10,13 +10,13 @@ const inter = Inter({
 
 const SITE_URL = "https://skylinecycleterminal.com";
 const TITLE = "Skyline Cycle Terminal";
-const DESCRIPTION = "Bitcoin & Ethereum Macro Cycle Intelligence — on-chain, macro liquidity, ETF flows, and price-structure data in one terminal.";
+const DESCRIPTION = "Bitcoin & Ethereum Macro Cycle Intelligence: on-chain, macro liquidity, ETF flows, and price-structure data in one terminal.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: TITLE,
-    template: `%s — ${TITLE}`,
+    template: `%s · ${TITLE}`,
   },
   description: DESCRIPTION,
   openGraph: {
