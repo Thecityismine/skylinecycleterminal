@@ -398,11 +398,9 @@ export default function LandingPage() {
 
           <SubscribeButton />
           <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
-            Secure checkout powered by Stripe. Card or Cash App accepted.
-          </p>
-          <p className="text-xs text-center mt-2">
+            Card or Cash App via Stripe. Already have an account?{" "}
             <Link href="/login?next=/billing" style={{ color: "var(--sct-btc)" }}>
-              No Google account? Sign in with email instead
+              Log in
             </Link>
           </p>
         </div>

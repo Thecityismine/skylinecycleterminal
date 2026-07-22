@@ -185,6 +185,12 @@ function LoginForm() {
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--sct-border)" }} />
               </div>
 
+              <p className="text-xs mb-3" style={{ color: "var(--sct-muted)" }}>
+                {next === "/billing"
+                  ? "Enter your email to receive a secure checkout link."
+                  : "Enter your email to receive a secure sign-in link."}
+              </p>
+
               <form onSubmit={(e) => void handleEmailLink(e)} className="space-y-3">
                 <input
                   type="email"
