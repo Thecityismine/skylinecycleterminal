@@ -23,9 +23,10 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'SMST',  name: 'ProShares UltraShort', sector: '2× Leveraged Short',  group: 'saylor',  type: 'etf',       color: '#F87171' },
 
   // ── BTC-Adjacent (exchanges, fintech) ─────────────────────────────────────
+  { ticker: 'XXI',   name: 'Twenty One Capital', sector: 'BTC Treasury',           group: 'btc',     type: 'btc_proxy', color: '#F7931A' },
   { ticker: 'COIN',  name: 'Coinbase',           sector: 'Crypto Exchange',        group: 'btc',     type: 'equity',    color: '#0052FF' },
   { ticker: 'HOOD',    name: 'Robinhood',          sector: 'Crypto / Brokerage',     group: 'btc',     type: 'equity',    color: '#00C805' },
-  { ticker: 'SQ',     name: 'Block',              sector: 'BTC Treasury / Fintech', group: 'btc',     type: 'equity',    color: '#00D64F' },
+  { ticker: 'XYZ',    name: 'Block',              sector: 'BTC Treasury / Fintech', group: 'btc',     type: 'equity',    color: '#00D64F' }, // ticker changed from SQ
   { ticker: 'PYPL',   name: 'PayPal',             sector: 'Crypto Payments',        group: 'btc',     type: 'equity',    color: '#003087' },
   { ticker: 'GLXY.TO', name: 'Galaxy Digital',    sector: 'Crypto Finance',         group: 'btc',     type: 'equity',    color: '#9333EA' },
 
