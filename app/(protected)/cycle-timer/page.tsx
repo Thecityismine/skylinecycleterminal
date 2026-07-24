@@ -55,13 +55,16 @@ export default function CycleTimerPage() {
 
   const { data, loading } = useApiData<ApiResponse>('/api/cycle-timer');
 
+  const rangeCutoffTs = useMemo(() => {
+    const ms = RANGE_MS[range];
+    return ms === Infinity ? -Infinity : Date.now() - ms;
+  }, [range]);
+
   const filteredPrices = useMemo(() => {
     if (!data?.prices.length) return [];
-    const ms = RANGE_MS[range];
-    if (ms === Infinity) return data.prices;
-    const cutoff = Date.now() - ms;
-    return data.prices.filter((p) => p.ts >= cutoff);
-  }, [data?.prices, range]);
+    if (rangeCutoffTs === -Infinity) return data.prices;
+    return data.prices.filter((p) => p.ts >= rangeCutoffTs);
+  }, [data?.prices, rangeCutoffTs]);
 
   const activeCycle  = data?.activeCycle;
   const phase        = activeCycle ? PHASE_CONFIG[activeCycle.currentPhase] : null;
@@ -77,10 +80,10 @@ export default function CycleTimerPage() {
     : '—';
 
   const shareWeeklyPoints = useMemo(
-    () => (data?.prices ?? [])
+    () => filteredPrices
       .filter((_, i, arr) => i % 7 === 0 || i === arr.length - 1)
       .map((p) => ({ ts: p.ts, price: p.price })),
-    [data?.prices],
+    [filteredPrices],
   );
 
   const shareHalvings = useMemo(() => HALVINGS.map((h) => ({ ts: h.ts, label: h.label })), []);
@@ -88,13 +91,15 @@ export default function CycleTimerPage() {
   const shareCycleMarkers = useMemo(() => {
     const out: { ts: number; price: number; kind: 'low' | 'high' }[] = [];
     for (const a of data?.anchors ?? []) {
-      out.push({ ts: new Date(a.lowDate + 'T00:00:00Z').getTime(), price: a.lowPrice, kind: 'low' });
+      const lowTs = new Date(a.lowDate + 'T00:00:00Z').getTime();
+      if (lowTs >= rangeCutoffTs) out.push({ ts: lowTs, price: a.lowPrice, kind: 'low' });
       if (a.highDate && a.highPrice) {
-        out.push({ ts: new Date(a.highDate + 'T00:00:00Z').getTime(), price: a.highPrice, kind: 'high' });
+        const highTs = new Date(a.highDate + 'T00:00:00Z').getTime();
+        if (highTs >= rangeCutoffTs) out.push({ ts: highTs, price: a.highPrice, kind: 'high' });
       }
     }
     return out;
-  }, [data?.anchors]);
+  }, [data?.anchors, rangeCutoffTs]);
 
   const sharePayload: CycleTimerSharePayload | null = (activeCycle && phase && metrics) ? {
     daysSinceLow:           activeCycle.daysSinceLow,
