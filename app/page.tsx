@@ -4,37 +4,45 @@ import {
   Check, ArrowRight,
 } from "lucide-react";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
+import { BtcSubscribeButton } from "@/components/billing/BtcSubscribeButton";
+import { CycleInsightStrip } from "@/components/landing/CycleInsightStrip";
 
 const FEATURES = [
   {
     icon: Activity,
     title: "Skyline Cycle Score",
     desc: "One number that tells you where Bitcoin sits in the four-year cycle.",
+    href: "/cycle",
   },
   {
     icon: LineChart,
     title: "BTC vs GLI Liquidity Lag",
     desc: "See how global liquidity leads Bitcoin by weeks or months.",
+    href: "/macro/gli",
   },
   {
     icon: Radar,
     title: "Liquidity Regime Matrix",
     desc: "Instantly know whether macro conditions are a tailwind or headwind.",
+    href: "/macro/liquidity-regime",
   },
   {
     icon: ArrowLeftRight,
     title: "ETF Flows & Dominance",
     desc: "Track daily institutional ETF demand, inflows/outflows, and dominance shifts.",
+    href: "/etf-flows",
   },
   {
     icon: Layers,
     title: "Full On-Chain Suite",
     desc: "Every major on-chain signal: SOPR, NUPL, HODL waves, realized price, and more.",
+    href: "/onchain",
   },
   {
     icon: Waves,
     title: "Halving & Seasonality Models",
     desc: "Compare every Bitcoin halving cycle since 2012, plus monthly and yearly patterns.",
+    href: "/price/halving-cycles",
   },
 ];
 
@@ -55,6 +63,7 @@ const FREE_INCLUDED = [
   "Skyline Cycle Score",
   "BTC price overview",
   "Fear & Greed",
+  "4-Year Cycle",
   "Overview dashboard",
 ];
 
@@ -163,6 +172,7 @@ export default function LandingPage() {
           models into one dashboard, so you know when to accumulate, when to stay patient, and
           when to reduce risk.
         </p>
+        <CycleInsightStrip />
         <div className="flex items-center justify-center gap-3 mb-4">
           <Link
             href="/dashboard"
@@ -275,13 +285,14 @@ export default function LandingPage() {
           Everything on one terminal
         </h2>
         <p className="text-sm text-center mb-12" style={{ color: "var(--sct-muted)" }}>
-          30+ institutional-grade Bitcoin &amp; Ethereum models in one place.
+          30+ Bitcoin &amp; Ethereum models in one place.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map((f) => (
-            <div
+            <Link
               key={f.title}
-              className="rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5"
+              href={f.href}
+              className="group rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5 block"
               style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
             >
               <div
@@ -293,10 +304,17 @@ export default function LandingPage() {
               <p className="text-sm font-semibold mb-1.5" style={{ color: "var(--sct-text)" }}>
                 {f.title}
               </p>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--sct-muted)" }}>
+              <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--sct-muted)" }}>
                 {f.desc}
               </p>
-            </div>
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ color: "var(--sct-btc)" }}
+              >
+                View live
+                <ArrowRight size={12} />
+              </span>
+            </Link>
           ))}
         </div>
       </section>
@@ -397,6 +415,17 @@ export default function LandingPage() {
           </ul>
 
           <SubscribeButton />
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="h-px flex-1" style={{ backgroundColor: "var(--sct-border)" }} />
+            <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--sct-muted)" }}>
+              or
+            </span>
+            <div className="h-px flex-1" style={{ backgroundColor: "var(--sct-border)" }} />
+          </div>
+
+          <BtcSubscribeButton />
+
           <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
             Card or Cash App via Stripe. Already have an account?{" "}
             <Link href="/login?next=/billing" style={{ color: "var(--sct-btc)" }}>
