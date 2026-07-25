@@ -21,8 +21,10 @@ const SIGNAL_FILTERS: { key: SignalFilter; label: string; color: string }[] = [
 
 function fmtPrice(v: number | null, currency?: string | null) {
   if (v == null) return '—';
-  const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'JPY' ? '¥' : '$';
   if (v >= 1000) return `${sym}${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  // JPY has no minor unit — showing "¥223.00" would be wrong
+  if (currency === 'JPY') return `${sym}${Math.round(v).toLocaleString('en-US')}`;
   return `${sym}${v.toFixed(2)}`;
 }
 
@@ -156,7 +158,7 @@ export default function EquitiesPage() {
   const [filter, setFilter] = useState<string>('all');
   const [signalFilter, setSignalFilter] = useState<SignalFilter>('all');
   const groups = ['all', ...GROUP_ORDER];
-  const filtered = filter === 'all' ? WATCHLIST : WATCHLIST.filter((s) => s.group === filter);
+  const filtered = filter === 'all' ? WATCHLIST : WATCHLIST.filter((s) => (s.groups as string[]).includes(filter));
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">

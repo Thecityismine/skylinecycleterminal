@@ -34,8 +34,10 @@ function fmtPctChange(v: number | null): string {
 }
 function fmtPrice(v: number | null, currency?: string | null): string {
   if (v == null) return '—';
-  const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'JPY' ? '¥' : '$';
   if (v >= 1000) return `${sym}${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  // JPY has no minor unit — showing "¥223.00" would be wrong
+  if (currency === 'JPY') return `${sym}${Math.round(v).toLocaleString('en-US')}`;
   return `${sym}${v.toFixed(2)}`;
 }
 function fmtBig(v: number | null): string {

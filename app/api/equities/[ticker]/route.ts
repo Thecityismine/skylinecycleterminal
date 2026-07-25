@@ -13,7 +13,7 @@ export async function GET(
   const sym   = ticker.toUpperCase();
   const stock = getStock(sym) ?? {
     ticker: sym, name: sym, sector: 'Unknown',
-    group: 'tech' as const, type: 'equity' as const, color: '#A9B4C0',
+    groups: ['tech'] as const, type: 'equity' as const, color: '#A9B4C0',
   };
 
   // Fetch both independently — fundamentals failure should not kill chart data
