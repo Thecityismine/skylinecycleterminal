@@ -1,9 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchCoinWeeklyHistory, fetchCoinSnapshot, EMPTY_ALTCOIN_SNAPSHOT } from '@/lib/api/coingecko';
+import { fetchCoinWeeklyHistory, fetchCoinSnapshot } from '@/lib/api/coingecko';
+import { fetchCmcSnapshot } from '@/lib/api/coinmarketcap';
+import { EMPTY_ALTCOIN_SNAPSHOT, type AltcoinSnapshot } from '@/lib/api/altcoinSnapshot';
 import { buildAltcoinData } from '@/lib/indicators/altcoinScore';
-import { getAltcoin } from '@/lib/data/altcoinWatchlist';
+import { getAltcoin, type AltcoinWatchlistItem } from '@/lib/data/altcoinWatchlist';
 
 export const revalidate = 3600;
+
+// CoinMarketCap (by numeric id) is tried first — generous rate limit, batched-
+// call-friendly, good uptime. CoinGecko is the fallback if CMC has no key
+// configured, is rate-limited, or errors. Either way a snapshot failure here
+// is non-fatal to the page — see the outer Promise.allSettled below.
+async function fetchSnapshot(coin: AltcoinWatchlistItem | { id: string; cmcId?: number }): Promise<AltcoinSnapshot> {
+  if (coin.cmcId != null) {
+    try {
+      return await fetchCmcSnapshot(coin.cmcId);
+    } catch (err) {
+      console.warn(`altcoins/${coin.id} CMC snapshot failed, falling back to CoinGecko:`, (err as Error).message);
+    }
+  }
+  return fetchCoinSnapshot(coin.id);
+}
 
 export async function GET(
   _req: NextRequest,
@@ -19,7 +36,7 @@ export async function GET(
   // Fetch both independently — a snapshot failure should not kill chart data
   const [chartResult, snapResult] = await Promise.allSettled([
     fetchCoinWeeklyHistory(coin.id),
-    fetchCoinSnapshot(coin.id),
+    fetchSnapshot(coin),
   ]);
 
   if (chartResult.status === 'rejected') {

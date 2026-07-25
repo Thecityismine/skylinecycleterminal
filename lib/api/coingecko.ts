@@ -1,3 +1,5 @@
+import type { AltcoinSnapshot } from './altcoinSnapshot';
+
 const BASE = 'https://api.coingecko.com/api/v3';
 
 export type CoinPrice = {
@@ -20,27 +22,6 @@ export type MarketData = {
 const CG_API_KEY = process.env.COINGECKO_API_KEY?.trim();
 
 export type CoinWeeklyClose = { time: string; ts: number; close: number };
-
-export type AltcoinSnapshot = {
-  name:              string | null;
-  price:             number | null;
-  change24h:         number | null;
-  marketCap:         number | null;
-  marketCapRank:     number | null;
-  volume24h:         number | null;
-  circulatingSupply: number | null;
-  totalSupply:       number | null;
-  maxSupply:         number | null;
-  athPrice:          number | null;
-  athChangePct:      number | null;
-  athDate:           string | null;
-};
-
-export const EMPTY_ALTCOIN_SNAPSHOT: AltcoinSnapshot = {
-  name: null, price: null, change24h: null, marketCap: null, marketCapRank: null,
-  volume24h: null, circulatingSupply: null, totalSupply: null, maxSupply: null,
-  athPrice: null, athChangePct: null, athDate: null,
-};
 
 // Groups daily price points into ISO weeks (keyed by the Monday of each week),
 // keeping the last day's value in each bucket as the "weekly close" — same

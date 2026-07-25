@@ -1,4 +1,5 @@
-import type { CoinWeeklyClose, AltcoinSnapshot } from '@/lib/api/coingecko';
+import type { CoinWeeklyClose } from '@/lib/api/coingecko';
+import type { AltcoinSnapshot } from '@/lib/api/altcoinSnapshot';
 
 // Trend-only scoring engine for altcoins — same SMA/percentile/ATH approach as
 // lib/indicators/equityScore.ts, but self-contained since there's no equity-style
