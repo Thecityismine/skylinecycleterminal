@@ -45,8 +45,12 @@ function ScorePill({ score, label, color }: { score: number; label: string; colo
   );
 }
 
-function StockCard({ ticker, color, signalFilter }: { ticker: string; color: string; signalFilter: SignalFilter }) {
+function StockCard({ ticker, name, color, signalFilter }: { ticker: string; name: string; color: string; signalFilter: SignalFilter }) {
   const { data, loading } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
+
+  // Numeric foreign tickers (e.g. Metaplanet's "3350.T") say nothing on their
+  // own, so fall back to the company's initials for the badge.
+  const badge = /^\d/.test(ticker) ? name.slice(0, 2).toUpperCase() : ticker.slice(0, 2);
 
   if (!loading && signalFilter !== 'all') {
     const quadrant = data?.scores?.quadrant;
@@ -69,12 +73,12 @@ function StockCard({ ticker, color, signalFilter }: { ticker: string; color: str
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0"
             style={{ backgroundColor: color + '20', color }}>
-            {ticker.slice(0, 2)}
+            {badge}
           </div>
           <div>
             <p className="text-sm font-bold" style={{ color: 'var(--sct-text)' }}>{ticker}</p>
             <p className="text-[10px]" style={{ color: 'var(--sct-muted)' }}>
-              {data?.sector ?? '…'}
+              {name}{data?.sector ? ` · ${data.sector}` : ''}
             </p>
           </div>
         </div>
@@ -220,7 +224,7 @@ export default function EquitiesPage() {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filtered.map((s) => (
-          <StockCard key={s.ticker} ticker={s.ticker} color={s.color} signalFilter={signalFilter} />
+          <StockCard key={s.ticker} ticker={s.ticker} name={s.name} color={s.color} signalFilter={signalFilter} />
         ))}
       </div>
 

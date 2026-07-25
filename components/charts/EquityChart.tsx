@@ -18,10 +18,17 @@ function fmtDate(ts: number) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
-function fmtPrice(v: number) {
-  if (v >= 1000) return `$${(v / 1000).toFixed(1)}k`;
-  if (v >= 1)    return `$${v.toFixed(2)}`;
-  return `$${v.toFixed(4)}`;
+function currencySymbol(currency?: string | null) {
+  return currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'JPY' ? '¥' : '$';
+}
+
+function fmtPrice(v: number, currency?: string | null) {
+  const sym = currencySymbol(currency);
+  if (v >= 1000) return `${sym}${(v / 1000).toFixed(1)}k`;
+  // JPY has no minor unit — sub-¥1 precision is meaningless
+  if (currency === 'JPY') return `${sym}${v.toFixed(0)}`;
+  if (v >= 1)    return `${sym}${v.toFixed(2)}`;
+  return `${sym}${v.toFixed(4)}`;
 }
 
 type Props = {
@@ -31,9 +38,10 @@ type Props = {
   logScale:  boolean;
   color:     string;
   startTs?:  number;
+  currency?: string | null;   // quote currency; defaults to USD formatting
 };
 
-export function EquityChart({ points, segments, ath, logScale, color, startTs }: Props) {
+export function EquityChart({ points, segments, ath, logScale, color, startTs, currency }: Props) {
   const filtered = startTs ? points.filter((p) => p.ts >= startTs) : points;
   const filteredSegs = startTs
     ? segments.filter((s) => s.x2 >= startTs).map((s) => ({ ...s, x1: Math.max(s.x1, startTs) }))
@@ -59,18 +67,18 @@ export function EquityChart({ points, segments, ath, logScale, color, startTs }:
         <div className="space-y-0.5">
           <div className="flex justify-between gap-4">
             <span style={{ color: 'var(--sct-muted)' }}>Price</span>
-            <span className="font-mono font-bold" style={{ color }}>{fmtPrice(d.close)}</span>
+            <span className="font-mono font-bold" style={{ color }}>{fmtPrice(d.close, currency)}</span>
           </div>
           {d.ma50w != null && (
             <div className="flex justify-between gap-4">
               <span style={{ color: 'var(--sct-muted)' }}>50W SMA</span>
-              <span className="font-mono" style={{ color: '#D4A853' }}>{fmtPrice(d.ma50w)}</span>
+              <span className="font-mono" style={{ color: '#D4A853' }}>{fmtPrice(d.ma50w, currency)}</span>
             </div>
           )}
           {d.ma200w != null && (
             <div className="flex justify-between gap-4">
               <span style={{ color: 'var(--sct-muted)' }}>200W SMA</span>
-              <span className="font-mono" style={{ color: '#5B7DD8' }}>{fmtPrice(d.ma200w)}</span>
+              <span className="font-mono" style={{ color: '#5B7DD8' }}>{fmtPrice(d.ma200w, currency)}</span>
             </div>
           )}
           {d.ath > 0 && (
@@ -141,7 +149,7 @@ export function EquityChart({ points, segments, ath, logScale, color, startTs }:
           orientation="right"
           scale={logScale ? 'log' : 'linear'}
           domain={domain}
-          tickFormatter={(v) => fmtPrice(v)}
+          tickFormatter={(v) => fmtPrice(v, currency)}
           tick={{ fill: 'var(--sct-muted)', fontSize: 10 }}
           tickLine={false}
           axisLine={false}

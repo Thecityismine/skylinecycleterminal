@@ -30,9 +30,18 @@ export async function GET(
     );
   }
 
-  const closes = chartResult.value;
+  let closes = chartResult.value;
   if (!closes.length) {
     return NextResponse.json({ error: 'No price data returned' }, { status: 404 });
+  }
+
+  // Drop history from before a total change of business (see `historyStart` in
+  // the watchlist) so ATH, drawdown and the trend percentiles are computed only
+  // over the current company's life. Ignored if it would leave nothing.
+  const historyStart = 'historyStart' in stock ? stock.historyStart : undefined;
+  if (historyStart) {
+    const trimmed = closes.filter((c) => c.time >= historyStart);
+    if (trimmed.length) closes = trimmed;
   }
 
   let fund = EMPTY_FUNDAMENTALS;

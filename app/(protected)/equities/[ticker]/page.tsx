@@ -40,12 +40,16 @@ function fmtPrice(v: number | null, currency?: string | null): string {
   if (currency === 'JPY') return `${sym}${Math.round(v).toLocaleString('en-US')}`;
   return `${sym}${v.toFixed(2)}`;
 }
-function fmtBig(v: number | null): string {
+// Market cap et al. are reported in the security's own quote currency — a
+// Tokyo-listed name returns JPY, so labelling it "$" overstated the value by
+// roughly the exchange rate (¥285.7B read as "$285.7B" vs ~$1.9B actual).
+function fmtBig(v: number | null, currency?: string | null): string {
   if (v == null) return '—';
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (v >= 1e9)  return `$${(v / 1e9).toFixed(1)}B`;
-  if (v >= 1e6)  return `$${(v / 1e6).toFixed(1)}M`;
-  return `$${v.toFixed(0)}`;
+  const sym = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'JPY' ? '¥' : '$';
+  if (v >= 1e12) return `${sym}${(v / 1e12).toFixed(2)}T`;
+  if (v >= 1e9)  return `${sym}${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6)  return `${sym}${(v / 1e6).toFixed(1)}M`;
+  return `${sym}${v.toFixed(0)}`;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -235,7 +239,7 @@ export default function EquityDetailPage() {
           sub={trend?.pctFrom52wHigh != null ? `${(trend.pctFrom52wHigh * 100).toFixed(1)}%` : undefined} />
         <StatCard label="52W Low"        value={fmtPrice(trend?.low52w ?? null, currency)}
           sub={trend?.pctFrom52wLow != null ? `+${(trend.pctFrom52wLow * 100).toFixed(1)}%` : undefined} />
-        <StatCard label="Market Cap"     value={fmtBig(fund?.marketCap ?? null)} />
+        <StatCard label="Market Cap"     value={fmtBig(fund?.marketCap ?? null, currency)} />
       </div>
 
       {/* Main chart */}
@@ -321,6 +325,7 @@ export default function EquityDetailPage() {
               logScale={log}
               color={color}
               startTs={startTs}
+              currency={currency}
             />
           ) : null}
         </div>
@@ -496,7 +501,7 @@ export default function EquityDetailPage() {
               />
               <MetricRow label="Net Debt / FCF"
                 value={fmt(quality?.debtToFcf ?? null, 1, 'x')}
-                sub={quality?.netDebt != null ? (quality.netDebt < 0 ? 'net cash position' : `${fmtBig(quality.netDebt)} net debt`) : undefined}
+                sub={quality?.netDebt != null ? (quality.netDebt < 0 ? 'net cash position' : `${fmtBig(quality.netDebt, currency)} net debt`) : undefined}
                 color={quality?.netDebt != null && quality.netDebt < 0 ? '#35D07F' : 'var(--sct-muted)'}
               />
             </div>

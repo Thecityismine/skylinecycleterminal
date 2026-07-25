@@ -12,6 +12,11 @@ export type WatchlistItem = {
   groups:  StockGroup[];
   type:    StockType;
   color:   string;
+  // Optional YYYY-MM-DD cutoff — ignore price history before this date. For
+  // companies whose listing predates a total change of business, the older
+  // history belongs to a different company and corrupts every derived metric
+  // (ATH, drawdown, and the self-calibrating trend percentiles).
+  historyStart?: string;
 };
 
 export const WATCHLIST: WatchlistItem[] = [
@@ -29,7 +34,12 @@ export const WATCHLIST: WatchlistItem[] = [
   // ── Bitcoin Treasury Companies ────────────────────────────────────────────
   // Companies holding BTC as a primary reserve asset. Most also live in another
   // category (miners, exchanges, the Saylor complex) — see `groups` above.
-  { ticker: '3350.T', name: 'Metaplanet',        sector: 'BTC Treasury · Japan',   groups: ['btc_treasury'], type: 'btc_proxy', color: '#E8B32C' },
+  // Listed since 2004 as Red Planet Japan, a hotel operator; renamed and
+  // pivoted to a Bitcoin treasury strategy in April 2024. Pre-pivot prices are
+  // effectively a different company (¥47,250 in 2004 -> ¥18 in 2023), which
+  // put ATH 99.5% above spot and skewed the trend percentiles, so history is
+  // cut to the pivot.
+  { ticker: '3350.T', name: 'Metaplanet',        sector: 'BTC Treasury · Japan',   groups: ['btc_treasury'], type: 'btc_proxy', color: '#E8B32C', historyStart: '2024-04-01' },
   // Bitcoin Standard Treasury Co. has not completed its SPAC merger — no BSTR
   // ticker exists yet. CEPO is the pre-merger Cantor Equity Partners I vehicle
   // it is combining with, still trading near SPAC trust value (~$10).
