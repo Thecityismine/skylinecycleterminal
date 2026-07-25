@@ -26,7 +26,10 @@ const PERIODS: Period[] = [
 function fmtY(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`;
-  return `$${v}`;
+  // Full-history log ticks reach down to cents (BTC's series starts at $0.05),
+  // where the raw value would print as "$0.050540618351841".
+  if (v >= 1)         return `$${Math.round(v)}`;
+  return `$${v.toFixed(2)}`;
 }
 
 function fmtX(d: string): string {
@@ -102,7 +105,11 @@ export function RealizedPriceChart({
   onZoomChange?: (d: ZoomDomain<string> | null) => void;
   shareButton?: React.ReactNode;
 }) {
-  const [period, setPeriod] = useState<string>('3Y');
+  // Defaults to the full history on a log axis: across BTC's whole range a
+  // linear axis flattens every pre-2020 cycle into the baseline, which is
+  // exactly where the price-vs-200W-MA relationship is most readable.
+  const [period, setPeriod] = useState<string>('All');
+  const [logScale, setLogScale] = useState(true);
 
   const {
     domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers,
@@ -175,6 +182,18 @@ export function RealizedPriceChart({
               {p.label}
             </button>
           ))}
+          <button
+            onClick={() => setLogScale((v) => !v)}
+            title={logScale ? 'Switch to linear scale' : 'Switch to log scale'}
+            className="px-3 py-1 text-xs font-mono rounded transition-all duration-150"
+            style={{
+              backgroundColor: logScale ? 'var(--sct-border)' : 'transparent',
+              color: logScale ? 'var(--sct-text)' : 'var(--sct-muted)',
+              border: `1px solid ${logScale ? 'var(--sct-border)' : 'transparent'}`,
+            }}
+          >
+            Log
+          </button>
           {isZoomed && (
             <button onClick={reset} className="px-3 py-1 rounded text-xs font-mono border transition-all"
               style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
@@ -213,6 +232,8 @@ export function RealizedPriceChart({
             interval="preserveStartEnd"
           />
           <YAxis
+            scale={logScale ? 'log' : 'linear'}
+            domain={logScale ? ['auto', 'auto'] : [0, 'auto']}
             tickFormatter={fmtY}
             tick={{ fill: '#4B5563', fontSize: 10 }}
             tickLine={false}

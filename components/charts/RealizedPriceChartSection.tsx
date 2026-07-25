@@ -36,7 +36,9 @@ export function RealizedPriceChartSection({
   data, currentPrice, ma200w, ratio, premium, zoneLabel, zoneColor,
   secondaryLabel, secondaryColor, generatedAt,
 }: Props) {
-  const [period, setPeriod] = useState('3Y');
+  // Must match RealizedPriceChart's own default period, otherwise the share
+  // card would export a different window than the one on screen.
+  const [period, setPeriod] = useState('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<string> | null>(null);
 
   const handlePeriodChange = useCallback((p: string) => {
