@@ -37,6 +37,7 @@ import {
   Timer,
   Rocket,
   Gauge,
+  Coins,
 } from "lucide-react";
 
 type NavItem = {
@@ -162,6 +163,12 @@ const nav: (NavItem | NavSection)[] = [
       { label: "RKLB",       href: "/equities/RKLB",   icon: TrendingDown },
       { label: "COIN",       href: "/equities/COIN",   icon: TrendingDown },
       { label: "MSTR",       href: "/equities/MSTR",   icon: TrendingDown },
+    ],
+  },
+  {
+    section: "ALTCOINS",
+    items: [
+      { label: "Watchlist",  href: "/altcoins",        icon: Coins,        exact: true },
     ],
   },
   {
