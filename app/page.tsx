@@ -4,7 +4,6 @@ import {
   Check, ArrowRight,
 } from "lucide-react";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
-import { BtcSubscribeButton } from "@/components/billing/BtcSubscribeButton";
 import { CycleInsightStrip } from "@/components/landing/CycleInsightStrip";
 
 const FEATURES = [
@@ -415,16 +414,6 @@ export default function LandingPage() {
           </ul>
 
           <SubscribeButton />
-
-          <div className="flex items-center gap-3 my-4">
-            <div className="h-px flex-1" style={{ backgroundColor: "var(--sct-border)" }} />
-            <span className="text-[10px] uppercase tracking-widest" style={{ color: "var(--sct-muted)" }}>
-              or
-            </span>
-            <div className="h-px flex-1" style={{ backgroundColor: "var(--sct-border)" }} />
-          </div>
-
-          <BtcSubscribeButton />
 
           <p className="text-[11px] text-center mt-3" style={{ color: "var(--sct-muted)" }}>
             Card or Cash App via Stripe. Already have an account?{" "}
