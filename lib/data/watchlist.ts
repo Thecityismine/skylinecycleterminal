@@ -118,6 +118,7 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'QQQ',   name: 'Nasdaq 100 ETF',     sector: 'Index',                  groups: ['macro'],   type: 'etf',       color: '#9B8CFF' },
   { ticker: 'TLT',   name: '20Y Treasury ETF',   sector: 'Bonds',                  groups: ['macro'],   type: 'etf',       color: '#35D07F' },
   { ticker: 'SPCX',  name: 'SPAC & New Issue ETF', sector: 'SPACs / IPOs',        groups: ['macro'],   type: 'etf',       color: '#8B5CF6' },
+  { ticker: 'ARKK',  name: 'ARK Innovation ETF', sector: 'Disruptive Innovation',  groups: ['macro'],   type: 'etf',       color: '#F2C230' },
 ];
 
 export const GROUP_LABELS: Record<StockGroup, string> = {
