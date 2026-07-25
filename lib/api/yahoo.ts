@@ -63,7 +63,13 @@ export type WeeklyClose = {
 export async function fetchWeeklyHistory(ticker: string): Promise<WeeklyClose[]> {
   // Use crumb+cookie auth — Yahoo blocks unauthenticated chart requests from data-center IPs
   const { crumb, cookie } = await getCredentials();
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&range=max&crumb=${encodeURIComponent(crumb)}`;
+  // `range=max` silently downgrades granularity to 1mo even when interval=1wk
+  // is requested (Yahoo caps how far back weekly bars go for named ranges), so
+  // every "50W/200W" average was really a 50-/200-MONTH average. An explicit
+  // period1/period2 window returns true weekly bars for the full history
+  // (MSTR: 1469 weekly bars vs 338 monthly).
+  const period2 = Math.floor(Date.now() / 1000) + 86_400;
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1wk&period1=0&period2=${period2}&crumb=${encodeURIComponent(crumb)}`;
   const res = await fetch(url, {
     headers: {
       'User-Agent': BROWSER_UA,
