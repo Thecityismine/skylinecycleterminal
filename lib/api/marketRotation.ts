@@ -1,6 +1,28 @@
 import { fetchMarketData } from './coingecko';
+import { fetchCointraderMarketCapHistory } from './cointrader';
 
 const CG = 'https://api.coingecko.com/api/v3';
+
+// charts.cointrader.pro market-cap symbols for BTC, ETH, and a fixed set of
+// major alts — used ONLY to backfill dates older than CoinGecko's free-tier
+// 365-day window. Every symbol here was manually verified live (value +
+// freshness) before being added; this catalog has stale/dead feeds under
+// confusingly similar names (e.g. "AVALANCHE-AVAX:MARKETCAP" territory —
+// verified "AVALANCHE:MARKETCAP" is the live one). This is necessarily a
+// fixed, present-day "large alt" set applied uniformly across all history,
+// unlike the live top-15-by-market-cap list CoinGecko drives the recent
+// window with — it won't perfectly reflect which coins were actually
+// large-cap at any given historical date, but it's the same style of
+// approximation the tail-ratio scaling below already makes.
+const COINTRADER_BTC_SYMBOL   = 'BITCOIN:MARKETCAP';
+const COINTRADER_ETH_SYMBOL   = 'ETHEREUM:MARKETCAP';
+const COINTRADER_ALT_SYMBOLS  = [
+  'BNB:MARKETCAP', 'XRP:MARKETCAP', 'SOLANA:MARKETCAP', 'DOGECOIN:MARKETCAP',
+  'CHAINLINK:MARKETCAP', 'CARDANO:MARKETCAP', 'STELLAR:MARKETCAP', 'TONCOIN:MARKETCAP',
+  'LITECOIN:MARKETCAP', 'AVALANCHE:MARKETCAP', 'POLKADOT-NEW:MARKETCAP',
+  'FILECOIN:MARKETCAP', 'CURVE-DAO-TOKEN:MARKETCAP',
+];
+const COINTRADER_BACKFILL_FROM = Math.floor(new Date('2013-01-01T00:00:00Z').getTime() / 1000);
 
 // Optional free CoinGecko "Demo" key (coingecko.com/en/developer/dashboard) — the
 // public API caps market_chart history at 365 days without one. With a key, `days`
@@ -128,6 +150,78 @@ export async function fetchMarketRotationData(
   const ethMap = toMap(ethHist, weekly);
   const altMaps = altHists.map((h) => toMap(h, weekly));
 
+  // ── Deep-history backfill from charts.cointrader.pro ──────────────────────
+  // CoinGecko's free tier only reaches back `days` far (365 without a paid
+  // key). Backfill everything strictly older than that from cointrader.pro's
+  // unofficial, undocumented — but manually verified — market-cap feeds.
+  // Never fatal: any failure here just leaves the CoinGecko-only window as-is.
+  const earliestCgKey = [...btcMap.keys()].sort()[0];
+  const backfillAltSumMap = new Map<string, number>();
+
+  if (earliestCgKey) {
+    const cutoffTs = Math.floor(new Date(earliestCgKey + 'T00:00:00Z').getTime() / 1000);
+    try {
+      const [btcBackfill, ethBackfill, ...altBackfills] = await Promise.all([
+        fetchCointraderMarketCapHistory(COINTRADER_BTC_SYMBOL, COINTRADER_BACKFILL_FROM, cutoffTs),
+        fetchCointraderMarketCapHistory(COINTRADER_ETH_SYMBOL, COINTRADER_BACKFILL_FROM, cutoffTs),
+        ...COINTRADER_ALT_SYMBOLS.map((sym) =>
+          fetchCointraderMarketCapHistory(sym, COINTRADER_BACKFILL_FROM, cutoffTs).catch(() => [] as MCPoint[])
+        ),
+      ]);
+
+      const btcBackfillMap = toMap(btcBackfill, weekly);
+      const ethBackfillMap = toMap(ethBackfill, weekly);
+      const altBackfillMaps = altBackfills.map((h) => toMap(h, weekly));
+
+      // Continuity check AT THE MERGE SEAM ONLY — not across the whole
+      // backfilled range. Crypto genuinely has had >50% single-week moves
+      // during thin, early periods (e.g. the Oct/Nov 2013 run-up), so
+      // scanning every week over 13 years of history for "no big jumps"
+      // produces false positives on real volatility. The seam itself, by
+      // construction, always borders a RECENT date (~1yr before "today"),
+      // where a >50% single-week move in the combined BTC+ETH+tracked-alt
+      // market cap would be a genuine red flag rather than an artifact of
+      // an especially wild early-Bitcoin week. This unofficial,
+      // undocumented vendor has been observed during testing to
+      // occasionally return an inflated read right around the boundary —
+      // if this check trips, the whole backfill is distrusted and
+      // discarded for this request rather than risk a corrupted chart.
+      const lastBackfillKey = [...btcBackfillMap.keys()].filter((k) => k < earliestCgKey).sort().at(-1);
+      if (lastBackfillKey) {
+        const combinedBackfill =
+          (btcBackfillMap.get(lastBackfillKey) ?? 0) + (ethBackfillMap.get(lastBackfillKey) ?? 0)
+          + altBackfillMaps.reduce((sum, m) => sum + (m.get(lastBackfillKey) ?? 0), 0);
+        const combinedReal =
+          (btcMap.get(earliestCgKey) ?? 0) + (ethMap.get(earliestCgKey) ?? 0)
+          + altMaps.reduce((sum, m) => sum + (m.get(earliestCgKey) ?? 0), 0);
+
+        if (combinedBackfill > 0 && combinedReal > 0) {
+          const ratio = combinedBackfill / combinedReal;
+          if (ratio > 1.5 || ratio < 1 / 1.5) {
+            throw new Error(
+              `backfill continuity check failed between ${lastBackfillKey} and ${earliestCgKey}: ` +
+              `combined market cap moved ${(ratio * 100 - 100).toFixed(0)}% across the seam`
+            );
+          }
+        }
+      }
+
+      for (const [key, v] of btcBackfillMap) {
+        if (key < earliestCgKey) btcMap.set(key, v);
+      }
+      for (const [key, v] of ethBackfillMap) {
+        if (key < earliestCgKey) ethMap.set(key, v);
+      }
+      for (const m of altBackfillMaps) {
+        for (const [key, v] of m) {
+          if (key < earliestCgKey) backfillAltSumMap.set(key, (backfillAltSumMap.get(key) ?? 0) + v);
+        }
+      }
+    } catch (err) {
+      console.warn('[marketRotation] cointrader.pro backfill failed, using CoinGecko-only window:', (err as Error).message);
+    }
+  }
+
   const dateKeys = Array.from(new Set([...btcMap.keys(), ...ethMap.keys()])).sort();
 
   // Calibrate the tracked-alt long tail against today's real total market cap —
@@ -148,11 +242,18 @@ export async function fetchMarketRotationData(
 
       let altSum = 0;
       let largeCapSum = 0;
-      altMaps.forEach((m, idx) => {
-        const v = m.get(key) ?? 0;
-        altSum += v;
-        if (idx < LARGE_CAP_COUNT) largeCapSum += v;
-      });
+      if (backfillAltSumMap.has(key)) {
+        // Backfilled (pre-CoinGecko-window) date — fixed 13-coin proxy set,
+        // all treated as "large cap" (see COINTRADER_ALT_SYMBOLS above).
+        altSum = backfillAltSumMap.get(key) ?? 0;
+        largeCapSum = altSum;
+      } else {
+        altMaps.forEach((m, idx) => {
+          const v = m.get(key) ?? 0;
+          altSum += v;
+          if (idx < LARGE_CAP_COUNT) largeCapSum += v;
+        });
+      }
 
       const scaledAltSum = altSum * (1 + tailRatio);
 
