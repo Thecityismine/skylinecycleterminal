@@ -37,6 +37,14 @@ function fmt(v: number | null, d = 2): string {
   return v == null ? '—' : v.toFixed(d);
 }
 
+// Log ticks span 0.1 → 10,000, so scale the precision to the magnitude.
+function fmtAxis(v: number): string {
+  if (v >= 1000) return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k`;
+  if (v >= 10)   return v.toFixed(0);
+  if (v >= 1)    return v.toFixed(1);
+  return v.toFixed(2);
+}
+
 export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
   const {
     points, range, logScale, ratio, ema200, ema400, sma52,
@@ -173,7 +181,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
             scale={logScale ? 'log' : 'auto'}
             domain={logScale ? ['auto', 'auto'] : [0, 'auto']}
             allowDataOverflow
-            tickFormatter={(v: number) => v.toFixed(2)}
+            tickFormatter={fmtAxis}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             axisLine={{ stroke: '#1E293B' }}
             tickLine={false}

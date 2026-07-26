@@ -26,7 +26,8 @@ type Props = {
 };
 
 export function BtcM2PageClient({ points, ratio, ema200, ema400, sma52, zoneLabel, zoneColor }: Props) {
-  const [logScale, setLogScale] = useState(false);
+  // Ratio spans ~4 orders of magnitude (2012 → today), so log is the default view.
+  const [logScale, setLogScale] = useState(true);
   const [range, setRange] = useState<Range>('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 

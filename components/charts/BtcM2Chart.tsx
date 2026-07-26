@@ -35,6 +35,14 @@ function fmtRatio(v: number): string {
   return v.toFixed(2);
 }
 
+// Log ticks span 0.1 → 10,000, so scale the precision to the magnitude.
+function fmtAxis(v: number): string {
+  if (v >= 1000) return `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k`;
+  if (v >= 10)   return v.toFixed(0);
+  if (v >= 1)    return v.toFixed(1);
+  return v.toFixed(2);
+}
+
 function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload as BtcM2Point;
@@ -174,11 +182,11 @@ export function BtcM2Chart({ data, logScale, onRangeChange, onZoomChange }: Prop
           scale={logScale ? 'log' : 'auto'}
           domain={yDomain}
           allowDataOverflow
-          tickFormatter={fmtRatio}
+          tickFormatter={fmtAxis}
           tick={{ fill: 'var(--sct-muted)', fontSize: 11, fontFamily: 'var(--font-geist-mono)' }}
           axisLine={{ stroke: 'var(--sct-border)' }}
           tickLine={false}
-          width={48}
+          width={52}
         />
 
         <Tooltip content={<CustomTooltip />} cursor={isSelecting ? false : undefined} />
