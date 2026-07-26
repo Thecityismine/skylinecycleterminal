@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import {
   LayoutDashboard,
+  FileText,
   Activity,
   TrendingUp,
   History,
@@ -55,6 +56,7 @@ type NavSection = {
 
 const nav: (NavItem | NavSection)[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true, free: true },
+  { label: "Deep Research", href: "/research", icon: FileText, exact: true },
   {
     section: "CYCLE",
     items: [

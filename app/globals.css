@@ -139,3 +139,66 @@
 ::-webkit-scrollbar-track { background: var(--sct-bg); }
 ::-webkit-scrollbar-thumb { background: var(--sct-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--sct-muted); }
+
+/* ── Print / Save-as-PDF ──────────────────────────────────────────────────────
+   Used by the Deep Research report. The app is a dark UI; printed output
+   inverts to ink-on-paper so a saved PDF is legible and doesn't flood a
+   printer with background colour. Scoped to .report-root so no other page is
+   affected. */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm;
+  }
+
+  /* Hide app chrome — nav, sidebars, buttons — leaving only the report. */
+  aside, nav, header.app-header, .no-print { display: none !important; }
+
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  .report-root {
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* Flatten the dark card treatment to plain rules on white. */
+  .report-root .report-section {
+    background: #fff !important;
+    border: none !important;
+    border-top: 1px solid #ccc !important;
+    border-radius: 0 !important;
+    padding: 10px 0 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-root .report-section:first-of-type { border-top: none !important; }
+
+  /* Force every token-coloured text node to ink. Series/status colours are
+     re-enabled below only where colour carries meaning. */
+  .report-root, .report-root * {
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+
+  .report-root h1 { font-size: 20pt; }
+  .report-root h2 { font-size: 9pt; letter-spacing: 0.1em; }
+  .report-root table { font-size: 8pt; width: 100%; }
+  .report-root td, .report-root th {
+    border-bottom: 1px solid #ddd !important;
+    padding: 4px 8px 4px 0 !important;
+  }
+
+  /* Meters print as outlined bars so the fill level survives greyscale. */
+  .report-root .rounded-full {
+    border: 1px solid #999 !important;
+    background: #fff !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .report-root a { text-decoration: none; }
+}

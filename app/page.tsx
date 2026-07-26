@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Activity, Waves, Radar, ArrowLeftRight, Layers, LineChart,
-  Check, ArrowRight,
+  Check, ArrowRight, FileText, TrendingDown, TrendingUp,
 } from "lucide-react";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
 import { CycleInsightStrip } from "@/components/landing/CycleInsightStrip";
@@ -67,12 +67,28 @@ const FREE_INCLUDED = [
 ];
 
 const PREMIUM_INCLUDED = [
+  "Skyline Deep Research report",
   "Every chart and model",
   "Full on-chain suite",
   "Macro liquidity dashboards",
   "ETF flows and dominance",
   "Shareable chart cards",
   "New models added over time",
+];
+
+// Mirrors the real structure of the report at /research — the transparency
+// ledger is the differentiator, so the landing page shows it rather than
+// describing it.
+const RESEARCH_SECTIONS = [
+  "Executive summary",
+  "Why this conclusion",
+  "Indicator dashboard",
+  "Historical cycle comparison",
+  "Positional weights",
+  "What changed this week",
+  "Most similar historical period",
+  "What would invalidate this",
+  "Data gaps",
 ];
 
 const FAQS = [
@@ -315,6 +331,99 @@ export default function LandingPage() {
               </span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Deep Research */}
+      <section id="research" className="max-w-5xl mx-auto px-6 py-16 scroll-mt-16">
+        <div className="text-center mb-3">
+          <span
+            className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-full border"
+            style={{ color: "var(--sct-btc)", borderColor: "rgba(247,147,26,0.3)", backgroundColor: "rgba(247,147,26,0.08)" }}
+          >
+            <FileText size={11} />
+            Skyline Deep Research
+          </span>
+        </div>
+        <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
+          The charts give you the data. This tells you what it adds up to.
+        </h2>
+        <p className="text-sm text-center max-w-2xl mx-auto mb-10" style={{ color: "var(--sct-muted)" }}>
+          Every model on the terminal is read into a single research report — the kind an institutional desk
+          publishes. It states a position, shows the evidence on both sides, and tells you what would prove it wrong.
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+          {/* The transparency ledger — the actual differentiator */}
+          <div
+            className="rounded-xl border p-5"
+            style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+          >
+            <p className="text-sm font-semibold mb-1" style={{ color: "var(--sct-text)" }}>
+              Never a black box
+            </p>
+            <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--sct-muted)" }}>
+              Every report splits its own evidence in two, so you can see exactly which indicators drove
+              the conclusion — and which argue against it.
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <TrendingUp size={13} className="shrink-0 mt-0.5" style={{ color: "var(--sct-green)" }} />
+                <p className="text-xs" style={{ color: "var(--sct-secondary)" }}>
+                  <span style={{ color: "var(--sct-green)" }}>Supporting</span> — indicators aligned with the reading
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <TrendingDown size={13} className="shrink-0 mt-0.5" style={{ color: "#FF5C5C" }} />
+                <p className="text-xs" style={{ color: "var(--sct-secondary)" }}>
+                  <span style={{ color: "#FF5C5C" }}>Weakening</span> — indicators pointing the other way
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="shrink-0 mt-0.5 text-[13px] leading-none" style={{ color: "var(--sct-muted)" }}>—</span>
+                <p className="text-xs" style={{ color: "var(--sct-secondary)" }}>
+                  <span style={{ color: "var(--sct-muted)" }}>Data gaps</span> — what couldn&apos;t be computed, listed rather than hidden
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* What's in it */}
+          <div
+            className="rounded-xl border p-5"
+            style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+          >
+            <p className="text-sm font-semibold mb-1" style={{ color: "var(--sct-text)" }}>
+              What&apos;s in every report
+            </p>
+            <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--sct-muted)" }}>
+              Rebuilt from live data each time you open it. Print or save as PDF.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {RESEARCH_SECTIONS.map((s) => (
+                <span
+                  key={s}
+                  className="text-[11px] px-2 py-1 rounded border"
+                  style={{ color: "var(--sct-secondary)", borderColor: "var(--sct-border)" }}
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="rounded-xl border p-5 text-center"
+          style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+        >
+          <p className="text-sm mb-1" style={{ color: "var(--sct-secondary)" }}>
+            Probabilities, never predictions.
+          </p>
+          <p className="text-xs max-w-2xl mx-auto" style={{ color: "var(--sct-muted)" }}>
+            Skyline Deep Research reports where the evidence sits and how confident that reading is. It does not
+            forecast price, and it does not tell you what to buy. Data first, opinion second.
+          </p>
         </div>
       </section>
 
