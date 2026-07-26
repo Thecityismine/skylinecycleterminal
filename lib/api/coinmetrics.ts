@@ -15,7 +15,12 @@ export type OnChainPoint = {
   issTotNtv: number | null;  // daily BTC issuance (block reward)
 };
 
-async function coinmetricsGet(params: Record<string, string>): Promise<{ data: Record<string, string>[] }> {
+type CoinmetricsResponse = {
+  data: Record<string, string>[];
+  next_page_token?: string;
+};
+
+async function coinmetricsGet(params: Record<string, string>): Promise<CoinmetricsResponse> {
   const url = new URL('https://community-api.coinmetrics.io/v4/timeseries/asset-metrics');
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
@@ -45,7 +50,7 @@ export async function fetchDailyPrice(asset: string = 'btc', startTime = '2012-0
     for (const d of json.data ?? []) {
       if (d.PriceUSD != null) all.push({ time: d.time.slice(0, 10), price: Number(d.PriceUSD) });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
 
   return all;
@@ -88,7 +93,7 @@ export async function fetchBTCRealizedPrice(startTime = '2012-01-01'): Promise<R
           realized: capReal != null && sply != null && sply > 0 ? capReal / sply : null,
         });
       }
-      nextPageToken = (json as any).next_page_token ?? null;
+      nextPageToken = json.next_page_token ?? null;
     } while (nextPageToken);
 
     return all;
@@ -129,7 +134,7 @@ export async function fetchReserveRiskData(startTime = '2012-01-01'): Promise<Re
           splyAct1yr: d.SplyAct1yr  != null ? Number(d.SplyAct1yr)  : null,
         });
       }
-      nextPageToken = (json as any).next_page_token ?? null;
+      nextPageToken = json.next_page_token ?? null;
     } while (nextPageToken);
 
     return all;
@@ -187,7 +192,7 @@ async function tryHashMetric(metric: string, startTime: string): Promise<HashRib
         source:   metric as 'HashRate' | 'DiffLast',
       });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
   return all;
 }
@@ -238,7 +243,52 @@ export async function fetchBTCMVRVData(startTime = '2011-01-01'): Promise<MVRVDa
         mvrv:  Number(d.CapMVRVCur),
       });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
+  } while (nextPageToken);
+
+  return all;
+}
+
+// ─── Valuation model data (realized price, delta price, MVRV bands) ──────────
+
+export type ValuationDataPoint = {
+  time:      string;
+  price:     number;
+  mvrv:      number;
+  marketCap: number;
+  splyCur:   number;
+};
+
+// Delta Price needs Average Cap = cumulative market cap ÷ days of history, so this
+// must be fetched from the first day CoinMetrics has data (2010-07-18) regardless of
+// what the page displays — starting the cumulative sum later inflates Average Cap and
+// pushes Delta Price too high. All four metrics are on the free Community tier.
+export async function fetchBTCValuationData(startTime = '2010-07-01'): Promise<ValuationDataPoint[]> {
+  const all: ValuationDataPoint[] = [];
+  let nextPageToken: string | null = null;
+
+  do {
+    const params: Record<string, string> = {
+      assets: 'btc', metrics: 'PriceUSD,CapMVRVCur,CapMrktCurUSD,SplyCur', frequency: '1d',
+      start_time: startTime, page_size: '10000',
+    };
+    if (nextPageToken) params.next_page_token = nextPageToken;
+
+    const json = await coinmetricsGet(params);
+    for (const d of json.data ?? []) {
+      if (d.PriceUSD == null || d.CapMVRVCur == null || d.CapMrktCurUSD == null || d.SplyCur == null) continue;
+      const mvrv    = Number(d.CapMVRVCur);
+      const splyCur = Number(d.SplyCur);
+      if (mvrv <= 0 || splyCur <= 0) continue;
+      all.push({
+        time:      d.time.slice(0, 10),
+        price:     Number(d.PriceUSD),
+        mvrv,
+        marketCap: Number(d.CapMrktCurUSD),
+        splyCur,
+      });
+    }
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
 
   return all;
@@ -277,7 +327,7 @@ export async function fetchBTCRiskFactorData(startTime = '2011-01-01'): Promise<
         marketCap: Number(d.CapMrktCurUSD),
       });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
 
   return all;
@@ -324,7 +374,7 @@ export async function fetchCycleMasterData(startTime = '2010-07-01'): Promise<Cy
           : null;
       rows.push({ time: d.time.slice(0, 10), price, splyCur, capRealUSD, cdd: null });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
 
   return rows;
@@ -362,7 +412,7 @@ export async function fetchBTCExchangeReserve(startTime = '2016-01-01'): Promise
         splyCur: Number(d.SplyCur),
       });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
 
   return all;
@@ -394,7 +444,7 @@ export async function fetchOnChainMetrics(startTime = '2022-01-01'): Promise<OnC
         issTotNtv: d.IssTotNtv     != null ? Number(d.IssTotNtv)     : null,
       });
     }
-    nextPageToken = (json as any).next_page_token ?? null;
+    nextPageToken = json.next_page_token ?? null;
   } while (nextPageToken);
 
   return all;

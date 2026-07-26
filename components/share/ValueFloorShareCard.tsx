@@ -16,7 +16,8 @@ export type ValueFloorSharePayload = {
   scoreColor:    string;
   btcClose:      number | null;
   realizedPrice: number | null;
-  vsRealizedPct: number | null;   // (vsRealized ratio - 1) * 100
+  deltaPrice:    number | null;
+  vsDeltaPct:    number | null;   // (vsDelta ratio - 1) * 100
   drawdownPct:   number | null;
   generatedAt:   string;
   logoSrc?:      never;
@@ -39,10 +40,13 @@ const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
 
 const FLOOR_LINES = [
   { key: 'realizedPrice', label: 'Realized Price', color: '#3B82F6', width: 2,   dash: undefined },
+  { key: 'deltaPrice',    label: 'Delta Price',    color: '#EC4899', width: 2,   dash: undefined },
   { key: 'ma2y',          label: '2Y MA',          color: '#35D07F', width: 1.5, dash: '6 3'     },
   { key: 'ma200w',        label: '200W MA',        color: '#A855F7', width: 1.5, dash: '6 3'     },
   { key: 'powerLaw',      label: 'Power Law',      color: '#E6B450', width: 1,   dash: '4 4'     },
 ];
+
+const MVRV_BAND_LINES = ['mvrvBandLow', 'mvrvBandHigh'];
 
 function fmtPrice(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(0)}M`;
@@ -67,7 +71,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
   const {
     points, visible,
     scoreScore, scoreLabel, scoreColor,
-    btcClose, realizedPrice, vsRealizedPct, drawdownPct,
+    btcClose, realizedPrice, deltaPrice, vsDeltaPct,
     generatedAt,
   } = payload;
 
@@ -75,21 +79,25 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
     month: 'short', day: 'numeric', year: 'numeric',
   });
 
-  const vsColor = vsRealizedPct == null ? '#94A3B8'
-    : vsRealizedPct < 0  ? '#35D07F'
-    : vsRealizedPct < 50 ? '#3B82F6'
-    : vsRealizedPct < 150 ? '#E6B450'
+  const distColor = (v: number | null) => v == null ? '#94A3B8'
+    : v < 0   ? '#35D07F'
+    : v < 50  ? '#3B82F6'
+    : v < 150 ? '#E6B450'
     : '#FF5C5C';
 
   const stats = [
-    { label: 'BTC Price',       value: fmtUSD(btcClose),       sub: 'Current price',              color: '#E6EDF3'   },
-    { label: 'Realized Price',  value: fmtUSD(realizedPrice),   sub: 'Aggregate holder cost basis', color: '#3B82F6'   },
-    { label: 'vs Cost Basis',   value: fmtPct(vsRealizedPct),   sub: vsRealizedPct != null ? (vsRealizedPct < 0 ? 'Below cost basis' : 'Above cost basis') : '—', color: vsColor },
-    { label: 'Floor Score',     value: `${scoreScore}/100`,     sub: scoreLabel,                    color: scoreColor  },
+    { label: 'BTC Price',       value: fmtUSD(btcClose),       sub: 'Current price',               color: '#E6EDF3'  },
+    { label: 'Realized Price',  value: fmtUSD(realizedPrice),  sub: 'Aggregate holder cost basis',  color: '#3B82F6'  },
+    { label: 'Delta Price',     value: fmtUSD(deltaPrice),     sub: 'Realized cap − average cap',   color: '#EC4899'  },
+    { label: 'vs Delta Price',  value: fmtPct(vsDeltaPct),     sub: vsDeltaPct != null ? (vsDeltaPct < 0 ? 'Below the model' : 'Above the model') : '—', color: distColor(vsDeltaPct) },
+    { label: 'Floor Score',     value: `${scoreScore}/100`,    sub: scoreLabel,                     color: scoreColor },
   ];
 
   // Y-axis domain
-  const allPrices = points.flatMap(p => [p.btcClose, p.realizedPrice, p.ma200w, p.ma2y, p.powerLawLow].filter((v): v is number => v != null && v > 0));
+  const allPrices = points.flatMap(p => [
+    p.btcClose, p.realizedPrice, p.deltaPrice, p.ma200w, p.ma2y, p.powerLawLow,
+    ...(visible.mvrvBands ? [p.mvrvBandLow, p.mvrvBandHigh] : []),
+  ].filter((v): v is number => v != null && v > 0));
   const pMin = allPrices.length ? Math.max(0.01, Math.min(...allPrices) * 0.7) : 0.01;
   const pMax = allPrices.length ? Math.max(...allPrices) * 2.0 : 200_000;
   const logTicks = LOG_TICKS.filter(t => t >= pMin && t <= pMax);
@@ -126,10 +134,10 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
       }}>
         <div>
           <p style={{ fontSize: 18, fontWeight: 700, color: '#F7F9FC', margin: 0 }}>
-            Bitcoin Value Floor Model
+            Bitcoin Valuation Models
           </p>
           <p style={{ fontSize: 12, color: '#8B949E', margin: '4px 0 10px' }}>
-            Realized price · 200W MA · 2Y MA · Power Law — long-term cost basis floors
+            Delta price · realized price · 200W MA · 2Y MA · Power Law — long-term value reference levels
           </p>
         </div>
 
@@ -154,7 +162,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
         height:              STATS_H,
         flex:                `0 0 ${STATS_H}px`,
         display:             'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(5, 1fr)',
         gap:                 12,
         marginTop:           GAP,
         marginBottom:        STATS_GAP,
@@ -239,6 +247,11 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
             <Area type="monotone" dataKey="realizedPrice" stroke="none" fill="rgba(59,130,246,0.08)" dot={false} isAnimationActive={false} connectNulls />
           )}
 
+          {/* MVRV reference bands — behind every model line */}
+          {visible.mvrvBands && MVRV_BAND_LINES.map((key) => (
+            <Line key={key} type="monotone" dataKey={key} stroke="#64748B" strokeWidth={1} strokeDasharray="2 4" dot={false} isAnimationActive={false} connectNulls />
+          ))}
+
           {/* Floor lines */}
           {FLOOR_LINES.map(({ key, color, width, dash }) =>
             visible[key] ? (
@@ -264,9 +277,11 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
             {[
               { key: 'btcPrice',      color: '#E6EDF3', label: 'BTC Price' },
               { key: 'realizedPrice', color: '#3B82F6', label: 'Realized' },
+              { key: 'deltaPrice',    color: '#EC4899', label: 'Delta' },
               { key: 'ma2y',          color: '#35D07F', label: '2Y MA' },
               { key: 'ma200w',        color: '#A855F7', label: '200W MA' },
               { key: 'powerLaw',      color: '#E6B450', label: 'Power Law' },
+              { key: 'mvrvBands',     color: '#64748B', label: 'MVRV Bands' },
             ].filter(l => visible[l.key]).map(l => (
               <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 14, height: l.key === 'btcPrice' ? 2.5 : 2, backgroundColor: l.color, display: 'inline-block', borderRadius: 1 }} />

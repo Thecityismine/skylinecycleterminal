@@ -1,8 +1,9 @@
-import { fetchBTCMVRVData } from '@/lib/api/coinmetrics';
+import { fetchBTCValuationData } from '@/lib/api/coinmetrics';
 import {
   buildValueFloorPoints,
   getFloorProximityScore,
-  FLOOR_EVENTS,
+  buildCycleLowRows,
+  getMvrvBandMultiples,
 } from '@/lib/indicators/valueFloors';
 import { BTCValueFloorChartSection } from '@/components/charts/BTCValueFloorChartSection';
 import { PageHeader }         from '@/components/dashboard/PageHeader';
@@ -37,23 +38,14 @@ function distColor(v: number | null | undefined): string {
   return '#FF5C5C';
 }
 
-// ─── Historical reference table ────────────────────────────────────────────────
-
-const CYCLE_SNAPSHOTS = [
-  { period: '2011 Cycle Low', date: 'Nov 2011', btcPrice: '$2',      vsCostBasis: 'Below', regime: 'Deep Value', color: '#3B82F6' },
-  { period: '2015 Bear Low',  date: 'Jan 2015', btcPrice: '$175',    vsCostBasis: '0–20%', regime: 'Deep Value', color: '#3B82F6' },
-  { period: '2018 Bear Low',  date: 'Dec 2018', btcPrice: '$3,122',  vsCostBasis: '~20%',  regime: 'Deep Value', color: '#3B82F6' },
-  { period: 'COVID Crash',    date: 'Mar 2020', btcPrice: '$3,858',  vsCostBasis: '~5%',   regime: 'Approaching', color: '#35D07F' },
-  { period: '2022 Bear Low',  date: 'Nov 2022', btcPrice: '$15,476', vsCostBasis: '~-15%', regime: 'Deep Value', color: '#3B82F6' },
-  { period: '2024 ATH',       date: 'Mar 2024', btcPrice: '$73,737', vsCostBasis: '~280%', regime: 'Extended',   color: '#FF5C5C' },
-];
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function CVDDPage() {
+export default async function ValuationModelsPage() {
   const points = await (async () => {
     try {
-      const raw = await fetchBTCMVRVData('2011-01-01');
+      // Must start at the beginning of CoinMetrics history — Delta Price depends on a
+      // cumulative average of market cap, so a later start date biases the whole series.
+      const raw = await fetchBTCValuationData('2010-07-01');
       return buildValueFloorPoints(raw);
     } catch {
       return [];
@@ -62,6 +54,8 @@ export default async function CVDDPage() {
 
   const last  = points.length > 0 ? points[points.length - 1] : null;
   const score = getFloorProximityScore(points);
+  const cycleRows = buildCycleLowRows(points);
+  const bands = getMvrvBandMultiples(points);
 
   const pageRegime = score.score >= 80 ? 'accumulate'
     : score.score >= 60 ? 'neutral'
@@ -69,6 +63,7 @@ export default async function CVDDPage() {
     : 'distribution';
 
   const vsRealized  = last?.vsRealized  != null ? (last.vsRealized  - 1) * 100 : null;
+  const vsDelta     = last?.vsDelta     != null ? (last.vsDelta     - 1) * 100 : null;
   const vs200w      = last?.vs200w      != null ? (last.vs200w      - 1) * 100 : null;
   const vs2y        = last?.vs2y        != null ? (last.vs2y        - 1) * 100 : null;
   const vsPowerLaw  = last != null ? (last.vsPowerLaw - 1) * 100 : null;
@@ -76,8 +71,8 @@ export default async function CVDDPage() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
-        title="Bitcoin Value Floor Model"
-        subtitle="Long-term on-chain value reference floors — realized price, moving averages, and power law"
+        title="Bitcoin Valuation Models"
+        subtitle="Historical on-chain valuation models used to identify long-term accumulation zones — delta price, realized price, moving averages, and power law"
         regime={pageRegime}
       />
 
@@ -88,10 +83,12 @@ export default async function CVDDPage() {
       >
         <span className="text-blue-400 text-base shrink-0">ⓘ</span>
         <p className="text-xs leading-relaxed" style={{ color: 'rgba(147,197,253,0.9)' }}>
-          <strong>CVDD Alternative:</strong> True CVDD (Cumulative Value Days Destroyed) requires daily Coin Days Destroyed (CDD) data, which is paywalled across all on-chain providers including CoinMetrics, Glassnode, and Blockchain.info.
-          This page answers the same question — <em>is Bitcoin near historically depressed valuation territory?</em> — using four free-tier metrics:
-          <strong> Realized Price</strong> (aggregate holder cost basis via MVRV), <strong>200W MA</strong>, <strong>2Y MA</strong>, and <strong>Power Law</strong> central value.
-          All four have historically converged near major bear-market lows, providing equivalent floor reference signals to CVDD.
+          <strong>On CVDD:</strong> Cumulative Value Days Destroyed is the model most often cited for this job, but it can&rsquo;t be
+          computed from free data — it needs daily Coin Days Destroyed, which is paywalled across CoinMetrics, Glassnode and
+          Blockchain.info. It also no longer does what it&rsquo;s famous for: its normalisation constant was fitted before 2019, and at the
+          November 2022 low price was still <strong>236% above</strong> CVDD rather than touching it. We use <strong>Delta Price</strong> instead —
+          computed here from full CoinMetrics history, it came within <strong>1% of the 2018 low</strong> and <strong>9% of the 2015 low</strong>.
+          Every model on this page is a reference level, not a signal.
         </p>
       </div>
 
@@ -126,18 +123,24 @@ export default async function CVDDPage() {
           accent="rgba(230,237,243,0.85)"
         />
         <StatCard
-          label="Realized Price"
-          value={fmtUSD(last?.realizedPrice)}
-          sub="Aggregate holder cost basis"
-          accent="#3B82F6"
+          label="Delta Price"
+          value={fmtUSD(last?.deltaPrice)}
+          sub="Realized cap − average cap"
+          accent="#EC4899"
         />
         <StatCard
-          label="vs Realized Price"
-          value={vsRealized != null ? fmtPct(vsRealized) : '—'}
-          sub={vsRealized != null
-            ? vsRealized < 0 ? 'Below cost basis — deep value' : 'Above aggregate cost basis'
+          label="vs Delta Price"
+          value={vsDelta != null ? fmtPct(vsDelta) : '—'}
+          sub={vsDelta != null
+            ? vsDelta < 0 ? 'Below the model — deep value' : 'Above the model'
             : ''}
-          accent={distColor(vsRealized)}
+          accent={distColor(vsDelta)}
+        />
+        <StatCard
+          label="Realized Price"
+          value={fmtUSD(last?.realizedPrice)}
+          sub={vsRealized != null ? `${fmtPct(vsRealized)} vs holder cost basis` : 'Aggregate holder cost basis'}
+          accent="#3B82F6"
         />
         <StatCard
           label="Floor Proximity"
@@ -159,7 +162,7 @@ export default async function CVDDPage() {
       </div>
 
       {/* ── Secondary distance cards ───────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard
           label="200W MA"
           value={fmtUSD(last?.ma200w)}
@@ -179,6 +182,14 @@ export default async function CVDDPage() {
           accent="#35D07F"
         />
         <StatCard
+          label="MVRV"
+          value={last?.mvrv != null ? fmtMult(last.mvrv) : '—'}
+          sub={bands ? `Bands at ${bands.low.toFixed(2)}× / ${bands.high.toFixed(2)}×` : 'Market value / realized value'}
+          accent={last?.mvrv != null
+            ? last.mvrv < 1 ? '#3B82F6' : last.mvrv < 2 ? '#35D07F' : last.mvrv < 3 ? '#E6B450' : '#FF5C5C'
+            : 'var(--sct-muted)'}
+        />
+        <StatCard
           label="vs Power Law"
           value={last?.vsPowerLaw != null ? fmtMult(last.vsPowerLaw) : '—'}
           sub={vsPowerLaw != null ? `${fmtPct(vsPowerLaw)} vs central value` : ''}
@@ -194,7 +205,8 @@ export default async function CVDDPage() {
         scoreColor={score.color}
         btcClose={last?.btcClose ?? null}
         realizedPrice={last?.realizedPrice ?? null}
-        vsRealizedPct={vsRealized}
+        deltaPrice={last?.deltaPrice ?? null}
+        vsDeltaPct={vsDelta}
         drawdownPct={last?.drawdownPct ?? null}
       />
 
@@ -236,10 +248,11 @@ export default async function CVDDPage() {
 
           <div className="space-y-2">
             {[
-              { label: 'vs Realized Price (50%)', value: score.breakdown.realizedFloor },
-              { label: 'vs 200W MA (20%)',        value: score.breakdown.ma200wFloor },
-              { label: 'vs 2Y MA (15%)',           value: score.breakdown.ma2yFloor },
-              { label: 'ATH Drawdown (15%)',        value: score.breakdown.drawdown },
+              { label: 'vs Realized Price (30%)', value: score.breakdown.realizedFloor },
+              { label: 'vs Delta Price (30%)',    value: score.breakdown.deltaFloor },
+              { label: 'vs 200W MA (15%)',        value: score.breakdown.ma200wFloor },
+              { label: 'vs 2Y MA (10%)',          value: score.breakdown.ma2yFloor },
+              { label: 'ATH Drawdown (15%)',      value: score.breakdown.drawdown },
             ].map((c) => {
               const col = c.value >= 80 ? '#3B82F6' : c.value >= 60 ? '#35D07F' : c.value >= 40 ? '#6B7280' : c.value >= 20 ? '#E6B450' : '#FF5C5C';
               return (
@@ -295,45 +308,62 @@ export default async function CVDDPage() {
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
       >
         <p className="text-xs font-medium tracking-wider uppercase mb-4" style={{ color: 'var(--sct-muted)' }}>
-          Historical Cycle Reference — Floor Proximity at Key Dates
+          Historical Cycle Reference — Models at Major Lows
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--sct-border)' }}>
-                {['Period', 'Date', 'BTC Price', 'vs Realized Price', 'Zone', ''].map((h) => (
+                {['Period', 'Date', 'BTC Price', 'Delta Price', 'vs Delta', 'Realized Price', 'vs Realized'].map((h) => (
                   <th key={h} className="text-left py-2 pr-4 font-medium" style={{ color: 'var(--sct-muted)' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {CYCLE_SNAPSHOTS.map((r) => (
-                <tr key={r.period} style={{ borderBottom: '1px solid var(--sct-border)' }} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-2.5 pr-4 font-medium" style={{ color: 'var(--sct-secondary)' }}>{r.period}</td>
+              {cycleRows.map((r) => (
+                <tr
+                  key={r.date}
+                  style={{
+                    borderBottom: '1px solid var(--sct-border)',
+                    backgroundColor: r.isCurrent ? 'rgba(236,72,153,0.06)' : undefined,
+                  }}
+                  className="hover:bg-white/[0.02] transition-colors"
+                >
+                  <td className="py-2.5 pr-4 font-medium" style={{ color: r.isCurrent ? '#EC4899' : 'var(--sct-secondary)' }}>{r.label}</td>
                   <td className="py-2.5 pr-4 font-mono"   style={{ color: 'var(--sct-muted)' }}>{r.date}</td>
-                  <td className="py-2.5 pr-4 font-mono"   style={{ color: 'rgba(230,237,243,0.8)' }}>{r.btcPrice}</td>
-                  <td className="py-2.5 pr-4 font-mono"   style={{ color: '#3B82F6' }}>{r.vsCostBasis}</td>
-                  <td className="py-2.5 pr-4 font-medium" style={{ color: r.color }}>{r.regime}</td>
-                  <td className="py-2.5">
-                    <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: r.color }} />
-                  </td>
+                  <td className="py-2.5 pr-4 font-mono"   style={{ color: 'rgba(230,237,243,0.8)' }}>{fmtUSD(r.btcClose)}</td>
+                  <td className="py-2.5 pr-4 font-mono"   style={{ color: '#EC4899' }}>{fmtUSD(r.deltaPrice)}</td>
+                  <td className="py-2.5 pr-4 font-mono"   style={{ color: distColor(r.vsDeltaPct) }}>{fmtPct(r.vsDeltaPct)}</td>
+                  <td className="py-2.5 pr-4 font-mono"   style={{ color: '#3B82F6' }}>{fmtUSD(r.realizedPrice)}</td>
+                  <td className="py-2.5 pr-4 font-mono"   style={{ color: distColor(r.vsRealizedPct) }}>{fmtPct(r.vsRealizedPct)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className="text-[10px] mt-3" style={{ color: 'var(--sct-muted)' }}>
-          &ldquo;vs Realized Price&rdquo; shows approximate % above/below aggregate holder cost basis at that date. Bear lows historically occur when BTC trades near or below this level.
+          Every figure is read from the live series at that date — nothing here is hardcoded. &ldquo;vs Delta&rdquo; and &ldquo;vs Realized&rdquo; show how far
+          price sat above (+) or below (−) each model. Delta Price came closest at the 2015 and 2018 lows; no model has called every cycle.
         </p>
       </div>
 
       {/* ── Interpretation panel ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
+          {
+            label: 'Delta Price',
+            color: '#EC4899',
+            content: 'Realized cap minus average cap, divided by supply. It blends the on-chain cost basis with Bitcoin\'s entire price history, which makes it move slowly and lag far behind bull markets. That lag is the point: it has sat within single-digit percentages of the 2015 and 2018 lows, and about 30% above the 2022 low.',
+          },
           {
             label: 'Realized Price Floor',
             color: '#3B82F6',
             content: 'The realized price is the average cost basis of all Bitcoin holders — what they paid when their coins last moved. Trading near or below this level means most holders are at breakeven or a loss. All major bear-market lows (2015, 2018, 2022) have touched this floor.',
+          },
+          {
+            label: 'MVRV Bands',
+            color: '#64748B',
+            content: 'MVRV is market cap divided by realized cap. The dotted bands mark realized price multiplied by the 5th and 95th percentile of MVRV across all history — the levels beyond which price has spent only 5% of its life in either direction. They are descriptive reference levels, not targets.',
           },
           {
             label: '200W MA Support',

@@ -105,7 +105,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "SOPR",              href: "/onchain/sopr",              icon: Activity },
       { label: "HODL Wave",         href: "/onchain/hodl-wave",         icon: Lock },
       { label: "Capital Age Structure", href: "/onchain/capital-age",   icon: Waves },
-      { label: "Value Floors",      href: "/onchain/cvdd",              icon: BarChart2 },
+      { label: "Valuation Models",  href: "/onchain/cvdd",              icon: BarChart2 },
       { label: "Bottom Confluence", href: "/onchain/bottom-confluence", icon: Crosshair },
       { label: "NUPL",              href: "/onchain/reserve-risk",      icon: ShieldCheck },
       { label: "Puell Multiple",    href: "/onchain?metric=puell",      icon: Cpu,        exact: true },

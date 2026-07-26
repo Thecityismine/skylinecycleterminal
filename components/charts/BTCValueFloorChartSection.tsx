@@ -18,16 +18,19 @@ type Props = {
   scoreColor:    string;
   btcClose:      number | null;
   realizedPrice: number | null;
-  vsRealizedPct: number | null;
+  deltaPrice:    number | null;
+  vsDeltaPct:    number | null;
   drawdownPct:   number | null;
 };
 
 const VISIBLE_DEFAULTS: Record<string, boolean> = {
   btcPrice:      true,
   realizedPrice: true,
+  deltaPrice:    true,
   ma2y:          true,
   ma200w:        true,
   powerLaw:      false,
+  mvrvBands:     false,
   halvings:      true,
   floorEvents:   true,
   valueZone:     true,
@@ -36,7 +39,7 @@ const VISIBLE_DEFAULTS: Record<string, boolean> = {
 export function BTCValueFloorChartSection({
   points,
   scoreScore, scoreLabel, scoreColor,
-  btcClose, realizedPrice, vsRealizedPct, drawdownPct,
+  btcClose, realizedPrice, deltaPrice, vsDeltaPct, drawdownPct,
 }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>(VISIBLE_DEFAULTS);
   const [range, setRange]     = useState<Range>('All');
@@ -71,7 +74,8 @@ export function BTCValueFloorChartSection({
     scoreColor,
     btcClose,
     realizedPrice,
-    vsRealizedPct,
+    deltaPrice,
+    vsDeltaPct,
     drawdownPct,
     generatedAt: new Date().toISOString(),
   };
@@ -85,7 +89,7 @@ export function BTCValueFloorChartSection({
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--sct-secondary)' }}>
-            Bitcoin Price vs Value Floors — Log Scale
+            Bitcoin Price vs Valuation Models — Log Scale
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
             All series in USD. Blue zone = price near realized price (cost basis). Green markers = historical bear market lows.
@@ -97,6 +101,7 @@ export function BTCValueFloorChartSection({
             {[
               { color: '#E6EDF3', label: 'BTC Price' },
               { color: '#3B82F6', label: 'Realized Price' },
+              { color: '#EC4899', label: 'Delta Price' },
               { color: '#35D07F', label: '2Y MA' },
               { color: '#A855F7', label: '200W MA' },
               { color: '#E6B450', label: 'Power Law' },
@@ -151,7 +156,9 @@ export function BTCValueFloorChartSection({
       </div>
 
       <p className="text-[10px] mt-2" style={{ color: 'var(--sct-muted)' }}>
-        Source: CoinMetrics Community API (PriceUSD, CapMVRVCur). Realized Price = Price / MVRV. 200W MA = 1400-day SMA. 2Y MA = 730-day SMA. Power Law = log regression central value (Bitcoin Magazine Pro methodology).
+        Source: CoinMetrics Community API (PriceUSD, CapMVRVCur, CapMrktCurUSD, SplyCur), full history from 2010-07-18.
+        Realized Price = Realized Cap / Supply. Delta Price = (Realized Cap − Average Cap) / Supply, where Average Cap is the cumulative mean of market cap since day one.
+        200W MA = 1400-day SMA. 2Y MA = 730-day SMA. Power Law = log regression central value. MVRV bands = realized price × the 5th / 95th percentile of MVRV across all history (fixed reference multiples, not a forecast).
       </p>
     </div>
   );

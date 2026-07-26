@@ -43,6 +43,7 @@ function CustomTooltip({ active, payload }: any) {
   const rows: Array<{ label: string; value: string; color: string }> = [
     { label: 'BTC Price',      value: fmtPrice(d.btcClose),                             color: '#E6EDF3' },
     { label: 'Realized Price', value: d.realizedPrice != null ? fmtPrice(d.realizedPrice) : '—', color: '#3B82F6' },
+    { label: 'Delta Price',    value: d.deltaPrice != null ? fmtPrice(d.deltaPrice) : '—', color: '#EC4899' },
     { label: '2Y MA',          value: d.ma2y != null ? fmtPrice(d.ma2y) : '—',           color: '#35D07F' },
     { label: '200W MA',        value: d.ma200w != null ? fmtPrice(d.ma200w) : '—',       color: '#A855F7' },
     { label: 'Power Law',      value: fmtPrice(d.powerLaw),                              color: '#E6B450' },
@@ -61,8 +62,12 @@ function CustomTooltip({ active, payload }: any) {
             <span className="text-xs font-mono font-semibold" style={{ color }}>{value}</span>
           </div>
         ))}
+        <div className="flex justify-between gap-6 pt-1 mt-1 border-t" style={{ borderColor: 'var(--sct-border)' }}>
+          <span className="text-xs" style={{ color: 'var(--sct-muted)' }}>MVRV</span>
+          <span className="text-xs font-mono" style={{ color: 'var(--sct-secondary)' }}>{d.mvrv.toFixed(2)}×</span>
+        </div>
         {d.drawdownPct < -1 && (
-          <div className="flex justify-between gap-6 pt-1 mt-1 border-t" style={{ borderColor: 'var(--sct-border)' }}>
+          <div className="flex justify-between gap-6">
             <span className="text-xs" style={{ color: 'var(--sct-muted)' }}>ATH Drawdown</span>
             <span className="text-xs font-mono" style={{ color: d.drawdownPct < -50 ? '#35D07F' : '#E6B450' }}>
               {d.drawdownPct.toFixed(1)}%
@@ -76,18 +81,28 @@ function CustomTooltip({ active, payload }: any) {
 
 const FLOOR_LINES = [
   { key: 'realizedPrice', label: 'Realized Price', color: '#3B82F6', width: 2,   dash: undefined },
+  { key: 'deltaPrice',    label: 'Delta Price',    color: '#EC4899', width: 2,   dash: undefined },
   { key: 'ma2y',          label: '2Y MA',          color: '#35D07F', width: 1.5, dash: '6 3' },
   { key: 'ma200w',        label: '200W MA',        color: '#A855F7', width: 1.5, dash: '6 3' },
   { key: 'powerLaw',      label: 'Power Law',      color: '#E6B450', width: 1,   dash: '4 4' },
+];
+
+// MVRV bands are reference scaffolding derived from realized price, not a model of
+// their own, so they render recessive — thin dotted slate rather than a palette hue.
+const MVRV_BAND_LINES = [
+  { key: 'mvrvBandLow',  color: '#64748B' },
+  { key: 'mvrvBandHigh', color: '#64748B' },
 ];
 
 export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZoomChange }: Props) {
   const [visible, setVisible] = useState<Record<string, boolean>>({
     btcPrice:      true,
     realizedPrice: true,
+    deltaPrice:    true,
     ma2y:          true,
     ma200w:        true,
     powerLaw:      false,
+    mvrvBands:     false,
     halvings:      true,
     floorEvents:   true,
     valueZone:     true,
@@ -125,9 +140,11 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZ
   const allPrices = chartData.flatMap((p) => [
     p.btcClose,
     p.realizedPrice,
+    p.deltaPrice,
     p.ma200w,
     p.ma2y,
     p.powerLawLow,
+    ...(visible.mvrvBands ? [p.mvrvBandLow, p.mvrvBandHigh] : []),
   ].filter((v): v is number => v != null && v > 0));
   const pMin = allPrices.length ? Math.max(0.01, Math.min(...allPrices) * 0.7) : 0.01;
   const pMax = allPrices.length ? Math.max(...allPrices) * 2.0 : 200_000;
@@ -163,9 +180,11 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZ
       <div className="flex items-center gap-1.5 mb-3 flex-wrap">
         {toggleBtn('btcPrice',      'BTC Price',      '#E6EDF3')}
         {toggleBtn('realizedPrice', 'Realized Price', '#3B82F6')}
+        {toggleBtn('deltaPrice',    'Delta Price',    '#EC4899')}
         {toggleBtn('ma2y',          '2Y MA',          '#35D07F')}
         {toggleBtn('ma200w',        '200W MA',        '#A855F7')}
         {toggleBtn('powerLaw',      'Power Law',      '#E6B450')}
+        {toggleBtn('mvrvBands',     'MVRV Bands',     '#64748B')}
         {toggleBtn('valueZone',     'Value Zone',     '#3B82F6')}
         {toggleBtn('halvings',      'Halvings',       'rgba(255,255,255,0.4)')}
         {toggleBtn('floorEvents',   'Bottom Events',  '#35D07F')}
@@ -262,6 +281,21 @@ export function BTCValueFloorChart({ points, range = 'all', onVisibleChange, onZ
               connectNulls
             />
           )}
+
+          {/* MVRV reference bands — behind every model line */}
+          {visible.mvrvBands && MVRV_BAND_LINES.map(({ key, color }) => (
+            <Line
+              key={key}
+              type="monotone"
+              dataKey={key}
+              stroke={color}
+              strokeWidth={1}
+              strokeDasharray="2 4"
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+          ))}
 
           {/* Floor lines — drawn before BTC price so price sits on top */}
           {FLOOR_LINES.map(({ key, color, width, dash }) =>
