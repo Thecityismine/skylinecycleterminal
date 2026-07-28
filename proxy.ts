@@ -7,15 +7,30 @@ import { SESSION_COOKIE } from "@/lib/auth/constants";
 // verify + entitlement check happens in app/(protected)/layout.tsx's requireAccess().
 const PUBLIC_PATHS = [
   "/", "/login", "/billing", "/terms", "/privacy", "/contact",
-  // Free-tier pages — app/(free)/... — viewable without signing in or paying
-  "/dashboard", "/cycle", "/price", "/price/fear-greed",
+  // Free-tier pages — app/(free)/... — viewable without signing in or paying.
+  // Keep this in sync with the `free: true` flags in components/layout/Sidebar.tsx
+  // and PUBLIC_PAGES in app/sitemap.ts.
+  "/dashboard", "/cycle", "/price", "/price/fear-greed", "/price/four-year-cycle", "/track-record",
+  // High-intent chart pages opened for organic discovery. The data behind these
+  // was never actually gated — the API routes have no session check — so opening
+  // the pages gives away nothing that was previously protected.
+  "/price/halving-cycles", "/price/power-law", "/price/drawdown", "/price/two-year-ma",
+  "/price/pi-cycle-bottom", "/price/realized-price", "/price/hash-ribbons",
+  "/altseason", "/dominance", "/onchain/sopr",
   // Crawler/metadata file-convention routes — must stay reachable without a session
   "/robots.txt", "/sitemap.xml",
 ];
 
+// Public sub-trees. PUBLIC_PATHS is an exact-match list, so anything with child
+// routes (/learn/<slug>) has to be declared here or every article silently
+// redirects to /login.
+const PUBLIC_PREFIXES = ["/learn"];
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.includes(pathname);
+  const isPublic =
+    PUBLIC_PATHS.includes(pathname) ||
+    PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   const hasSession = request.cookies.has(SESSION_COOKIE);
 
   if (!isPublic && !hasSession) {

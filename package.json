@@ -7,6 +7,7 @@
     "dev": "next dev",
     "prebuild": "node scripts/dropbox-ignore.mjs",
     "build": "next build",
+    "postbuild": "node scripts/dropbox-ignore.mjs",
     "start": "next start",
     "lint": "eslint"
   },
@@ -20,6 +21,7 @@
     "html-to-image": "^1.11.13",
     "lightweight-charts": "^5.2.0",
     "lucide-react": "^1.21.0",
+    "marked": "^18.0.7",
     "next": "16.2.9",
     "nodemailer": "^9.0.3",
     "react": "19.2.4",

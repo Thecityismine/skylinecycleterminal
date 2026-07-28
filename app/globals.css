@@ -140,6 +140,98 @@
 ::-webkit-scrollbar-thumb { background: var(--sct-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--sct-muted); }
 
+/* ── /learn article prose ─────────────────────────────────────────────────────
+   The guides are rendered from markdown, so the HTML arrives without classes.
+   Styling is scoped to .learn-prose rather than applied globally, and tuned for
+   long-form reading on the dark UI: wider line-height and a lighter body colour
+   than the dashboards use. */
+.learn-prose {
+  color: var(--sct-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.learn-prose > * + * { margin-top: 1.25em; }
+
+.learn-prose h2 {
+  color: var(--sct-text);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.5em;
+  margin-bottom: 0.75em;
+  scroll-margin-top: 2rem;
+}
+
+.learn-prose h3 {
+  color: var(--sct-text);
+  font-size: 1.175rem;
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+}
+
+.learn-prose strong { color: var(--sct-text); font-weight: 600; }
+
+.learn-prose a {
+  color: var(--sct-btc);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.learn-prose ul, .learn-prose ol { padding-left: 1.35em; }
+.learn-prose ul { list-style: disc; }
+.learn-prose ol { list-style: decimal; }
+.learn-prose li + li { margin-top: 0.5em; }
+.learn-prose li::marker { color: var(--sct-muted); }
+
+.learn-prose blockquote {
+  border-left: 2px solid var(--sct-btc);
+  padding: 0.25em 0 0.25em 1.25em;
+  color: var(--sct-text);
+}
+
+.learn-prose hr {
+  border: 0;
+  border-top: 1px solid var(--sct-border);
+  margin: 2.5em 0;
+}
+
+/* Tables come from GFM pipes and can be wide — let them scroll rather than
+   forcing the article body to scroll horizontally. */
+.learn-prose table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.learn-prose th, .learn-prose td {
+  border-bottom: 1px solid var(--sct-border);
+  padding: 0.6em 1em 0.6em 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.learn-prose th {
+  color: var(--sct-muted);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.learn-prose code {
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.875em;
+  background: var(--sct-panel);
+  border: 1px solid var(--sct-border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
 /* ── Print / Save-as-PDF ──────────────────────────────────────────────────────
    Used by the Deep Research report. The app is a dark UI; printed output
    inverts to ink-on-paper so a saved PDF is legible and doesn't flood a
