@@ -165,7 +165,7 @@ function Modal({ payload, onClose }: { payload: RatioSharePayload; onClose: () =
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-3" style={{ borderTop: '1px solid #21262D' }}>
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3" style={{ borderTop: '1px solid #21262D' }}>
           <button
             onClick={() => void generate()}
             disabled={state === 'exporting'}
@@ -180,7 +180,7 @@ function Modal({ payload, onClose }: { payload: RatioSharePayload; onClose: () =
             Regenerate
           </button>
 
-          <div className="flex-1" />
+          <div className="flex flex-wrap items-center gap-2">
 
           {hasShare && (
             <button
@@ -224,6 +224,7 @@ function Modal({ payload, onClose }: { payload: RatioSharePayload; onClose: () =
             <Download size={11} />
             Download PNG
           </button>
+          </div>
         </div>
       </div>
     </div>

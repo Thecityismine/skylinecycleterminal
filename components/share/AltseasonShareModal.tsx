@@ -136,7 +136,7 @@ export function AltseasonShareModal({ payload, onClose }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-3" style={{ borderTop: '1px solid #21262D' }}>
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3" style={{ borderTop: '1px solid #21262D' }}>
           <button
             onClick={() => void generate()} disabled={state === 'exporting'}
             className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border"
@@ -145,7 +145,7 @@ export function AltseasonShareModal({ payload, onClose }: Props) {
             <Loader2 size={11} style={state === 'exporting' ? { animation: 'spin 1s linear infinite' } : {}} />
             Regenerate
           </button>
-          <div className="flex-1" />
+          <div className="flex flex-wrap items-center gap-2">
           {hasShare && (
             <button onClick={() => void handleShare()} disabled={!dataUrl}
               className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border"
@@ -167,6 +167,7 @@ export function AltseasonShareModal({ payload, onClose }: Props) {
           >
             <Download size={11} /> Download PNG
           </button>
+          </div>
         </div>
       </div>
     </div>

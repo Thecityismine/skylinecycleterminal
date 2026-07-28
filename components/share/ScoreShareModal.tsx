@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { X, Download, Share2, Copy, Check, Loader2 } from 'lucide-react';
-import { ScoreShareCard, SCORE_CARD_CHART_RECT }  from '@/components/share/ScoreShareCard';
+import { ScoreShareCard, SCORE_CARD_CHART_RECT } from '@/components/share/ScoreShareCard';
 import type { ScoreSharePayload } from '@/components/share/ScoreShareCard';
 import {
   exportShareCard,
@@ -16,15 +16,19 @@ import { shareImageFile, copyImageToClipboard } from '@/lib/share/webShare';
 import { processLogoForWatermark } from '@/lib/share/processLogo';
 
 type Props = {
-  payload:  ScoreSharePayload;
-  onClose:  () => void;
+  payload: ScoreSharePayload;
+  onClose: () => void;
 };
 
 type ExportState = 'idle' | 'exporting' | 'ready';
 
-const PREVIEW_SCALE = 0.42;   // ≈ 504 × 283 preview on screen
+const PREVIEW_SCALE = 0.42;
 
-export function SharePreviewModal({ payload, onClose }: Props) {
+// Matches the standard *ShareModal.tsx pattern used by every other page's
+// share card (see RegimeShareModal.tsx) — this used to be a separately
+// designed component (SharePreviewModal.tsx) with a different 3-button
+// layout, which is why it looked inconsistent with the rest of the app.
+export function ScoreShareModal({ payload, onClose }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [state,    setState]    = useState<ExportState>('idle');
   const [dataUrl,  setDataUrl]  = useState<string | null>(null);
@@ -32,7 +36,6 @@ export function SharePreviewModal({ payload, onClose }: Props) {
   const [hasShare, setHasShare] = useState(false);
   const [logoSrc,  setLogoSrc]  = useState<string | null>(null);
 
-  // Detect Web Share API capability
   useEffect(() => {
     const testFile = new File([''], 'test.png', { type: 'image/png' });
     setHasShare(
@@ -42,16 +45,14 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     );
   }, []);
 
-  // Process the logo on mount — strips white bg, converts pixels to white
   useEffect(() => {
     processLogoForWatermark('/skyline-full.png')
       .then(setLogoSrc)
       .catch(() => setLogoSrc(''));
   }, []);
 
-  // Auto-generate once logo processing is done
   useEffect(() => {
-    if (logoSrc === null) return;  // still processing
+    if (logoSrc === null) return;
     const timer = setTimeout(() => void generate(), 300);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -65,8 +66,7 @@ export function SharePreviewModal({ payload, onClose }: Props) {
       const url = await compositeWatermark(raw, logoSrc ?? '', SCORE_CARD_CHART_RECT);
       setDataUrl(url);
       setState('ready');
-    } catch (err) {
-      console.error('Share card export failed', err);
+    } catch {
       setState('idle');
     }
   }, [logoSrc]);
@@ -94,12 +94,10 @@ export function SharePreviewModal({ payload, onClose }: Props) {
     }
   }, [dataUrl]);
 
-  // Close on backdrop click
   const handleBackdrop = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
@@ -112,6 +110,8 @@ export function SharePreviewModal({ payload, onClose }: Props) {
       style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
       onClick={handleBackdrop}
     >
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
       <div
         className="rounded-xl border shadow-2xl flex flex-col overflow-hidden"
         style={{ backgroundColor: '#0D1117', borderColor: '#21262D', maxWidth: 600, width: '100%' }}
@@ -150,15 +150,15 @@ export function SharePreviewModal({ payload, onClose }: Props) {
             </div>
           </div>
 
-          {/* Scaled preview — show the generated PNG or a spinner */}
+          {/* Scaled preview */}
           <div
             style={{
-              width:           Math.round(SHARE_CARD_WIDTH  * PREVIEW_SCALE),
-              height:          Math.round(SHARE_CARD_HEIGHT * PREVIEW_SCALE),
-              borderRadius:    8,
-              overflow:        'hidden',
-              border:          '1px solid #21262D',
-              position:        'relative',
+              width:        Math.round(SHARE_CARD_WIDTH  * PREVIEW_SCALE),
+              height:       Math.round(SHARE_CARD_HEIGHT * PREVIEW_SCALE),
+              borderRadius: 8,
+              overflow:     'hidden',
+              border:       '1px solid #21262D',
+              position:     'relative',
             }}
           >
             {dataUrl ? (
@@ -177,84 +177,87 @@ export function SharePreviewModal({ payload, onClose }: Props) {
                   display:         'flex',
                   alignItems:      'center',
                   justifyContent:  'center',
-                  flexDirection:   'column',
-                  gap:             8,
                 }}
               >
-                <Loader2 size={20} style={{ color: '#484F58', animation: 'spin 1s linear infinite' }} />
-                <p style={{ fontSize: 11, color: '#484F58' }}>Generating card…</p>
+                <Loader2
+                  size={24}
+                  style={{ color: '#8B949E', animation: 'spin 1s linear infinite' }}
+                />
               </div>
             )}
           </div>
         </div>
 
-        {/* Size note */}
-        <p className="text-center text-[10px] pb-1" style={{ color: '#484F58' }}>
-          {SHARE_CARD_WIDTH * 2} × {SHARE_CARD_HEIGHT * 2}px PNG · optimized for X / LinkedIn / Telegram
-        </p>
-
         {/* Action buttons */}
-        <div className="flex gap-2 p-4" style={{ borderTop: '1px solid #21262D' }}>
-          {/* Download */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3" style={{ borderTop: '1px solid #21262D' }}>
           <button
-            onClick={handleDownload}
-            disabled={state !== 'ready'}
-            className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all"
+            onClick={() => void generate()}
+            disabled={state === 'exporting'}
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border transition-all"
             style={{
-              backgroundColor: state === 'ready' ? '#35D07F22' : '#21262D',
-              border:          `1px solid ${state === 'ready' ? '#35D07F' : '#30363D'}`,
-              color:           state === 'ready' ? '#35D07F' : '#484F58',
-              cursor:          state === 'ready' ? 'pointer' : 'not-allowed',
+              borderColor:     '#21262D',
+              color:           '#8B949E',
+              backgroundColor: 'transparent',
+              opacity:         state === 'exporting' ? 0.5 : 1,
+              cursor:          state === 'exporting' ? 'not-allowed' : 'pointer',
             }}
           >
-            {state === 'exporting' ? (
-              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-            ) : (
-              <Download size={14} />
-            )}
-            {state === 'exporting' ? 'Rendering…' : 'Download PNG'}
+            <Loader2 size={11} style={state === 'exporting' ? { animation: 'spin 1s linear infinite' } : {}} />
+            Regenerate
           </button>
 
-          {/* Share (mobile) */}
-          {hasShare && (
+          <div className="flex flex-wrap items-center gap-2">
+            {hasShare && (
+              <button
+                onClick={() => void handleShare()}
+                disabled={!dataUrl}
+                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border transition-all"
+                style={{
+                  borderColor:     '#21262D',
+                  color:           '#8B949E',
+                  backgroundColor: 'transparent',
+                  opacity:         !dataUrl ? 0.4 : 1,
+                  cursor:          !dataUrl ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <Share2 size={11} />
+                Share
+              </button>
+            )}
+
             <button
-              onClick={handleShare}
-              disabled={state !== 'ready'}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all"
+              onClick={() => void handleCopy()}
+              disabled={!dataUrl}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border transition-all"
               style={{
-                backgroundColor: state === 'ready' ? '#3B82F622' : '#21262D',
-                border:          `1px solid ${state === 'ready' ? '#3B82F6' : '#30363D'}`,
-                color:           state === 'ready' ? '#3B82F6' : '#484F58',
-                cursor:          state === 'ready' ? 'pointer' : 'not-allowed',
+                borderColor:     '#21262D',
+                color:           copied ? '#35D07F' : '#8B949E',
+                backgroundColor: 'transparent',
+                opacity:         !dataUrl ? 0.4 : 1,
+                cursor:          !dataUrl ? 'not-allowed' : 'pointer',
               }}
             >
-              <Share2 size={14} />
-              Share
+              {copied ? <Check size={11} /> : <Copy size={11} />}
+              {copied ? 'Copied!' : 'Copy'}
             </button>
-          )}
 
-          {/* Copy to clipboard */}
-          <button
-            onClick={handleCopy}
-            disabled={state !== 'ready'}
-            className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
-            style={{
-              backgroundColor: copied ? '#E6B45022' : (state === 'ready' ? '#21262D' : '#161B22'),
-              border:          `1px solid ${copied ? '#E6B450' : '#30363D'}`,
-              color:           copied ? '#E6B450' : (state === 'ready' ? '#8B949E' : '#484F58'),
-              cursor:          state === 'ready' ? 'pointer' : 'not-allowed',
-            }}
-          >
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
+            <button
+              onClick={handleDownload}
+              disabled={!dataUrl}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                backgroundColor: dataUrl ? '#F7931A' : '#21262D',
+                color:           dataUrl ? '#000' : '#6B7280',
+                opacity:         !dataUrl ? 0.5 : 1,
+                cursor:          !dataUrl ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <Download size={11} />
+              Download PNG
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Spin animation */}
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }
