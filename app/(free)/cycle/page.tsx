@@ -8,6 +8,7 @@ import { InsightPanel } from '@/components/dashboard/InsightPanel';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { ScoreHistoryChart } from '@/components/charts/ScoreHistoryChart';
 import { ScoreShareModal } from '@/components/share/ScoreShareModal';
+import { SKYLINE_INDICATOR_COUNT } from '@/lib/indicators/skylineScore';
 import type { CycleScoreResult, ScoreZone } from '@/lib/indicators/skylineScore';
 import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
 
@@ -27,11 +28,6 @@ const BANDS = [
   { range: '75–100', label: 'Distribution',  color: '#FF5C5C' },
 ];
 
-// Purely cosmetic: how many placeholder rows the breakdown panel shows before
-// data arrives. Matches the current indicator count so the layout doesn't jump.
-// Nothing is claimed to the user from this number.
-const SKELETON_ROWS = 11;
-
 function scoreColor(score: number): string {
   if (score < 25) return '#3B82F6';
   if (score < 50) return '#35D07F';
@@ -46,22 +42,33 @@ export default function CyclePage() {
 
   const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
 
-  // Counts come from the payload rather than a hardcoded number — the previous
-  // copy claimed "8 indicators equally weighted", which had drifted from the
-  // 11 weighted indicators computeSkylineScore() actually reads.
-  const totalIndicators = cycle?.indicators.length ?? 0;
-  const reporting       = cycle?.indicators.filter((i) => i.available).length ?? 0;
+  // Copy below is derived from the live result so it can't drift from the model.
+  // Before data arrives we fall back to the count the scorer advertises.
+  const totalIndicators = cycle?.indicators.length ?? SKYLINE_INDICATOR_COUNT;
+  const availableCount  = cycle?.indicators.filter((i) => i.available).length ?? null;
+
+  const indicatorSummary =
+    availableCount != null && availableCount < totalIndicators
+      ? `${availableCount} of ${totalIndicators} indicators reporting`
+      : `${totalIndicators} indicators`;
+
+  // Only claim an equal split when the weights actually are equal today.
+  const equalWeightShare = (() => {
+    const avail = cycle?.indicators.filter((i) => i.available) ?? [];
+    const sum   = avail.reduce((s, i) => s + i.weight, 0);
+    if (!avail.length || sum <= 0) return null;
+    const shares = avail.map((i) => i.weight / sum);
+    return shares.every((s) => Math.abs(s - shares[0]) < 1e-9)
+      ? `${(shares[0] * 100).toFixed(1)}%`
+      : null;
+  })();
 
   return (
     <>
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
         title="Skyline Cycle Score"
-        subtitle={
-          cycle
-            ? `Composite 0–100 cycle position — weighted mean of ${totalIndicators} indicators, ${reporting} reporting`
-            : 'Composite 0–100 cycle position'
-        }
+        subtitle={`Composite 0–100 cycle position — weighted mean of ${indicatorSummary}`}
         regime={regime}
       />
 
@@ -221,7 +228,7 @@ export default function CyclePage() {
           </p>
           <div className="space-y-4">
             {loading || !cycle
-              ? Array.from({ length: SKELETON_ROWS }).map((_, i) => (
+              ? Array.from({ length: SKYLINE_INDICATOR_COUNT }).map((_, i) => (
                   <div key={i} className="animate-pulse space-y-1.5">
                     <div className="h-3 rounded w-2/3" style={{ backgroundColor: 'var(--sct-border)' }} />
                     <div className="h-1.5 rounded-full" style={{ backgroundColor: 'var(--sct-border)' }} />
@@ -263,13 +270,16 @@ export default function CyclePage() {
         <div className="lg:col-span-3">
           <InsightPanel title="Score Methodology">
             <p className="text-xs leading-relaxed">
-              {totalIndicators || 'Multiple'} indicators are each normalized to 0–100 against their
-              own historical range. A higher score = higher cycle risk. A lower score = stronger
-              accumulation conditions. The composite is a <strong>weighted</strong> mean — indicators
-              do not contribute equally — and any indicator that cannot be computed is excluded
-              rather than counted as neutral.
-              {cycle && reporting < totalIndicators && (
-                <> Right now {totalIndicators - reporting} of {totalIndicators} {totalIndicators - reporting === 1 ? 'is' : 'are'} unavailable and excluded from the score.</>
+              {totalIndicators} indicators are each normalized to 0–100 against their own historical
+              range. A higher score = higher cycle risk. A lower score = stronger accumulation
+              conditions. The composite is a weighted mean taken only over the indicators with data
+              on the day — anything without data is dropped from the average rather than counted as
+              neutral.
+              {availableCount != null && (
+                <> Right now {availableCount} of {totalIndicators} are reporting.</>
+              )}
+              {equalWeightShare && (
+                <> Weights are currently equal, so each reporting indicator contributes {equalWeightShare} of the score.</>
               )}
             </p>
             <div className="mt-3 space-y-1.5">
