@@ -8,10 +8,6 @@ const SITE_URL = "https://skylinecycleterminal.com";
 const PUBLIC_PAGES = [
   "/", "/dashboard", "/cycle", "/track-record", "/learn",
   "/price", "/price/fear-greed",
-  // High-intent chart pages opened for organic discovery
-  "/price/halving-cycles", "/price/power-law", "/price/drawdown", "/price/two-year-ma",
-  "/price/pi-cycle-bottom", "/price/realized-price", "/price/hash-ribbons",
-  "/altseason", "/dominance", "/onchain/sopr",
   "/terms", "/privacy", "/contact",
 ];
 

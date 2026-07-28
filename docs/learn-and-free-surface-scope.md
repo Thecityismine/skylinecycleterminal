@@ -142,9 +142,17 @@ Three places had to move together, and they are easy to desync — `proxy.ts` no
 
 `/dominance`'s query-string siblings (`?asset=eth`, `?view=total`) were also badged — they resolve to the same now-public route, so leaving them unbadged would have been a fresh inconsistency.
 
-Verified: all 10 return 200 to an unauthenticated request and render their charts; `/onchain`, `/etf-flows` and `/dominance/stablecoins` still 307 to `/login`; sitemap carries 35 URLs including all 10; 17 FREE badges render in the sidebar. Build clean, 92 pages, exit 0.
+### Rolled back, 2026-07-28
 
-**Indexable public pages: ~6 → ~31.**
+**All ten went back to `(protected)`.** The sidebar tells the story: FREE badges went from 4 to 16, and a terminal advertising sixteen free charts undersells premium to exactly the person evaluating whether to pay. The extra indexed pages were not worth that.
+
+What the plan missed: it argued the trade purely as SEO-versus-nothing, on the reasoning that the data was never truly gated so opening the pages cost nothing. That was right about *access* and wrong about *perception* — the paywall's job is partly to look like one. Reviewing the routing diff was never going to surface that; only seeing the rendered sidebar did.
+
+Restored exactly: `/dashboard`, `/cycle`, `/price`, `/price/fear-greed`. The badge list is byte-identical to `cbe2f5a`.
+
+**Indexable public pages: ~6 → ~24**, carried by `/learn` and `/track-record` rather than by chart pages. Those two are marketing surfaces, not terminal features, so they do the top-of-funnel job without touching the paywall.
+
+**If this is ever revisited**, the lever to reach for first is decoupling the two things Phase 2 conflated: a page can stay publicly crawlable while the sidebar stops badging it FREE. That keeps the SEO and drops the perception cost, and it was not considered when the phase was scoped.
 
 ### Build environment notes
 

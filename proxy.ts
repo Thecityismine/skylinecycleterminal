@@ -10,13 +10,13 @@ const PUBLIC_PATHS = [
   // Free-tier pages — app/(free)/... — viewable without signing in or paying.
   // Keep this in sync with the `free: true` flags in components/layout/Sidebar.tsx
   // and PUBLIC_PAGES in app/sitemap.ts.
+  //
+  // Deliberately a short list. Ten chart pages were opened here for organic
+  // reach and then rolled back: sixteen FREE badges in the sidebar made premium
+  // look thin, which costs more than the extra indexed pages were worth.
+  // /learn and /track-record carry the top-of-funnel job instead — they are
+  // marketing surfaces rather than terminal features.
   "/dashboard", "/cycle", "/price", "/price/fear-greed", "/track-record",
-  // High-intent chart pages opened for organic discovery. The data behind these
-  // was never actually gated — the API routes have no session check — so opening
-  // the pages gives away nothing that was previously protected.
-  "/price/halving-cycles", "/price/power-law", "/price/drawdown", "/price/two-year-ma",
-  "/price/pi-cycle-bottom", "/price/realized-price", "/price/hash-ribbons",
-  "/altseason", "/dominance", "/onchain/sopr",
   // Crawler/metadata file-convention routes — must stay reachable without a session
   "/robots.txt", "/sitemap.xml",
 ];
