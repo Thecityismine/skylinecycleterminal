@@ -428,6 +428,11 @@ function reserveRiskIndicator(
 
 // ─── Composite score ──────────────────────────────────────────────────────────
 
+// How many indicators computeSkylineScore emits. Only for sizing UI placeholders
+// before data arrives — anything rendered next to real numbers should read
+// result.indicators.length instead. The dev guard below shouts if this drifts.
+export const SKYLINE_INDICATOR_COUNT = 11;
+
 export function computeSkylineScore(
   onChain: OnChainPoint[],
   fearGreedValue: number,
@@ -452,6 +457,12 @@ export function computeSkylineScore(
     hashRateRibbonIndicator(extra.hashratePoints ?? null),
     reserveRiskIndicator(prices, extra.splyCur ?? null, extra.splyAct1yr ?? null, ctx),
   ];
+
+  if (process.env.NODE_ENV !== 'production' && indicators.length !== SKYLINE_INDICATOR_COUNT) {
+    console.warn(
+      `[skylineScore] SKYLINE_INDICATOR_COUNT is ${SKYLINE_INDICATOR_COUNT} but ${indicators.length} indicators were built — update the constant and any copy quoting it.`
+    );
+  }
 
   const avail       = indicators.filter((i) => i.available);
   const totalWeight = avail.reduce((s, i) => s + i.weight, 0);
