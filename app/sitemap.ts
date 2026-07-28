@@ -7,7 +7,7 @@ const SITE_URL = "https://skylinecycleterminal.com";
 // and PUBLIC_PREFIXES in proxy.ts) — no point indexing /login or /billing.
 const PUBLIC_PAGES = [
   "/", "/dashboard", "/cycle", "/track-record", "/learn",
-  "/price", "/price/fear-greed", "/price/four-year-cycle",
+  "/price", "/price/fear-greed",
   // High-intent chart pages opened for organic discovery
   "/price/halving-cycles", "/price/power-law", "/price/drawdown", "/price/two-year-ma",
   "/price/pi-cycle-bottom", "/price/realized-price", "/price/hash-ribbons",

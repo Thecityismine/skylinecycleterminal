@@ -10,7 +10,7 @@ const PUBLIC_PATHS = [
   // Free-tier pages — app/(free)/... — viewable without signing in or paying.
   // Keep this in sync with the `free: true` flags in components/layout/Sidebar.tsx
   // and PUBLIC_PAGES in app/sitemap.ts.
-  "/dashboard", "/cycle", "/price", "/price/fear-greed", "/price/four-year-cycle", "/track-record",
+  "/dashboard", "/cycle", "/price", "/price/fear-greed", "/track-record",
   // High-intent chart pages opened for organic discovery. The data behind these
   // was never actually gated — the API routes have no session check — so opening
   // the pages gives away nothing that was previously protected.
