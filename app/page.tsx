@@ -4,7 +4,9 @@ import {
   Check, ArrowRight, FileText,
 } from "lucide-react";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
-import { CycleInsightStrip } from "@/components/landing/CycleInsightStrip";
+import { CycleScoreHero } from "@/components/landing/CycleScoreHero";
+import { ProofBar } from "@/components/landing/ProofBar";
+import { Testimonials } from "@/components/landing/Testimonials";
 import { DeepResearchPreview } from "@/components/landing/DeepResearchPreview";
 
 const FEATURES = [
@@ -111,7 +113,7 @@ const FAQS = [
   },
   {
     q: "How often is data updated?",
-    a: "BTC/ETH prices and dominance update frequently throughout the day. Most other dashboards refresh daily; macro and on-chain indicators update as new source data becomes available.",
+    a: "Cycle signals move in weeks and months, not seconds, so the cadence matches the data. BTC/ETH prices and dominance update throughout the day; on-chain and macro dashboards refresh daily, as their source data does. Nothing here is built for tick-by-tick trading.",
   },
   {
     q: "What does premium include?",
@@ -123,17 +125,38 @@ const FAQS = [
   },
 ];
 
+// Specifics, not adjectives. Every line here is something a subscriber can go
+// and check inside the terminal — which is the point, and the contrast against
+// competitors quoting win rates and round user counts.
 const PROOF_POINTS = [
-  "Cycle models built on every Bitcoin halving and major accumulation zone since 2012",
-  "Tracks institutional ETF demand alongside on-chain and macro signals",
-  "30+ macro, on-chain, and price-structure models in one dashboard",
-  "Most dashboards update daily",
-  "Built specifically around Bitcoin's four-year halving cycle",
+  "The Cycle Score is a weighted read of 11 independent indicators: Pi Cycle, MVRV, Puell Multiple, 2-year MA, power law, NVT, Fear & Greed, active addresses, stablecoin supply, hash ribbons, and Reserve Risk",
+  "Every indicator is percentile-ranked against Bitcoin's full price history back to 2012, so a reading is scored against its own distribution rather than a threshold someone picked",
+  "Covers all four halving cycles: 2012, 2016, 2020, and 2024",
+  "Indicators that can't be computed are shown as gaps, not quietly dropped from the average",
+  "50+ models and dashboards, from ETF flows and global liquidity to HODL waves and altseason",
 ];
+
+// Built from the same FAQS array the page renders, so the structured data can
+// never drift from the visible copy. Feeds Google rich results and gives AI
+// search engines a clean question/answer pair to cite.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
 
 export default function LandingPage() {
   return (
     <div style={{ backgroundColor: "#070B10" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
+      />
+
       {/* Nav */}
       <header className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto relative z-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -143,6 +166,12 @@ export default function LandingPage() {
           style={{ width: 160, height: "auto", filter: "invert(1) brightness(1.8)", opacity: 0.92 }}
         />
         <nav className="flex items-center gap-6">
+          <Link href="/learn" className="hidden sm:inline text-sm" style={{ color: "var(--sct-secondary)" }}>
+            Guides
+          </Link>
+          <Link href="/track-record" className="hidden sm:inline text-sm" style={{ color: "var(--sct-secondary)" }}>
+            Track record
+          </Link>
           <a href="#features" className="hidden sm:inline text-sm" style={{ color: "var(--sct-secondary)" }}>
             Features
           </a>
@@ -184,11 +213,10 @@ export default function LandingPage() {
           <span style={{ color: "var(--sct-btc)" }}>Start reading the cycle.</span>
         </h1>
         <p className="text-base sm:text-lg max-w-2xl mx-auto mb-8" style={{ color: "var(--sct-secondary)" }}>
-          Skyline combines on-chain metrics, macro liquidity, ETF flows, and historical cycle
-          models into one dashboard, so you know when to accumulate, when to stay patient, and
-          when to reduce risk.
+          One dashboard for on-chain, macro liquidity, ETF flows, and historical cycle models —
+          so you know when to accumulate, when to wait, and when to reduce risk.
         </p>
-        <CycleInsightStrip />
+        <CycleScoreHero />
         <div className="flex items-center justify-center gap-3 mb-4">
           <Link
             href="/dashboard"
@@ -198,16 +226,19 @@ export default function LandingPage() {
             Start Free
             <ArrowRight size={16} />
           </Link>
-          <a
-            href="#pricing"
+          <Link
+            href="/cycle"
             className="text-sm font-medium px-5 py-3 rounded-md border transition-colors"
             style={{ borderColor: "var(--sct-border)", color: "var(--sct-text)" }}
           >
-            See Pricing
-          </a>
+            See today&apos;s full read
+          </Link>
         </div>
-        <p className="text-xs" style={{ color: "var(--sct-muted)" }}>
-          Free dashboard available. No signup required.
+        {/* Disqualification does more for trust than another benefit claim, and
+            it is the sharpest line of separation from signal-selling tools. */}
+        <p className="text-xs max-w-md mx-auto" style={{ color: "var(--sct-muted)" }}>
+          Free dashboard, no signup. Built for investors thinking in cycles — if you want entry
+          signals for tomorrow, this isn&apos;t it.
         </p>
       </section>
 
@@ -252,6 +283,8 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <ProofBar />
+
       {/* Trust row */}
       <section className="max-w-3xl mx-auto px-6 pb-16 text-center">
         <h2 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: "var(--sct-text)" }}>
@@ -295,47 +328,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-16">
-        <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
-          Everything on one terminal
-        </h2>
-        <p className="text-sm text-center mb-12" style={{ color: "var(--sct-muted)" }}>
-          30+ Bitcoin &amp; Ethereum models in one place.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {FEATURES.map((f) => (
-            <Link
-              key={f.title}
-              href={f.href}
-              className="group rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5 block"
-              style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
-            >
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center mb-4"
-                style={{ backgroundColor: "rgba(247,147,26,0.12)" }}
-              >
-                <f.icon size={18} style={{ color: "var(--sct-btc)" }} />
-              </div>
-              <p className="text-sm font-semibold mb-1.5" style={{ color: "var(--sct-text)" }}>
-                {f.title}
-              </p>
-              <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--sct-muted)" }}>
-                {f.desc}
-              </p>
-              <span
-                className="inline-flex items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ color: "var(--sct-btc)" }}
-              >
-                View live
-                <ArrowRight size={12} />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Deep Research */}
+      {/* Deep Research — moved above the feature grid: it is the differentiator,
+          and it was previously sitting below a generic list of capabilities. */}
       <section id="research" className="max-w-6xl mx-auto px-6 py-20 sm:py-24 scroll-mt-16">
         <div className="text-center mb-4">
           <span
@@ -399,6 +393,46 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Features */}
+      <section id="features" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-16">
+        <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
+          Everything on one terminal
+        </h2>
+        <p className="text-sm text-center mb-12" style={{ color: "var(--sct-muted)" }}>
+          50+ Bitcoin &amp; Ethereum models in one place.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {FEATURES.map((f) => (
+            <Link
+              key={f.title}
+              href={f.href}
+              className="group rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5 block"
+              style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+            >
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center mb-4"
+                style={{ backgroundColor: "rgba(247,147,26,0.12)" }}
+              >
+                <f.icon size={18} style={{ color: "var(--sct-btc)" }} />
+              </div>
+              <p className="text-sm font-semibold mb-1.5" style={{ color: "var(--sct-text)" }}>
+                {f.title}
+              </p>
+              <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--sct-muted)" }}>
+                {f.desc}
+              </p>
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ color: "var(--sct-btc)" }}
+              >
+                View live
+                <ArrowRight size={12} />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Proof / why investors use Skyline */}
       <section className="max-w-3xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-semibold text-center mb-8" style={{ color: "var(--sct-text)" }}>
@@ -414,6 +448,34 @@ export default function LandingPage() {
               <p className="text-sm sm:text-base" style={{ color: "var(--sct-secondary)" }}>{p}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Track record — the numbers here are the point-in-time readings served by
+          /api/track-record. They only move if CYCLE_ANCHORS or the history start
+          date change; if either does, update this copy with them. */}
+      <section className="max-w-3xl mx-auto px-6 py-16">
+        <div
+          className="rounded-2xl border p-6 sm:p-8"
+          style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
+        >
+          <h2 className="text-2xl font-semibold mb-3" style={{ color: "var(--sct-text)" }}>
+            Here is where the score was wrong.
+          </h2>
+          <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--sct-secondary)" }}>
+            Across the last three Bitcoin cycles, the Cycle Score read Accumulate at all three cycle
+            bottoms and Distribution Risk at the 2017 top. At the 2021 top it reached only 68 —
+            Caution, not Distribution Risk. That is a miss, and it is published alongside the hits,
+            computed point-in-time so no reading uses data from after its own date.
+          </p>
+          <Link
+            href="/track-record"
+            className="inline-flex items-center gap-1.5 text-sm font-medium"
+            style={{ color: "var(--sct-btc)" }}
+          >
+            See the full track record
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 
@@ -505,6 +567,8 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <Testimonials />
+
       {/* FAQ */}
       <section id="faq" className="max-w-3xl mx-auto px-6 py-16 scroll-mt-16">
         <h2 className="text-2xl font-semibold text-center mb-10" style={{ color: "var(--sct-text)" }}>
@@ -552,6 +616,8 @@ export default function LandingPage() {
           or sell any asset. &copy; {new Date().getFullYear()} Skyline Cycle Terminal.
         </p>
         <div className="flex items-center justify-center gap-5 text-[11px]">
+          <Link href="/learn" style={{ color: "var(--sct-muted)" }}>Guides</Link>
+          <Link href="/track-record" style={{ color: "var(--sct-muted)" }}>Track record</Link>
           <Link href="/terms" style={{ color: "var(--sct-muted)" }}>Terms</Link>
           <Link href="/privacy" style={{ color: "var(--sct-muted)" }}>Privacy</Link>
           <Link href="/contact" style={{ color: "var(--sct-muted)" }}>Contact</Link>

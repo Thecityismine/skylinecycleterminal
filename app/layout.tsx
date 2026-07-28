@@ -50,6 +50,49 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+// Site-wide structured data. Deliberately omits aggregateRating and any user
+// count — schema.org review markup must reflect real, collected reviews, and
+// inventing one is the fastest way to lose the credibility this is meant to build.
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: TITLE,
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon-512.png`,
+      description: DESCRIPTION,
+      sameAs: ["https://x.com/SkylineCycle"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: TITLE,
+      description: DESCRIPTION,
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${SITE_URL}/#software`,
+      name: TITLE,
+      url: SITE_URL,
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Web",
+      description: DESCRIPTION,
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      offers: {
+        "@type": "Offer",
+        price: "99",
+        priceCurrency: "USD",
+        category: "Annual subscription",
+        url: `${SITE_URL}/#pricing`,
+      },
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -60,6 +103,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body style={{ backgroundColor: "var(--sct-bg)" }}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c") }}
+        />
         {children}
       </body>
     </html>
