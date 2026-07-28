@@ -15,7 +15,11 @@ import {
 import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
-type Props = { points: HistoricalScorePoint[] };
+// Optional vertical markers for known cycle turning points. /track-record uses
+// these to show where the score sat at each top and bottom; /cycle passes none.
+export type ChartMarker = { ts: number; label: string; color: string };
+
+type Props = { points: HistoricalScorePoint[]; markers?: ChartMarker[] };
 
 const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
   new Date(`${2011 + i}-01-01`).getTime(),
@@ -96,7 +100,7 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function ScoreHistoryChart({ points }: Props) {
+export function ScoreHistoryChart({ points, markers }: Props) {
   if (!points.length) return null;
 
   const prices   = points.map((p) => p.btcClose).filter((v) => v > 0);
@@ -145,6 +149,25 @@ export function ScoreHistoryChart({ points }: Props) {
                 value: h.label,
                 position: 'insideTopRight',
                 fill: 'rgba(255,255,255,0.28)',
+                fontSize: 9,
+              }}
+            />
+          ))}
+
+          {/* Cycle turning-point markers — drawn above halvings so a top or
+              bottom stays legible where the two nearly coincide. */}
+          {markers?.map((m) => (
+            <ReferenceLine
+              key={`${m.label}-${m.ts}`}
+              yAxisId="score"
+              x={m.ts}
+              stroke={m.color}
+              strokeWidth={1.5}
+              strokeDasharray="2 3"
+              label={{
+                value: m.label,
+                position: 'insideBottomLeft',
+                fill: m.color,
                 fontSize: 9,
               }}
             />
