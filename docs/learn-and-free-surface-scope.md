@@ -150,8 +150,24 @@ Verified: all 10 return 200 to an unauthenticated request and render their chart
 
 Two non-code problems surfaced repeatedly and cost real time:
 
-1. **Stale dev route validators.** `tsconfig.json` includes `.next/dev/types/**/*.ts` (Next 16 scaffolding). Moving pages between route groups leaves that generated `validator.ts` pointing at the old `(protected)` paths, and `next build` does not regenerate it — so the production typecheck fails with `Cannot find module '../../app/(protected)/…/page.js'`. Fix: delete `.next/dev/types` after moving any route. Worth knowing before the next move.
-2. **Dropbox locking.** EBUSY/EPERM on `.next` paths, landing on a different directory each run, and at one point corrupting the dev server's manifests badly enough that two pages served 500 until a restart. Compilation, TypeScript and all 92 pages succeeded every time; only cleanup failed. This is the known issue `scripts/dropbox-ignore.mjs` exists for, and it does not affect Vercel (the script no-ops on CI).
+1. **Stale dev route validators.** `tsconfig.json` includes `.next/dev/types/**/*.ts` (Next 16 scaffolding). Adding or removing a route leaves that generated `validator.ts` pointing at paths that no longer exist, and `next build` does not regenerate it — so the production typecheck fails with `Cannot find module '../../app/(protected)/…/page.js'`. Fix: delete `.next/dev/types`. This bit twice: once moving pages between route groups, and again after removing the BTCPay routes. Expect it after any route change.
+
+2. **Dropbox locking — resolved, and the obvious fix does not work.** EBUSY/EPERM on `.next` paths, landing on a different directory each run, and at one point corrupting the dev server's manifests badly enough that two pages served 500 until a restart. Compilation, TypeScript and all 92 pages succeeded every time; only cleanup failed.
+
+   The first attempt at a fix extended `scripts/dropbox-ignore.mjs` to pre-create and mark the `.next` subdirectories, on the theory that the build would then write into folders Dropbox already ignored. **That does not work**, and it is recorded here because it is the obvious thing to reach for. Measured with a harness that writes an export-shaped tree, waits 2s and removes it — 10 iterations each:
+
+   | Setup | Failures |
+   |---|---|
+   | Inside Dropbox, unmarked | 5/10 |
+   | Inside Dropbox, marked ignored | 5/6 |
+   | Outside Dropbox | 0/10 |
+   | Inside Dropbox, via junction | 0/10 |
+
+   Marking tells Dropbox not to *sync* a folder; it does not stop Dropbox opening a handle on it first. Narrowing the race was an illusion produced by a single passing build.
+
+   The shipped fix redirects `.next` out of the Dropbox tree via an NTFS directory junction into `%LOCALAPPDATA%`. Next still sees `.next` inside the project — `distDir` requires that — but the files live where Dropbox never looks. The container is keyed by a hash of the project path so worktrees don't share a build directory, and carries a junction back to `node_modules`, without which code running from the redirected output resolves modules beside its real path and fails on `@tailwindcss/postcss`. `node_modules` itself keeps the ignore marker, where the goal is stopping the upload rather than the handle. Marking survives as the fallback when a junction can't be created.
+
+   None of this affects Vercel — the script no-ops on CI.
 
 ## Risks
 
