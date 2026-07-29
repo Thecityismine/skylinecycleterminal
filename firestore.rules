@@ -35,6 +35,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Skyline Weekly subscribers ────────────────────────────────────────────
+    // Written only by app/api/subscribe/route.ts via firebase-admin (bypasses
+    // rules). Holds email addresses, so it must never be client-readable.
+    match /subscribers/{email} {
+      allow read, write: if false;
+    }
+
     // ── Stripe customer → uid reverse lookup ─────────────────────────────────
     // Written only by app/api/stripe/webhook/route.ts via firebase-admin. Needed
     // because subscription update/delete events only carry the Stripe customer

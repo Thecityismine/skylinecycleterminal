@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getAllArticles, getArticle, getPillar, getRelated } from "@/lib/content/learn";
+import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 
 const SITE_URL = "https://skylinecycleterminal.com";
 
@@ -124,6 +125,13 @@ export default async function LearnArticlePage({ params }: Params) {
             How it read past cycles
           </Link>
         </div>
+      </div>
+
+      {/* Capture sits between the closer and the next-reads: someone who
+          finished the guide is the most likely subscriber they will ever be,
+          and `source` records which guide earned it. */}
+      <div className="mt-12">
+        <NewsletterSignup source={`learn:${article.slug}`} />
       </div>
 
       {/* Up to the pillar, sideways to siblings — the content-hub linking rule. */}

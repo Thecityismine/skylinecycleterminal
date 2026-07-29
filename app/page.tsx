@@ -7,6 +7,7 @@ import { SubscribeButton } from "@/components/billing/SubscribeButton";
 import { CycleScoreHero } from "@/components/landing/CycleScoreHero";
 import { ProofBar } from "@/components/landing/ProofBar";
 import { Testimonials } from "@/components/landing/Testimonials";
+import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 import { DeepResearchPreview } from "@/components/landing/DeepResearchPreview";
 
 const FEATURES = [
@@ -568,6 +569,13 @@ export default function LandingPage() {
       </section>
 
       <Testimonials />
+
+      {/* Sits after pricing deliberately — it catches the visitor who read the
+          whole page and did not subscribe, who is the one worth staying in
+          touch with. */}
+      <section className="max-w-3xl mx-auto px-6 py-16">
+        <NewsletterSignup source="landing" />
+      </section>
 
       {/* FAQ */}
       <section id="faq" className="max-w-3xl mx-auto px-6 py-16 scroll-mt-16">

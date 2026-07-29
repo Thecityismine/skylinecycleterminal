@@ -17,6 +17,9 @@ const PUBLIC_PATHS = [
   // /learn and /track-record carry the top-of-funnel job instead — they are
   // marketing surfaces rather than terminal features.
   "/dashboard", "/cycle", "/price", "/price/fear-greed", "/track-record",
+  // Reached only from an email link, by someone who is very likely not signed in.
+  // Kept out of the sitemap deliberately — it is noindex and carries an address.
+  "/unsubscribe",
   // Crawler/metadata file-convention routes — must stay reachable without a session
   "/robots.txt", "/sitemap.xml",
 ];

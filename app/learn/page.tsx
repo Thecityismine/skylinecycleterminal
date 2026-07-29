@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { getAllArticles, getPillar } from "@/lib/content/learn";
+import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 
 const TITLE = "Bitcoin Cycle Guides";
 const DESCRIPTION =
@@ -105,8 +106,12 @@ export default function LearnIndexPage() {
         ))}
       </div>
 
+      <div className="mt-12">
+        <NewsletterSignup source="learn-index" />
+      </div>
+
       <div
-        className="rounded-2xl border p-6 sm:p-8 mt-12 text-center"
+        className="rounded-2xl border p-6 sm:p-8 mt-6 text-center"
         style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
       >
         <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--sct-text)" }}>
