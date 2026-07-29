@@ -77,14 +77,14 @@ export function NewsletterSignup({
       return (
         <p className="flex items-center justify-center gap-2 text-xs" style={{ color: "var(--sct-green)" }}>
           <Check size={14} />
-          Subscribed — check your inbox.
+          Subscribed. Check your inbox.
         </p>
       );
     }
     return (
       <div className="text-center">
         <p className="text-xs mb-3" style={{ color: "var(--sct-muted)" }}>
-          {heading} — one email each Sunday.
+          {heading}. One email each Sunday.
         </p>
         <form
           onSubmit={(e) => void handleSubmit(e)}
@@ -111,7 +111,7 @@ export function NewsletterSignup({
         </form>
         {status === "error" && (
           <p className="text-[11px] mt-2" style={{ color: "var(--sct-red)" }}>
-            Something went wrong — try again in a moment.
+            Something went wrong. Try again in a moment.
           </p>
         )}
       </div>
@@ -136,7 +136,7 @@ export function NewsletterSignup({
               You&apos;re subscribed
             </p>
             <p className="text-xs" style={{ color: "var(--sct-muted)" }}>
-              Check your inbox — a short welcome is on its way. The first digest lands Sunday.
+              Check your inbox. A short welcome is on its way, and the first digest lands Sunday.
             </p>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function NewsletterSignup({
 
           {status === "error" && (
             <p className="text-xs mt-2.5" style={{ color: "var(--sct-red)" }}>
-              Something went wrong — try again in a moment.
+              Something went wrong. Try again in a moment.
             </p>
           )}
 

@@ -11,7 +11,7 @@ const AUDIENCE_STAT_READY = false;
 
 const AUDIENCE = {
   value: "[TODO]",
-  label: "PLACEHOLDER — subscribers / followers",
+  label: "PLACEHOLDER: subscribers / followers",
 };
 
 const STATS = [

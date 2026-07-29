@@ -16,19 +16,19 @@ const TESTIMONIALS_READY = false;
 
 const TESTIMONIALS = [
   {
-    quote: "PLACEHOLDER — replace with a real subscriber quote about a decision Skyline helped them think through.",
-    name: "[TODO — real name]",
-    source: "[TODO — source label]",
+    quote: "PLACEHOLDER. Replace with a real subscriber quote about a decision Skyline helped them think through.",
+    name: "[TODO: real name]",
+    source: "[TODO: source label]",
   },
   {
-    quote: "PLACEHOLDER — replace with a real quote. Outcome-specific beats 'great UI'.",
-    name: "[TODO — real name]",
-    source: "[TODO — source label]",
+    quote: "PLACEHOLDER. Replace with a real quote. Outcome-specific beats 'great UI'.",
+    name: "[TODO: real name]",
+    source: "[TODO: source label]",
   },
   {
-    quote: "PLACEHOLDER — replace with a real quote, ideally one that names the cycle read or a specific model.",
-    name: "[TODO — real name]",
-    source: "[TODO — source label]",
+    quote: "PLACEHOLDER. Replace with a real quote, ideally one that names the cycle read or a specific model.",
+    name: "[TODO: real name]",
+    source: "[TODO: source label]",
   },
 ];
 
@@ -42,7 +42,7 @@ export function Testimonials() {
           className="text-xs text-center mb-6 px-4 py-2 rounded-md border max-w-xl mx-auto"
           style={{ color: "var(--sct-amber)", borderColor: "var(--sct-amber)" }}
         >
-          Dev-only preview. Placeholder copy — hidden in production until real quotes replace it.
+          Dev-only preview. Placeholder copy, hidden in production until real quotes replace it.
         </p>
       )}
       <h2 className="text-2xl font-semibold text-center mb-10" style={{ color: "var(--sct-text)" }}>

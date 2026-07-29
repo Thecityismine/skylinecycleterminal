@@ -214,7 +214,7 @@ export default function LandingPage() {
           <span style={{ color: "var(--sct-btc)" }}>Start reading the cycle.</span>
         </h1>
         <p className="text-base sm:text-lg max-w-2xl mx-auto mb-8" style={{ color: "var(--sct-secondary)" }}>
-          One dashboard for on-chain, macro liquidity, ETF flows, and historical cycle models —
+          One dashboard for on-chain, macro liquidity, ETF flows, and historical cycle models,
           so you know when to accumulate, when to wait, and when to reduce risk.
         </p>
         <CycleScoreHero />
@@ -238,7 +238,7 @@ export default function LandingPage() {
         {/* Disqualification does more for trust than another benefit claim, and
             it is the sharpest line of separation from signal-selling tools. */}
         <p className="text-xs max-w-md mx-auto" style={{ color: "var(--sct-muted)" }}>
-          Free dashboard, no signup. Built for investors thinking in cycles — if you want entry
+          Free dashboard, no signup. Built for investors thinking in cycles. If you want entry
           signals for tomorrow, this isn&apos;t it.
         </p>
       </section>
@@ -348,7 +348,7 @@ export default function LandingPage() {
           The charts give you the data. This tells you what it adds up to.
         </h2>
         <p className="text-sm sm:text-base text-center max-w-2xl mx-auto mb-12" style={{ color: "var(--sct-muted)" }}>
-          Every model on the terminal is read into a single research report — the kind an institutional desk
+          Every model on the terminal is read into a single research report, the kind an institutional desk
           publishes. It states a position, shows the evidence on both sides, and tells you what would prove it wrong.
         </p>
 
@@ -465,7 +465,7 @@ export default function LandingPage() {
           </h2>
           <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--sct-secondary)" }}>
             Across the last three Bitcoin cycles, the Cycle Score read Accumulate at all three cycle
-            bottoms and Distribution Risk at the 2017 top. At the 2021 top it reached only 68 —
+            bottoms and Distribution Risk at the 2017 top. At the 2021 top it reached only 68:
             Caution, not Distribution Risk. That is a miss, and it is published alongside the hits,
             computed point-in-time so no reading uses data from after its own date.
           </p>

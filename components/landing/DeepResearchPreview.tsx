@@ -153,7 +153,7 @@ export function DeepResearchPreview() {
             {!weakening.length && (
               <li className="text-xs leading-relaxed" style={{ color: "var(--sct-muted)" }}>
                 Nothing in the tracked set currently argues against the reading. When something does, it appears
-                here — the report never quietly drops its counter-evidence.
+                here. The report never quietly drops its counter-evidence.
               </li>
             )}
           </ul>
@@ -163,7 +163,7 @@ export function DeepResearchPreview() {
       {ledger.gaps.length > 0 && (
         <p className="text-[11px] mt-6 pt-4" style={{ color: "var(--sct-muted)", borderTop: "1px solid var(--sct-border)" }}>
           {ledger.gaps.length} tracked indicator{ledger.gaps.length === 1 ? "" : "s"} unavailable right now and excluded from every
-          figure above — the report lists {ledger.gaps.length === 1 ? "it" : "them"} rather than hiding {ledger.gaps.length === 1 ? "it" : "them"}.
+          figure above. The report lists {ledger.gaps.length === 1 ? "it" : "them"} rather than hiding {ledger.gaps.length === 1 ? "it" : "them"}.
         </p>
       )}
     </Link>
