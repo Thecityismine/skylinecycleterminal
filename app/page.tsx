@@ -480,6 +480,15 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Directly after the track record, and before the pricing ask. It was
+          originally below pricing, on the theory that it catches whoever read
+          the whole page and did not buy — but that placement put it 39% down a
+          long page, where most visitors never reach. Here the credibility
+          argument is still fresh and nothing has asked for money yet. */}
+      <section className="max-w-3xl mx-auto px-6 pb-16">
+        <NewsletterSignup source="landing" />
+      </section>
+
       {/* Free vs Premium */}
       <section className="max-w-4xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-semibold text-center mb-3" style={{ color: "var(--sct-text)" }}>
@@ -570,13 +579,6 @@ export default function LandingPage() {
 
       <Testimonials />
 
-      {/* Sits after pricing deliberately — it catches the visitor who read the
-          whole page and did not subscribe, who is the one worth staying in
-          touch with. */}
-      <section className="max-w-3xl mx-auto px-6 py-16">
-        <NewsletterSignup source="landing" />
-      </section>
-
       {/* FAQ */}
       <section id="faq" className="max-w-3xl mx-auto px-6 py-16 scroll-mt-16">
         <h2 className="text-2xl font-semibold text-center mb-10" style={{ color: "var(--sct-text)" }}>
@@ -618,6 +620,11 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="max-w-6xl mx-auto px-6 py-10 border-t" style={{ borderColor: "var(--sct-border)" }}>
+        {/* Second capture, so subscribing is reachable from the bottom of the
+            page without scrolling back up. */}
+        <div className="pb-8 mb-8 border-b" style={{ borderColor: "var(--sct-border)" }}>
+          <NewsletterSignup source="landing-footer" variant="compact" />
+        </div>
         <p className="text-[11px] text-center mb-4" style={{ color: "var(--sct-muted)" }}>
           Skyline Cycle Terminal is provided for informational and educational purposes only.
           Nothing on this site is financial advice, investment advice, or a recommendation to buy
