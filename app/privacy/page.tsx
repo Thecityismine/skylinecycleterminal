@@ -125,7 +125,7 @@ export default function PrivacyPage() {
           <SubHeading>Vercel</SubHeading>
           <List items={["Website and application hosting"]} />
           <SubHeading>Market data providers</SubHeading>
-          <p>Skyline retrieves market information from providers including, but not limited to, CoinGecko, CoinMetrics, FRED, TradingView, exchange APIs, and blockchain data providers. These providers supply market data only — we do not send them your personal account information.</p>
+          <p>Skyline retrieves market information from providers including, but not limited to, CoinGecko, CoinMetrics, FRED, TradingView, exchange APIs, and blockchain data providers. These providers supply market data only. We do not send them your personal account information.</p>
         </Section>
 
         <Section title="5. Data retention">

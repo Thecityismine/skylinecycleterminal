@@ -59,7 +59,7 @@ export function UnsubscribeForm({ email, token }: { email: string; token: string
           You&apos;re unsubscribed
         </h1>
         <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--sct-muted)" }}>
-          {email} won&apos;t receive Skyline Weekly again. The terminal stays free to use — nothing
+          {email} won&apos;t receive Skyline Weekly again. The terminal stays free to use. Nothing
           about your access changes.
         </p>
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: "var(--sct-btc)" }}>
@@ -104,7 +104,7 @@ export function UnsubscribeForm({ email, token }: { email: string; token: string
 
       {status === "error" && (
         <p className="text-xs mt-3" style={{ color: "var(--sct-red)" }}>
-          Something went wrong — try again in a moment, or reply to any Skyline email.
+          Something went wrong. Try again in a moment, or reply to any Skyline email.
         </p>
       )}
     </>

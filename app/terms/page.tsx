@@ -144,7 +144,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="13. AI & predictive models disclaimer">
-          <p>Skyline&apos;s cycle scoring, market models, and other analytical tools are statistical and heuristic in nature. They are built from historical data and are not predictions, guarantees, or forecasts of future market behavior. Model outputs may be wrong, may lag real market conditions, and should be treated as one input among many in your own research — never as a signal to act on alone.</p>
+          <p>Skyline&apos;s cycle scoring, market models, and other analytical tools are statistical and heuristic in nature. They are built from historical data and are not predictions, guarantees, or forecasts of future market behavior. Model outputs may be wrong, may lag real market conditions, and should be treated as one input among many in your own research, never as a signal to act on alone.</p>
         </Section>
 
         <Section title="14. Termination">

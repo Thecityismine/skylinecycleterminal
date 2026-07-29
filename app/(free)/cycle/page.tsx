@@ -68,7 +68,7 @@ export default function CyclePage() {
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
         title="Skyline Cycle Score"
-        subtitle={`Composite 0–100 cycle position — weighted mean of ${indicatorSummary}`}
+        subtitle={`Composite 0–100 cycle position: weighted mean of ${indicatorSummary}`}
         regime={regime}
       />
 
@@ -111,10 +111,10 @@ export default function CyclePage() {
             />
           </div>
           <div className="hidden sm:flex justify-between mt-2 text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
-            <span style={{ color: '#3B82F6' }}>0 — Accumulate</span>
-            <span style={{ color: '#35D07F' }}>25 — Build</span>
-            <span style={{ color: '#E6B450' }}>50 — Caution</span>
-            <span style={{ color: '#FF5C5C' }}>75 — Distribute</span>
+            <span style={{ color: '#3B82F6' }}>0 · Accumulate</span>
+            <span style={{ color: '#35D07F' }}>25 · Build</span>
+            <span style={{ color: '#E6B450' }}>50 · Caution</span>
+            <span style={{ color: '#FF5C5C' }}>75 · Distribute</span>
             <span>100</span>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function CyclePage() {
       >
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <p className="text-xs font-medium tracking-wider uppercase" style={{ color: 'var(--sct-muted)' }}>
-            Skyline Score History — Price-Based Proxy
+            Skyline Score History · Price-Based Proxy
           </p>
           <div className="flex items-center gap-4 flex-wrap">
             {/* Score zones */}
@@ -273,7 +273,7 @@ export default function CyclePage() {
               {totalIndicators} indicators are each normalized to 0–100 against their own historical
               range. A higher score = higher cycle risk. A lower score = stronger accumulation
               conditions. The composite is a weighted mean taken only over the indicators with data
-              on the day — anything without data is dropped from the average rather than counted as
+              on the day. Anything without data is dropped from the average rather than counted as
               neutral.
               {availableCount != null && (
                 <> Right now {availableCount} of {totalIndicators} are reporting.</>

@@ -43,13 +43,13 @@ export default function ContactPage() {
             </div>
             <p className="text-sm font-semibold mb-1" style={{ color: "var(--sct-text)" }}>Message sent</p>
             <p className="text-xs" style={{ color: "var(--sct-muted)" }}>
-              Thanks for reaching out — we&apos;ll get back to you by email.
+              Thanks for reaching out. We&apos;ll get back to you by email.
             </p>
           </div>
         ) : (
           <>
             <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--sct-secondary)" }}>
-              Questions, feedback, or support requests — send a message below, or email{" "}
+              Questions, feedback, or support requests. Send a message below, or email{" "}
               <a href="mailto:support@skylinecycleterminal.com" style={{ color: "var(--sct-btc)" }}>
                 support@skylinecycleterminal.com
               </a>{" "}
@@ -85,7 +85,7 @@ export default function ContactPage() {
 
               {status === "error" && (
                 <p className="text-xs" style={{ color: "var(--sct-red)" }}>
-                  Something went wrong — try again in a moment.
+                  Something went wrong. Try again in a moment.
                 </p>
               )}
 

@@ -70,7 +70,7 @@ export default async function FearGreedPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Bitcoin Fear & Greed Index"
-        subtitle="Market sentiment gauge — extreme fear has historically marked cycle lows, extreme greed marks cycle highs"
+        subtitle="Market sentiment gauge: extreme fear has historically marked cycle lows, extreme greed marks cycle highs"
       />
 
       {/* Stat cards */}
@@ -113,7 +113,7 @@ export default async function FearGreedPage() {
         />
         <div>
           <p className="text-sm font-semibold" style={{ color: currentColor }}>
-            {currentClass} — {currentValue}
+            {currentClass} · {currentValue}
             {currentPrice != null && (
               <span className="text-xs ml-3 font-normal" style={{ color: 'var(--sct-muted)' }}>
                 BTC: ${currentPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })}
@@ -124,7 +124,7 @@ export default async function FearGreedPage() {
             {currentValue < 25
               ? 'Historically, extreme fear levels near cycle lows have preceded major Bitcoin recoveries.'
               : currentValue < 50
-              ? 'Market is in fear territory. Elevated risk-off sentiment — watch for potential buying opportunities.'
+              ? 'Market is in fear territory. Elevated risk-off sentiment. Watch for potential buying opportunities.'
               : currentValue < 75
               ? 'Market is in greed territory. Sentiment is positive but not yet overheated.'
               : 'Extreme greed typically coincides with late-cycle euphoria. Prior ATH peaks have occurred in this zone.'
@@ -198,10 +198,10 @@ export default async function FearGreedPage() {
             </thead>
             <tbody>
               {[
-                { zone: 'Extreme Greed', range: '75–100', color: '#16a34a', filter: (v: number) => v >= 75,  context: 'Late-cycle euphoria — prior BTC ATHs have occurred here' },
+                { zone: 'Extreme Greed', range: '75–100', color: '#16a34a', filter: (v: number) => v >= 75,  context: 'Late-cycle euphoria: prior BTC ATHs have occurred here' },
                 { zone: 'Greed',         range: '50–74',  color: '#65a30d', filter: (v: number) => v >= 50 && v < 75, context: 'Positive sentiment, uptrend intact' },
                 { zone: 'Fear',          range: '25–49',  color: '#d97706', filter: (v: number) => v >= 25 && v < 50, context: 'Elevated uncertainty, risk-off behavior' },
-                { zone: 'Extreme Fear',  range: '0–24',   color: '#dc2626', filter: (v: number) => v < 25,   context: 'Capitulation zone — historically strongest long-term entry' },
+                { zone: 'Extreme Fear',  range: '0–24',   color: '#dc2626', filter: (v: number) => v < 25,   context: 'Capitulation zone: historically strongest long-term entry' },
               ].map(({ zone, range, color, filter, context }, i) => {
                 const count = allValues.filter(filter).length;
                 const pct   = ((count / allValues.length) * 100).toFixed(1);
@@ -233,7 +233,7 @@ export default async function FearGreedPage() {
 
       <InsightPanel title="Reading the Fear & Greed Index">
         <InsightRow label="What it measures" value="The Alternative.me Crypto Fear & Greed Index aggregates volatility, market momentum, social media sentiment, surveys, Bitcoin dominance, and Google Trends data into a 0–100 score. 0 = maximum fear, 100 = maximum greed." stack />
-        <InsightRow label="The contrarian signal" value="Bitcoin historically reaches cycle lows when the F&G index is in Extreme Fear (0–24). The Nov 2022 bottom coincided with readings of 6. This is a mean-reversion indicator — extreme sentiment tends to precede directional reversals." valueColor="#d97706" stack />
+        <InsightRow label="The contrarian signal" value="Bitcoin historically reaches cycle lows when the F&G index is in Extreme Fear (0–24). The Nov 2022 bottom coincided with readings of 6. This is a mean-reversion indicator: extreme sentiment tends to precede directional reversals." valueColor="#d97706" stack />
         <InsightRow label="What it does NOT tell you" value="The F&G index measures current sentiment, not forward price. Fear can stay elevated for months (2022 bear market), and greed can persist through an entire bull run. It signals regime, not timing." stack />
         <InsightRow label="Best used with" value="Drawdown from ATH (where in the bear cycle?), MVRV Z-Score (on-chain valuation), and the Power Law model (log-scale structural position). When all three align at historical extremes, the combined signal is strongest." stack />
         <InsightRow label="Source" value="Alternative.me Crypto Fear & Greed Index · api.alternative.me/fng · Updated daily" stack />

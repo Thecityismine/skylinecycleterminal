@@ -45,12 +45,12 @@ function marketRead(cycle: CycleScoreResult | null, market: MarketSnapshot | nul
   const mvrv = indicators.find((i) => i.name === 'MVRV Ratio');
 
   if (zone === 'accumulate')
-    return `Score ${score}/100 — deep value territory. ${mvrv ? `MVRV at ${mvrv.rawLabel}` : ''} suggests the market is trading below realized value. Historically the strongest long-term entry zone.`;
+    return `Score ${score}/100: deep value territory. ${mvrv ? `MVRV at ${mvrv.rawLabel}` : ''} suggests the market is trading below realized value. Historically the strongest long-term entry zone.`;
   if (zone === 'build')
-    return `Score ${score}/100 — healthy expansion. Market is between key thresholds. ${fg ? `Fear & Greed at ${fg.rawValue}.` : ''} Build positions on pullbacks to key MAs.`;
+    return `Score ${score}/100: healthy expansion. Market is between key thresholds. ${fg ? `Fear & Greed at ${fg.rawValue}.` : ''} Build positions on pullbacks to key MAs.`;
   if (zone === 'caution')
-    return `Score ${score}/100 — elevated cycle risk. Begin reducing exposure in tranches. Watch Pi Cycle and MVRV for further deterioration.`;
-  return `Score ${score}/100 — extreme cycle risk. ${fg ? `Sentiment at ${fg.rawValue} (${fg.rawLabel}).` : ''} Historically aligned with cycle top conditions. Protect gains.`;
+    return `Score ${score}/100: elevated cycle risk. Begin reducing exposure in tranches. Watch Pi Cycle and MVRV for further deterioration.`;
+  return `Score ${score}/100: extreme cycle risk. ${fg ? `Sentiment at ${fg.rawValue} (${fg.rawLabel}).` : ''} Historically aligned with cycle top conditions. Protect gains.`;
 }
 
 export default function OverviewPage() {
@@ -258,10 +258,10 @@ export default function OverviewPage() {
           value={macro ? String(macro.macroScore) : '—'}
           sub={
             macro
-              ? macro.macroScore < 30 ? 'Accommodative — tailwind for BTC'
+              ? macro.macroScore < 30 ? 'Accommodative: tailwind for BTC'
               : macro.macroScore < 55 ? 'Neutral macro'
-              : macro.macroScore < 75 ? 'Tightening — headwind for BTC'
-              : 'Restrictive — bearish macro'
+              : macro.macroScore < 75 ? 'Tightening: headwind for BTC'
+              : 'Restrictive: bearish macro'
               : 'DXY · Fed · CPI · M2 · 10Y'
           }
           accent={subScoreColor(macro?.macroScore ?? null)}

@@ -106,7 +106,7 @@ export default async function LearnArticlePage({ params }: Params) {
         </h2>
         <p className="text-sm mb-5 max-w-lg mx-auto" style={{ color: "var(--sct-muted)" }}>
           Rather than tracking each of these signals separately, Skyline reads them into the Skyline
-          Cycle Score — one view of where Bitcoin sits in its long-term cycle. Free, no signup.
+          Cycle Score: one view of where Bitcoin sits in its long-term cycle. Free, no signup.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link

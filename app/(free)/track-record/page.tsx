@@ -18,10 +18,10 @@ type TrackRecordResponse = TrackRecord & {
 };
 
 const INDICATORS = [
-  'Pi Cycle Top ratio — 111DMA / (2 × 350DMA)',
-  'MVRV proxy — price / 200DMA',
-  '2Y MA Multiplier — price / 730DMA',
-  'Log Regression — price / power-law fair value',
+  'Pi Cycle Top ratio: 111DMA / (2 × 350DMA)',
+  'MVRV proxy: price / 200DMA',
+  '2Y MA Multiplier: price / 730DMA',
+  'Log Regression: price / power-law fair value',
 ];
 
 const fmtUSD = (v: number) =>
@@ -59,7 +59,7 @@ export default function TrackRecordPage() {
     <div className="max-w-[1400px] mx-auto space-y-8">
       <PageHeader
         title="Cycle Score Track Record"
-        subtitle="What the Skyline Cycle Score read at every Bitcoin cycle top and bottom — including where it fell short"
+        subtitle="What the Skyline Cycle Score read at every Bitcoin cycle top and bottom, including where it fell short"
       />
 
       {error && (
@@ -110,7 +110,7 @@ export default function TrackRecordPage() {
                 {data.misses.map((m) => (
                   <p key={m.date} className="text-sm leading-relaxed" style={{ color: 'var(--sct-secondary)' }}>
                     At the <strong>{fmtDate(m.date)}</strong> cycle {m.kind} ({fmtUSD(m.price)}), the score read{' '}
-                    <strong style={{ color: m.zoneColor }}>{m.score} — {m.zoneLabel}</strong>. A model doing its job
+                    <strong style={{ color: m.zoneColor }}>{m.score}: {m.zoneLabel}</strong>. A model doing its job
                     here would have reached <strong>{m.expectedLabel}</strong>, and it did not.
                     {m.nearby && m.nearby.date !== m.date && (
                       <> Its most extreme reading within 30 days was {m.nearby.score}, on {fmtDate(m.nearby.date)}.</>
@@ -120,7 +120,7 @@ export default function TrackRecordPage() {
               </div>
               <p className="text-xs leading-relaxed mt-4 pt-4" style={{ color: 'var(--sct-muted)', borderTop: '1px solid rgba(230,180,80,0.25)' }}>
                 The Cycle Score is a position read, not a top-caller. A high reading says the market is
-                historically extended, not that a top is imminent — and this is what that distinction
+                historically extended, not that a top is imminent, and this is what that distinction
                 costs in practice.
               </p>
             </div>
@@ -224,7 +224,7 @@ export default function TrackRecordPage() {
                 </p>
                 <p>
                   The live Skyline Cycle Score reads 11 indicators. Only four can be reconstructed
-                  across full history from price alone — Fear &amp; Greed data begins in 2018, and the
+                  across full history from price alone. Fear &amp; Greed data begins in 2018, and the
                   on-chain series have their own start dates, so a true 11-indicator backtest of the
                   2015 and 2017 turns is not possible. These four are what the historical series uses:
                 </p>
@@ -241,7 +241,7 @@ export default function TrackRecordPage() {
                   </p>
                   <p>
                     Each indicator is percentile-ranked against its own history up to that date only.
-                    Ranking against the complete series instead would be hindsight — it would let a
+                    Ranking against the complete series instead would be hindsight. It would let a
                     2017 reading use 2026 data. It also flatters the result: on this same data the
                     hindsight method scores the 2021 top at 75, which would convert the miss above
                     into a fifth hit and show a perfect record. That is exactly why it is not used here.
@@ -252,7 +252,7 @@ export default function TrackRecordPage() {
                     Reference window and turning points
                   </p>
                   <p>
-                    History starts {fmtDate(data.historyStart)}, and the window is part of the method —
+                    History starts {fmtDate(data.historyStart)}, and the window is part of the method.
                     a percentile is always relative to some reference set. Extending the start back to
                     2010 moves these five readings by at most 3 points and changes none of their zones,
                     so nothing here hinges on that choice. Turning-point dates are the cycle highs and

@@ -6,7 +6,7 @@ import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 
 const TITLE = "Bitcoin Cycle Guides";
 const DESCRIPTION =
-  "Plain-English guides to reading the Bitcoin market cycle — tops, bottoms, macro liquidity, on-chain signals, and where the cycle stands.";
+  "Plain-English guides to reading the Bitcoin market cycle: tops, bottoms, macro liquidity, on-chain signals, and where the cycle stands.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -50,7 +50,7 @@ export default function LearnIndexPage() {
         Read the cycle.
       </h1>
       <p className="text-base max-w-2xl mb-12" style={{ color: "var(--sct-secondary)" }}>
-        No hype, no price calls. These guides explain how Bitcoin&apos;s cycle actually works — what
+        No hype, no price calls. These guides explain how Bitcoin&apos;s cycle actually works: what
         marks a top, what marks a bottom, and how liquidity, on-chain data, and market structure fit
         together.
       </p>
