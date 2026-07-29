@@ -48,14 +48,22 @@ function replyToAddress(): string {
 
 export const SITE_URL = "https://skylinecycleterminal.com";
 
-// Welcome email for Skyline Weekly signups. Copy is the version in
-// marketing/emails.md — keep the two in step if either changes.
-//
-// Deliberately plain text: the weekly digest is meant to read like a note from
-// George rather than a newsletter blast, and the welcome sets that expectation.
 /** Human-facing confirmation page linked at the foot of every email. */
 export function unsubscribeUrlFor(email: string, token: string): string {
   return `${SITE_URL}/unsubscribe?e=${encodeURIComponent(email)}&t=${encodeURIComponent(token)}`;
+}
+
+// The subscriber's name arrives from a public form and is interpolated into the
+// HTML body, so it has to be escaped. Mail clients strip scripts, but unescaped
+// markup can still break the layout or smuggle in a link that appears to be
+// ours — which on an email people trust is worse than a broken layout.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 export async function sendWelcomeEmail(
@@ -103,6 +111,28 @@ export async function sendWelcomeEmail(
       "Educational content only, not financial advice.",
       `Unsubscribe: ${unsubscribeUrl}`,
     ].join("\n"),
+    // Sent alongside the plain text as multipart/alternative — clients that
+    // prefer text still get the version above, with the full URL spelled out
+    // because text cannot carry a link.
+    //
+    // Styling stays minimal on purpose: emails.md asks for something that reads
+    // like a note from George, not a newsletter blast. No images, no dark-mode
+    // overrides, no layout tables — just type, so it renders the same
+    // everywhere and does not trip spam heuristics that dislike heavy markup.
+    html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;max-width:560px">
+<p style="margin:0 0 16px">${escapeHtml(greeting)}</p>
+<p style="margin:0 0 16px">Thanks for joining Skyline.</p>
+<p style="margin:0 0 16px">Our goal isn&rsquo;t to predict tomorrow. It&rsquo;s to help you understand where Bitcoin is in its larger cycle.</p>
+<p style="margin:0 0 16px">Every chart inside Skyline answers one question: is this a good time to accumulate, or should I be protecting capital?</p>
+<p style="margin:0 0 16px">Start with the free dashboard. When you&rsquo;re ready, Premium unlocks the complete cycle engine.</p>
+<p style="margin:0 0 24px"><a href="${SITE_URL}" style="color:#C2740E;text-decoration:underline">Open the dashboard &rarr;</a></p>
+<p style="margin:0 0 24px">See you inside,<br>George</p>
+<hr style="border:0;border-top:1px solid #e5e5e5;margin:0 0 12px">
+<p style="margin:0;font-size:12px;line-height:1.6;color:#8a8a8a">
+Educational content only, not financial advice.<br>
+<a href="${unsubscribeUrl}" style="color:#8a8a8a;text-decoration:underline">Unsubscribe</a>
+</p>
+</div>`,
   });
 }
 
