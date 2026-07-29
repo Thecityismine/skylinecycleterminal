@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
+import { yearTicks } from '@/lib/indicators/historicalScore';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -71,10 +72,6 @@ const CHART_W   = SHARE_CARD_WIDTH - PAD * 2;
 export const SCORE_CARD_CHART_RECT = {
   x: PAD, y: PAD + HEADER_H, w: CHART_W, h: CHART_H,
 };
-
-const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
-  new Date(`${2011 + i}-01-01`).getTime(),
-);
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
@@ -166,8 +163,8 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
             type="number"
             scale="time"
             domain={['dataMin', 'dataMax']}
-            ticks={YEAR_TICKS}
-            tickFormatter={(ts) => new Date(ts).getFullYear().toString()}
+            ticks={yearTicks(points)}
+            tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
             tick={{ fill: '#6B7280', fontSize: 10, fontFamily: 'monospace' }}
             axisLine={{ stroke: '#21262D' }}
             tickLine={false}

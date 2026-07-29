@@ -182,6 +182,32 @@ export function computeHistoricalScore(
   return downsample ? downsampleWeekly(all, keepDates) : all;
 }
 
+// Year ticks derived from the series itself.
+//
+// These used to be a hardcoded 2011..2026 range while the data starts
+// 2012-01-01. Recharts was given a tick outside the domain, and the labels
+// silently shifted by a year against their positions: the axis read 2011 where
+// the data began and 2025 where 2026 fell, so every year on the chart, and on
+// every exported share card, was wrong by one.
+//
+// Deriving them guarantees every tick sits inside [dataMin, dataMax].
+export function yearTicks(points: Pick<HistoricalScorePoint, 'ts'>[]): number[] {
+  if (!points.length) return [];
+
+  const first = new Date(points[0].ts);
+  const last = new Date(points[points.length - 1].ts);
+
+  // The first 1 January at or after the start of the data.
+  const startYear =
+    first.getUTCMonth() === 0 && first.getUTCDate() === 1
+      ? first.getUTCFullYear()
+      : first.getUTCFullYear() + 1;
+
+  const out: number[] = [];
+  for (let y = startYear; y <= last.getUTCFullYear(); y++) out.push(Date.UTC(y, 0, 1));
+  return out;
+}
+
 // Weekly downsample — keeps the chart responsive. Anchor dates are pinned so a
 // cycle top never gets smoothed out of the series it is meant to evidence.
 // Exported so callers that already hold a daily series can thin it without

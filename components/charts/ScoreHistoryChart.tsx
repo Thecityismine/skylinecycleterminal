@@ -13,6 +13,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
+import { yearTicks } from '@/lib/indicators/historicalScore';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 
 // Optional vertical markers for known cycle turning points. /track-record uses
@@ -20,10 +21,6 @@ import { ChartWatermark } from '@/components/charts/ChartWatermark';
 export type ChartMarker = { ts: number; label: string; color: string };
 
 type Props = { points: HistoricalScorePoint[]; markers?: ChartMarker[] };
-
-const YEAR_TICKS = Array.from({ length: 16 }, (_, i) =>
-  new Date(`${2011 + i}-01-01`).getTime(),
-);
 
 const HALVINGS = [
   { ts: new Date('2012-11-28').getTime(), label: 'H1' },
@@ -178,8 +175,8 @@ export function ScoreHistoryChart({ points, markers }: Props) {
             type="number"
             scale="time"
             domain={['dataMin', 'dataMax']}
-            ticks={YEAR_TICKS}
-            tickFormatter={(ts) => new Date(ts).getFullYear().toString()}
+            ticks={yearTicks(points)}
+            tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
             tick={{ fill: 'var(--sct-muted)', fontSize: 11 }}
             axisLine={{ stroke: 'var(--sct-border)' }}
             tickLine={false}
