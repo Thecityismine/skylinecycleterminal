@@ -47,6 +47,22 @@ export default function CyclePage() {
   const totalIndicators = cycle?.indicators.length ?? SKYLINE_INDICATOR_COUNT;
   const availableCount  = cycle?.indicators.filter((i) => i.available).length ?? null;
 
+  // The history series is the 4-indicator price proxy; its final point is that
+  // proxy's value, not today's live 11-indicator score. Overwriting the last
+  // point makes the line finish where the headline number actually sits.
+  //
+  // Built once and used for both the page chart and the share card. They used to
+  // derive it separately, and only the page did the substitution, so an exported
+  // card showed a line ending near 20 beside a metric strip reading 23.
+  const chartPoints = !history?.points?.length
+    ? []
+    : cycle
+      ? [
+          ...history.points.slice(0, -1),
+          { ...history.points[history.points.length - 1], score: cycle.score, zone: cycle.zone },
+        ]
+      : history.points;
+
   const indicatorSummary =
     availableCount != null && availableCount < totalIndicators
       ? `${availableCount} of ${totalIndicators} indicators reporting`
@@ -194,16 +210,9 @@ export default function CyclePage() {
         </div>
 
         <div style={{ height: 420 }}>
-          {!history?.points?.length
+          {!chartPoints.length
             ? <ChartSkeleton height="h-full" />
-            : <ScoreHistoryChart points={
-                cycle
-                  ? [
-                      ...history.points.slice(0, -1),
-                      { ...history.points[history.points.length - 1], score: cycle.score, zone: cycle.zone },
-                    ]
-                  : history.points
-              } />
+            : <ScoreHistoryChart points={chartPoints} />
           }
         </div>
 
@@ -298,10 +307,10 @@ export default function CyclePage() {
     </div>
 
     {/* Share card modal */}
-    {showShareModal && history?.points?.length && cycle && (
+    {showShareModal && chartPoints.length > 0 && cycle && (
       <ScoreShareModal
         payload={{
-          points:       history.points,
+          points:       chartPoints,
           currentScore: cycle.score,
           zoneLabel:    cycle.zoneLabel,
           zoneColor:    cycle.zoneColor,
