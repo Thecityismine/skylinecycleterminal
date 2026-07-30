@@ -21,7 +21,10 @@ const PUBLIC_PATHS = [
   // Kept out of the sitemap deliberately — it is noindex and carries an address.
   "/unsubscribe",
   // Crawler/metadata file-convention routes — must stay reachable without a session
-  "/robots.txt", "/sitemap.xml",
+  // The manifest belongs here for the same reason: the browser requests it with
+  // no session, got redirected to /login, and then failed parsing the HTML of the
+  // sign-in page as JSON.
+  "/robots.txt", "/sitemap.xml", "/manifest.webmanifest",
 ];
 
 // Public sub-trees. PUBLIC_PATHS is an exact-match list, so anything with child
