@@ -42,6 +42,14 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Newsletter send records ───────────────────────────────────────────────
+    // One document per issue, written only by app/api/newsletter/send/route.ts
+    // via firebase-admin. Its existence is what stops the same issue going out
+    // twice, so it must never be client-writable.
+    match /campaigns/{campaignId} {
+      allow read, write: if false;
+    }
+
     // ── Stripe customer → uid reverse lookup ─────────────────────────────────
     // Written only by app/api/stripe/webhook/route.ts via firebase-admin. Needed
     // because subscription update/delete events only carry the Stripe customer

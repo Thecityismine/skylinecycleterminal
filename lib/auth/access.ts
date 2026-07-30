@@ -46,6 +46,15 @@ export async function requireAccess(): Promise<Session> {
   return session;
 }
 
+// Guard for admin-only API routes. Unlike requireAccess() this returns a boolean
+// rather than redirecting, because an API route needs to answer 403 rather than
+// bounce a browser. Being entitled is not enough: a paying subscriber must not
+// be able to reach anything gated by this.
+export async function isAdmin(): Promise<boolean> {
+  const session = await verifySession();
+  return isAdminEmail(session?.email ?? null);
+}
+
 // Used by the (free) route group to decide whether to still show "FREE" badges in the
 // sidebar — true once someone is an admin or has an active entitlement, since those
 // badges are only meaningful to visitors who don't have full access yet.

@@ -57,7 +57,7 @@ export function unsubscribeUrlFor(email: string, token: string): string {
 // HTML body, so it has to be escaped. Mail clients strip scripts, but unescaped
 // markup can still break the layout or smuggle in a link that appears to be
 // ours — which on an email people trust is worse than a broken layout.
-function escapeHtml(s: string): string {
+export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -133,6 +133,36 @@ Educational content only, not financial advice.<br>
 <a href="${unsubscribeUrl}" style="color:#8a8a8a;text-decoration:underline">Unsubscribe</a>
 </p>
 </div>`,
+  });
+}
+
+// One newsletter send. Every recipient gets their own unsubscribe token, so the
+// footer link and the one-click header are personal to them: a forwarded email
+// can never unsubscribe the wrong person.
+export async function sendNewsletterEmail(args: {
+  to: string;
+  token: string;
+  subject: string;
+  text: string;
+  html: string;
+}): Promise<void> {
+  const { to, token, subject, text, html } = args;
+  const transport = getTransport();
+
+  const unsubscribeUrl = unsubscribeUrlFor(to, token);
+  const oneClick = `${SITE_URL}/api/unsubscribe?e=${encodeURIComponent(to)}&t=${encodeURIComponent(token)}`;
+
+  await transport.sendMail({
+    from: fromAddress(),
+    replyTo: replyToAddress(),
+    to,
+    subject,
+    headers: {
+      'List-Unsubscribe': `<${oneClick}>, <${unsubscribeUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
+    text,
+    html,
   });
 }
 
