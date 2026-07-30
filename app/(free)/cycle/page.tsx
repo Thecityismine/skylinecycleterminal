@@ -314,7 +314,7 @@ export default function CyclePage() {
           currentScore: cycle.score,
           zoneLabel:    cycle.zoneLabel,
           zoneColor:    cycle.zoneColor,
-          btcPrice:     history.points[history.points.length - 1]?.btcClose ?? 0,
+          btcPrice:     chartPoints[chartPoints.length - 1]?.btcClose ?? 0,
           generatedAt:  new Date().toISOString(),
         }}
         onClose={() => setShowShareModal(false)}
