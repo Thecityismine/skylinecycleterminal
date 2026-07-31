@@ -1,38 +1,29 @@
 "use client";
 
+import { useEffect, useMemo } from 'react';
 import {
   ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceArea,
 } from 'recharts';
 import type { WeeklyPoint, ZoneEpisode } from '@/lib/indicators/generationZone';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
+import { useChartZoom } from '@/lib/hooks/useChartZoom';
+import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import {
+  RANGES, filterByRange, filterEpisodes, episodeBounds,
+  xTicks, fmtXTick, spanYears, priceDomain, logTicks, fmtPrice,
+} from '@/lib/charts/generationZoneScale';
+import type { RangeKey } from '@/lib/charts/generationZoneScale';
 
-type Props = { weekly: WeeklyPoint[]; episodes: ZoneEpisode[] };
-
-const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
-
-function fmtPrice(v: number): string {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(0)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
-  return `$${v}`;
-}
+type Props = {
+  weekly:        WeeklyPoint[];
+  episodes:      ZoneEpisode[];
+  range:         RangeKey;
+  onRangeChange: (r: RangeKey) => void;
+  onZoomChange?: (d: ZoomDomain<number> | null) => void;
+};
 
 const usd = (v: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
-
-// Ticks derived from the series rather than hardcoded, for the reason recorded
-// in lib/indicators/historicalScore.ts: a tick outside the domain silently
-// shifts every label by a year.
-function yearTicks(points: WeeklyPoint[]): number[] {
-  if (!points.length) return [];
-  const first = new Date(points[0].ts);
-  const last = new Date(points[points.length - 1].ts);
-  const start = first.getUTCMonth() === 0 && first.getUTCDate() === 1
-    ? first.getUTCFullYear()
-    : first.getUTCFullYear() + 1;
-  const out: number[] = [];
-  for (let y = start; y <= last.getUTCFullYear(); y++) out.push(Date.UTC(y, 0, 1));
-  return out;
-}
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: WeeklyPoint }> }) {
   if (!active || !payload?.length) return null;
@@ -56,62 +47,146 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   );
 }
 
-export function GenerationZoneChart({ weekly, episodes }: Props) {
-  if (!weekly.length) return null;
+export function GenerationZoneChart({ weekly, episodes, range, onRangeChange, onZoomChange }: Props) {
+  const { domain, isZoomed, isSelecting, selectionArea, reset, cancel, chartHandlers } =
+    useChartZoom<number>();
 
-  const closes = weekly.map((w) => w.close).filter((v) => v > 0);
-  const pMin = Math.max(0.01, Math.min(...closes) * 0.7);
-  const pMax = Math.max(...closes) * 1.6;
+  useEffect(() => { onZoomChange?.(domain); }, [domain, onZoomChange]);
+
+  const displayed = useMemo(() => filterByRange(weekly, range), [weekly, range]);
+
+  const chartData = useMemo(() => {
+    if (!domain) return displayed;
+    const inside = displayed.filter((d) => d.ts >= domain.start && d.ts <= domain.end);
+    return inside.length >= 2 ? inside : displayed;
+  }, [displayed, domain]);
+
+  const from = chartData.length ? chartData[0].ts : 0;
+  const to = chartData.length ? chartData[chartData.length - 1].ts : 0;
+  const span = spanYears(chartData);
+  const [pMin, pMax] = useMemo(() => priceDomain(chartData), [chartData]);
+  const visibleEpisodes = useMemo(
+    () => filterEpisodes(episodes, from, to),
+    [episodes, from, to],
+  );
+
+  const handleRange = (r: RangeKey) => { reset(); onRangeChange(r); };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={weekly} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
+    <div>
+      {/* Range + zoom controls */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-3">
+        {RANGES.map((r) => {
+          const active = r.key === range;
+          return (
+            <button
+              key={r.key}
+              onClick={() => handleRange(r.key)}
+              className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+              style={{
+                backgroundColor: active ? 'var(--sct-border)' : 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           active ? 'var(--sct-text)' : 'var(--sct-muted)',
+              }}
+            >
+              {r.key}
+            </button>
+          );
+        })}
 
-          {/* Every touch episode, shaded. Derived from the data, so a new one
-              appears on its own rather than waiting to be added by hand. */}
-          {episodes.map((ep) => (
-            <ReferenceArea
-              key={ep.start}
-              x1={new Date(ep.start + 'T00:00:00Z').getTime()}
-              x2={new Date(ep.end + 'T00:00:00Z').getTime()}
-              fill={ep.reachedSmma ? 'rgba(53,208,127,0.22)' : 'rgba(53,208,127,0.12)'}
-              stroke="none"
-            />
-          ))}
+        {isZoomed && (
+          <button
+            onClick={reset}
+            className="px-3 py-1 rounded text-xs font-mono border transition-all"
+            style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}
+          >
+            Reset Zoom
+          </button>
+        )}
+        {!isZoomed && (
+          <span className="hidden md:inline text-[10px] font-mono ml-1"
+            style={{ color: 'var(--sct-muted)', opacity: 0.5 }}>
+            drag to zoom
+          </span>
+        )}
+      </div>
 
-          <XAxis
-            dataKey="ts"
-            type="number"
-            scale="time"
-            domain={['dataMin', 'dataMax']}
-            ticks={yearTicks(weekly)}
-            tickFormatter={(ts) => new Date(ts).getUTCFullYear().toString()}
-            tick={{ fill: 'var(--sct-muted)', fontSize: 11 }}
-            axisLine={{ stroke: 'var(--sct-border)' }}
-            tickLine={false}
-          />
-          <YAxis
-            scale="log"
-            domain={[pMin, pMax]}
-            ticks={LOG_TICKS.filter((t) => t >= pMin && t <= pMax)}
-            tickFormatter={fmtPrice}
-            tick={{ fill: 'var(--sct-muted)', fontSize: 10, fontFamily: 'monospace' }}
-            axisLine={{ stroke: 'var(--sct-border)' }}
-            tickLine={false}
-            width={54}
-            allowDataOverflow
-          />
+      <div
+        style={{
+          position:   'relative',
+          width:      '100%',
+          height:     460,
+          cursor:     isSelecting ? 'crosshair' : 'default',
+          userSelect: 'none',
+        }}
+        onMouseLeave={cancel}
+      >
+        {chartData.length > 0 && (
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} {...chartHandlers}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(38,50,65,0.35)" vertical={false} />
 
-          <Tooltip content={<CustomTooltip />} />
+              {selectionArea && (
+                <ReferenceArea
+                  x1={selectionArea.x1}
+                  x2={selectionArea.x2}
+                  fill="rgba(255,255,255,0.06)"
+                  stroke="rgba(255,255,255,0.25)"
+                  strokeWidth={1}
+                />
+              )}
 
-          <Line type="monotone" dataKey="smma230" stroke="#FF5C5C" strokeWidth={1.6} dot={false} isAnimationActive={false} connectNulls />
-          <Line type="monotone" dataKey="ema200" stroke="#3B82F6" strokeWidth={1.6} dot={false} isAnimationActive={false} connectNulls />
-          <Line type="monotone" dataKey="close" stroke="rgba(247,249,252,0.92)" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
-        </ComposedChart>
-      </ResponsiveContainer>
-      <ChartWatermark />
+              {/* Every touch episode, shaded. Derived from the data, so a new one
+                  appears on its own rather than waiting to be added by hand. */}
+              {visibleEpisodes.map((ep) => {
+                const [x1, x2] = episodeBounds(ep, from, to);
+                return (
+                  <ReferenceArea
+                    key={ep.start}
+                    x1={x1}
+                    x2={x2}
+                    fill={ep.reachedSmma ? 'rgba(53,208,127,0.22)' : 'rgba(53,208,127,0.12)'}
+                    stroke="none"
+                  />
+                );
+              })}
+
+              <XAxis
+                dataKey="ts"
+                type="number"
+                scale="time"
+                domain={['dataMin', 'dataMax']}
+                ticks={xTicks(chartData)}
+                tickFormatter={(ts: number) => fmtXTick(ts, span)}
+                tick={{ fill: 'var(--sct-muted)', fontSize: 11 }}
+                axisLine={{ stroke: 'var(--sct-border)' }}
+                tickLine={false}
+              />
+              <YAxis
+                scale="log"
+                domain={[pMin, pMax]}
+                ticks={logTicks(pMin, pMax)}
+                tickFormatter={fmtPrice}
+                tick={{ fill: 'var(--sct-muted)', fontSize: 10, fontFamily: 'monospace' }}
+                axisLine={{ stroke: 'var(--sct-border)' }}
+                tickLine={false}
+                width={54}
+                allowDataOverflow
+              />
+
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={isSelecting ? false : { stroke: 'var(--sct-border)', strokeWidth: 1 }}
+              />
+
+              <Line type="monotone" dataKey="smma230" stroke="#FF5C5C" strokeWidth={1.6} dot={false} isAnimationActive={false} connectNulls />
+              <Line type="monotone" dataKey="ema200" stroke="#3B82F6" strokeWidth={1.6} dot={false} isAnimationActive={false} connectNulls />
+              <Line type="monotone" dataKey="close" stroke="rgba(247,249,252,0.92)" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+        <ChartWatermark />
+      </div>
     </div>
   );
 }

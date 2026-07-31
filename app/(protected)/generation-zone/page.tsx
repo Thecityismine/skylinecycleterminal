@@ -4,7 +4,7 @@ import { useApiData } from '@/lib/hooks/useApiData';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { ChartSkeleton } from '@/components/dashboard/LoadingSkeleton';
 import { InsightPanel } from '@/components/dashboard/InsightPanel';
-import { GenerationZoneChart } from '@/components/charts/GenerationZoneChart';
+import { GenerationZoneChartSection } from '@/components/charts/GenerationZoneChartSection';
 import { Check, Minus, TriangleAlert } from 'lucide-react';
 import type { GenerationZoneResult } from '@/lib/indicators/generationZone';
 
@@ -76,34 +76,7 @@ export default function GenerationZonePage() {
           </div>
 
           {/* Chart */}
-          <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
-            <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
-              <p className="text-xs font-medium tracking-wider uppercase" style={{ color: 'var(--sct-muted)' }}>
-                BTC/USD weekly, log scale
-              </p>
-              <div className="flex items-center gap-4 flex-wrap">
-                {[
-                  { c: 'rgba(247,249,252,0.92)', l: 'Weekly close' },
-                  { c: '#3B82F6', l: '200 EMA' },
-                  { c: '#FF5C5C', l: '230 SMMA' },
-                  { c: 'rgba(53,208,127,0.5)', l: 'Touch episode' },
-                ].map((x) => (
-                  <div key={x.l} className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: x.c }} />
-                    <span className="text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>{x.l}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{ height: 460 }}>
-              <GenerationZoneChart weekly={data.weekly} episodes={data.episodes} />
-            </div>
-            <p className="text-[10px] mt-2" style={{ color: 'var(--sct-muted)' }}>
-              Shaded bands mark every week price closed at or below one of the averages, within a 2% tolerance.
-              Darker bands reached the deeper 230 SMMA. The 200 EMA needs 200 weekly closes and the 230 SMMA needs 230,
-              so neither exists before mid-2014 and this chart says nothing about 2011 to 2013.
-            </p>
-          </div>
+          <GenerationZoneChartSection data={data} />
 
           {/* Conditions */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
