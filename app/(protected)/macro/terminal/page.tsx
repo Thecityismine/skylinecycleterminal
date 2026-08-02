@@ -11,6 +11,7 @@ import { MacroTimeline }          from '@/components/macro/MacroTimeline';
 import { MacroScenarios }         from '@/components/macro/MacroScenarios';
 import { MacroReportPanel }       from '@/components/macro/MacroReportPanel';
 import { CycleVsMacroBridge }     from '@/components/macro/CycleVsMacroBridge';
+import { MacroTerminalShareModal } from '@/components/share/MacroTerminalShareModal';
 
 import { fetchMacroTerminalData, type MacroTerminalData } from '@/lib/api/macroTerminal';
 import { fetchFearGreed } from '@/lib/api/feargreed';
@@ -116,9 +117,28 @@ export default async function MacroTerminalPage() {
           </div>
 
           <div className="p-6 flex flex-col justify-center">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: risk.color }} />
-              <p className="text-lg font-semibold" style={{ color: risk.color }}>{risk.headline}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: risk.color }} />
+                <p className="text-lg font-semibold" style={{ color: risk.color }}>{risk.headline}</p>
+              </div>
+              <div className="shrink-0">
+                <MacroTerminalShareModal
+                  payload={{
+                    score:       risk.score,
+                    band:        risk.band,
+                    color:       risk.color,
+                    headline:    risk.headline,
+                    summary,
+                    dateStr,
+                    provisional: risk.provisional,
+                    coverage:    risk.coverage,
+                    sections:    risk.sections.map(s => ({
+                      title: s.title, risk: s.risk, color: s.color, weight: s.weight,
+                    })),
+                  }}
+                />
+              </div>
             </div>
 
             <p className="text-sm leading-relaxed mt-3" style={{ color: 'var(--sct-secondary)' }}>
