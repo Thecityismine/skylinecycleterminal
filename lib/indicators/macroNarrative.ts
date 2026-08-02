@@ -1,4 +1,4 @@
-// Macro Terminal — narrative, checklist, scenarios and historical eras.
+// Macro Terminal: narrative, checklist, scenarios and historical eras.
 //
 // Every sentence produced here is generated from the live scored data by a
 // deterministic rule set. Nothing is hand-written per-day and nothing is
@@ -92,7 +92,7 @@ export function buildMacroSummary(r: MacroRiskResult, btc: BtcContext): string {
   const closing =
     r.score >= 70 ? 'On this evidence there is still meaningful scope for a risk-off event to push valuations lower before the next long-term expansion begins.'
     : r.score >= 55 ? 'On this evidence the broader financial system has not fully reset, and patience is better rewarded than urgency.'
-    : r.score >= 45 ? 'On this evidence macro is neither the reason to buy nor the reason to wait — the cycle signals carry more weight here than the macro backdrop does.'
+    : r.score >= 45 ? 'On this evidence macro is neither the reason to buy nor the reason to wait. The cycle signals carry more weight here than the macro backdrop does.'
     : r.score >= 30 ? 'On this evidence the macro backdrop is starting to work with Bitcoin rather than against it.'
     : 'On this evidence the macro backdrop is actively supportive, which historically coincides with the expansion phase of the cycle.';
 
@@ -148,12 +148,12 @@ export function buildMacroReport(r: MacroRiskResult, btc: BtcContext): MacroRepo
     if (r.score >= 30) {
       return 'The macro backdrop is turning supportive. Historically, liquidity improving while valuation signals are still attractive has been the most favourable overlap of the cycle.';
     }
-    return 'Macro conditions are broadly supportive. The risk in this environment is complacency rather than contraction — this is the part of the cycle where positioning gets crowded.';
+    return 'Macro conditions are broadly supportive. The risk in this environment is complacency rather than contraction. This is the part of the cycle where positioning gets crowded.';
   })();
 
   return {
-    helping: helping.slice(0, 5).map(m => ({ label: m.label, detail: `${m.display} — ${lower(m.status)}` })),
-    hurting: hurting.slice(0, 5).map(m => ({ label: m.label, detail: `${m.display} — ${lower(m.status)}` })),
+    helping: helping.slice(0, 5).map(m => ({ label: m.label, detail: `${m.display}, ${lower(m.status)}` })),
+    hurting: hurting.slice(0, 5).map(m => ({ label: m.label, detail: `${m.display}, ${lower(m.status)}` })),
     biggestRisk,
     bottomLine,
   };
@@ -196,7 +196,7 @@ export type Scenario = {
  * Weights are a transparent function of the Macro Risk Score: the base case
  * always carries 50%, and the remaining 50% is split between the bull and bear
  * paths in proportion to how far the score sits from neutral. These are
- * planning weights for thinking about ranges — not forecasts.
+ * planning weights for thinking about ranges, not forecasts.
  */
 export function buildScenarios(r: MacroRiskResult, btc: BtcContext): Scenario[] {
   const score = r.score ?? 50;
@@ -253,7 +253,7 @@ export function buildScenarios(r: MacroRiskResult, btc: BtcContext): Scenario[] 
         'Liquidity withdrawal continues into the drawdown',
       ],
       btcFraming: btc.ma200w != null
-        ? `Bitcoin revisits long-term valuation support — the 200-week average currently sits at ${fmtUsd(btc.ma200w)}${btc.low52w != null ? `, with the 52-week low at ${fmtUsd(btc.low52w)}` : ''}`
+        ? `Bitcoin revisits long-term valuation support. The 200-week average currently sits at ${fmtUsd(btc.ma200w)}${btc.low52w != null ? `, with the 52-week low at ${fmtUsd(btc.low52w)}` : ''}`
         : 'Bitcoin revisits long-term valuation support',
       note: 'This is the scenario on-chain metrics alone will not warn you about. Cheap can get cheaper when the whole system is deleveraging.',
     },
@@ -272,44 +272,44 @@ export type MacroEra = {
 };
 
 /**
- * Curated history — the point is to let someone connect a macro cause to a
+ * Curated history. The point is to let someone connect a macro cause to a
  * Bitcoin effect at a glance. The final row is filled from live data.
  */
 export const MACRO_ERAS: MacroEra[] = [
   {
     period: '2014–2015', event: 'Fed ends QE3, dollar surges',
     liquidity: 'Liquidity flat, DXY +25%',
-    outcome: 'BTC bear — 85% drawdown into the 2015 low',
+    outcome: 'BTC bear: 85% drawdown into the 2015 low',
     color: RED,
   },
   {
     period: '2016–2017', event: 'BOJ and ECB expand aggressively',
     liquidity: 'Global liquidity expanding',
-    outcome: 'BTC bull — cycle top December 2017',
+    outcome: 'BTC bull: cycle top December 2017',
     color: GREEN,
   },
   {
     period: '2018–2019', event: 'Fed quantitative tightening',
     liquidity: 'Balance sheet shrinking',
-    outcome: 'BTC bear — 84% drawdown, base built through 2019',
+    outcome: 'BTC bear: 84% drawdown, base built through 2019',
     color: RED,
   },
   {
-    period: '2020', event: 'COVID — emergency easing',
+    period: '2020', event: 'COVID: emergency easing',
     liquidity: 'Largest liquidity expansion on record',
-    outcome: 'BTC bull — crash then historic expansion',
+    outcome: 'BTC bull: crash then historic expansion',
     color: GREEN,
   },
   {
     period: '2022', event: 'Fed hikes into inflation, QT restarts',
     liquidity: 'Liquidity falling, real yields surge',
-    outcome: 'BTC bear — 77% drawdown despite strong on-chain value signals',
+    outcome: 'BTC bear: 77% drawdown despite strong on-chain value signals',
     color: RED,
   },
   {
     period: '2023–2024', event: 'Rate peak, then policy pivot',
     liquidity: 'Liquidity stabilises, dollar tops',
-    outcome: 'BTC recovery — accumulation into the next expansion',
+    outcome: 'BTC recovery: accumulation into the next expansion',
     color: GREEN,
   },
 ];
@@ -320,7 +320,7 @@ export function currentEra(r: MacroRiskResult, btc: BtcContext): MacroEra {
   const year = new Date().getUTCFullYear();
 
   return {
-    period: `${year} — Current`,
+    period: `${year} · Current`,
     event: eq?.risk != null && eq.risk >= 55
       ? 'Equities late cycle, macro stress building'
       : eq?.risk != null && eq.risk < 35
@@ -328,9 +328,9 @@ export function currentEra(r: MacroRiskResult, btc: BtcContext): MacroEra {
       : 'Equities mixed, macro backdrop unresolved',
     liquidity: liq?.status ?? 'Liquidity unavailable',
     outcome: btc.price != null && btc.ma200w != null && btc.price < btc.ma200w
-      ? 'BTC below the 200-week average — historically deep-value territory'
+      ? 'BTC below the 200-week average, historically deep-value territory'
       : btc.drawdown != null && btc.drawdown < -20
-      ? `BTC ${Math.abs(btc.drawdown).toFixed(0)}% below all-time high — accumulation range`
+      ? `BTC ${Math.abs(btc.drawdown).toFixed(0)}% below all-time high, accumulation range`
       : 'BTC holding above long-term averages',
     color: r.color,
     current: true,

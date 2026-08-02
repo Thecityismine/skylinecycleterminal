@@ -1,4 +1,4 @@
-// Macro Risk Score — does the broader financial system help or fight Bitcoin?
+// Macro Risk Score: does the broader financial system help or fight Bitcoin?
 //
 // Direction convention (uniform across every metric, section, and the composite):
 //
@@ -182,7 +182,7 @@ function metric(
 
 /**
  * Weighted mean over available inputs. Weights renormalise across what exists,
- * and `share` reports how much of the intended weight actually had data — the
+ * and `share` reports how much of the intended weight actually had data. The
  * caller needs that to avoid presenting a thin sample as a confident reading.
  */
 function blend(pairs: Array<[number | null, number]>): { value: number | null; share: number } {
@@ -217,7 +217,7 @@ export function fedNetLiquidity(d: MacroTerminalData): Pt[] {
 /**
  * Global central-bank balance sheet in USD millions: Fed + ECB + BOJ.
  * ECB reports in € millions; BOJ in units of ¥100 million.
- * The PBoC is absent — FRED's China M2 series were discontinued in 2019 and no
+ * The PBoC is absent. FRED's China M2 series were discontinued in 2019 and no
  * free replacement covers the present, so China is excluded rather than guessed.
  */
 export function globalCentralBankAssets(d: MacroTerminalData): Pt[] {
@@ -234,7 +234,7 @@ export function globalCentralBankAssets(d: MacroTerminalData): Pt[] {
   });
 }
 
-/** 3M commercial paper minus 3M T-bill — short-term corporate funding stress. */
+/** 3M commercial paper minus 3M T-bill, a read on short-term corporate funding stress. */
 function cpSpread(d: MacroTerminalData): Pt[] {
   if (!d.cpRate.length) return [];
   return d.cpRate
@@ -245,7 +245,7 @@ function cpSpread(d: MacroTerminalData): Pt[] {
     .filter((p): p is Pt => p != null);
 }
 
-/** Russell 2000 / S&P 500 — small-cap participation, used as a breadth proxy. */
+/** Russell 2000 / S&P 500, small-cap participation, used as a breadth proxy. */
 function smallCapRatio(d: MacroTerminalData): Pt[] {
   if (!d.russell.length || !d.spx.length) return [];
   return d.russell
@@ -274,7 +274,7 @@ function buildLiquidity(d: MacroTerminalData): Section {
       netChg == null ? null : lin(netChg, 4, -4),
       `${fmtTrillions(last(net)?.value ?? null)} · ${fmtPct(netChg)} 13w`,
       [[25, 'Expanding'], [50, 'Flat'], [75, 'Draining'], [101, 'Contracting Hard']],
-      'Fed assets minus the Treasury General Account and overnight reverse repo. The cleanest read on dollars actually circulating in markets — Bitcoin has tracked its direction more closely than any single on-chain metric.',
+      'Fed assets minus the Treasury General Account and overnight reverse repo. The cleanest read on dollars actually circulating in markets. Bitcoin has tracked its direction more closely than any single on-chain metric.',
       'FRED WALCL · WTREGEN · RRPONTSYD', 'weekly', last(net)?.date ?? null),
 
     metric('globalcb', 'Global CB Balance Sheet',
@@ -313,7 +313,7 @@ function buildLiquidity(d: MacroTerminalData): Section {
       : risk < 75 ? 'Liquidity Tightening'
       : 'Liquidity Contracting',
     blurb: 'The single largest driver of Bitcoin\'s macro cycle. When dollars are being created, risk assets rise; when they are being withdrawn, valuation models stop mattering for a while.',
-    coverage: 'The PBoC is excluded — FRED discontinued its China M2 series in 2019 and no free full-history replacement exists.',
+    coverage: 'The PBoC is excluded. FRED discontinued its China M2 series in 2019 and no free full-history replacement exists.',
   };
 }
 
@@ -339,7 +339,7 @@ function buildEquities(d: MacroTerminalData): Section {
     metric('spxtrend', 'S&P 500 Trend',
       spxVs200 == null ? null : lin(spxVs200, 8, -12),
       spxVs200 == null ? '—' : `${fmtPct(spxVs200)} vs 200D`,
-      [[25, 'Bull — Above 200D'], [50, 'Consolidating'], [75, 'Correction'], [101, 'Bear — Below 200D']],
+      [[25, 'Bull · Above 200D'], [50, 'Consolidating'], [75, 'Correction'], [101, 'Bear · Below 200D']],
       'Bitcoin has never sustained an uptrend through a genuine S&P bear market. A break below the 200-day is the line where equity weakness starts pulling crypto with it.',
       'FRED SP500', 'daily', spxLast?.date ?? null),
 
@@ -361,14 +361,14 @@ function buildEquities(d: MacroTerminalData): Section {
       breadth == null ? null : lin(breadth, 6, -10),
       breadth == null ? '—' : `RUT/SPX ${fmtPct(breadth)} vs 52w`,
       [[25, 'Healthy'], [50, 'Neutral'], [75, 'Weakening'], [101, 'Diverging']],
-      'Russell 2000 against the S&P 500. When only mega-caps are rising, the rally is narrow — narrow rallies are the ones that break. Used here in place of an advance-decline line, which has no free data source.',
+      'Russell 2000 against the S&P 500. When only mega-caps are rising, the rally is narrow, and narrow rallies are the ones that break. Used here in place of an advance-decline line, which has no free data source.',
       'Yahoo ^RUT / FRED SP500', 'weekly', ratioLast?.date ?? null),
 
     metric('margin', 'Margin Debt',
       marginYoY == null ? null : lin(marginYoY, -5, 30),
       `${fmtPct(marginYoY)} YoY`,
       [[25, 'Low Leverage'], [50, 'Normal'], [75, 'Building'], [101, 'Euphoric']],
-      'Borrowed money in brokerage accounts. Rapid growth is the fuel for a forced-selling cascade — margin calls liquidate whatever is liquid, and Bitcoin trades 24/7.',
+      'Borrowed money in brokerage accounts. Rapid growth is the fuel for a forced-selling cascade. Margin calls liquidate whatever is liquid, and Bitcoin trades 24/7.',
       'FRED BOGZ1FL663067003Q', 'quarterly', last(d.marginDebt)?.date ?? null),
   ];
 
@@ -382,7 +382,7 @@ function buildEquities(d: MacroTerminalData): Section {
     color: riskColor(risk),
     status: risk == null ? 'Unavailable'
       : risk < 25 ? 'Equity Bull Intact'
-      : risk < 50 ? 'Late Cycle — Watch'
+      : risk < 50 ? 'Late Cycle · Watch'
       : risk < 75 ? 'Equity Stress Building'
       : 'Equity Bear Conditions',
     blurb: 'What happens to Bitcoin if equities break. Bitcoin is the most liquid asset most funds hold, which makes it the first thing sold when equity losses force a margin call.',
@@ -405,8 +405,8 @@ function buildCredit(d: MacroTerminalData): Section {
     metric('hy', 'High Yield Spreads',
       hy == null ? null : lin(hy.value, 2.8, 8.0),
       fmt(hy?.value ?? null, 2, '%'),
-      [[25, 'Tight — Risk-On'], [50, 'Normal'], [75, 'Widening'], [101, 'Distressed']],
-      'ICE BofA US High Yield OAS. The single best early warning in markets — credit reprices risk before equities do, and well before crypto does.',
+      [[25, 'Tight · Risk-On'], [50, 'Normal'], [75, 'Widening'], [101, 'Distressed']],
+      'ICE BofA US High Yield OAS. The single best early warning in markets. Credit reprices risk before equities do, and well before crypto does.',
       'FRED BAMLH0A0HYM2', 'daily', hy?.date ?? null),
 
     metric('hymom', 'HY Spread Momentum',
@@ -434,7 +434,7 @@ function buildCredit(d: MacroTerminalData): Section {
       cpLast == null ? null : lin(cpLast.value, 0.05, 0.80),
       cpLast == null ? '—' : `${cpLast.value.toFixed(2)}pp`,
       [[25, 'Normal'], [50, 'Slight Stress'], [75, 'Funding Stress'], [101, 'Acute Stress']],
-      '3-month commercial paper over T-bills. Short-term corporate funding — this is what seized in 2008 and again in March 2020, days before everything else broke.',
+      '3-month commercial paper over T-bills, a read on short-term corporate funding. This is what seized in 2008 and again in March 2020, days before everything else broke.',
       'FRED DCPN3M · DTB3', 'daily', cpLast?.date ?? null),
 
     metric('lending', 'Bank Lending Standards',
@@ -455,7 +455,7 @@ function buildCredit(d: MacroTerminalData): Section {
       nfci == null ? null : lin(nfci.value, -0.7, 0.6),
       nfci == null ? '—' : nfci.value.toFixed(2),
       [[25, 'Loose'], [50, 'Neutral'], [75, 'Tightening'], [101, 'Tight']],
-      'Chicago Fed National Financial Conditions Index — 105 measures of risk, credit and leverage in one number. Below zero is looser than average.',
+      'Chicago Fed National Financial Conditions Index, 105 measures of risk, credit and leverage in one number. Below zero is looser than average.',
       'FRED NFCI', 'weekly', nfci?.date ?? null),
   ];
 
@@ -493,7 +493,7 @@ function buildDollar(d: MacroTerminalData): Section {
     metric('dxy90', 'Dollar Momentum',
       dxy90 == null ? null : lin(dxy90, -4, 4),
       `${fmtPct(dxy90)} 90d`,
-      [[25, 'Weakening — Tailwind'], [50, 'Flat'], [75, 'Strengthening'], [101, 'Surging — Headwind']],
+      [[25, 'Weakening · Tailwind'], [50, 'Flat'], [75, 'Strengthening'], [101, 'Surging · Headwind']],
       'A rising dollar tightens conditions everywhere outside the US and drains offshore liquidity. It is the most reliable inverse relationship Bitcoin has.',
       'FRED DTWEXBGS', 'daily', dxyLast?.date ?? null),
 
@@ -507,7 +507,7 @@ function buildDollar(d: MacroTerminalData): Section {
     metric('realyield', '10Y Real Yield',
       real == null ? null : lin(real.value, -0.5, 2.5),
       fmt(real?.value ?? null, 2, '%'),
-      [[25, 'Negative — Supportive'], [50, 'Low'], [75, 'Restrictive'], [101, 'Highly Restrictive']],
+      [[25, 'Negative · Supportive'], [50, 'Low'], [75, 'Restrictive'], [101, 'Highly Restrictive']],
       'The 10-year TIPS yield: what cash earns after inflation. High real yields give capital a risk-free alternative to a non-yielding asset like Bitcoin.',
       'FRED DFII10', 'daily', real?.date ?? null),
 
@@ -521,7 +521,7 @@ function buildDollar(d: MacroTerminalData): Section {
     metric('curve', 'Yield Curve (10Y−2Y)',
       curve == null ? null : lin(curve.value, 1.6, -0.6),
       curve == null ? '—' : `${curve.value >= 0 ? '+' : ''}${curve.value.toFixed(2)}%`,
-      [[25, 'Normal — Healthy'], [50, 'Flattening'], [75, 'Near Flat'], [101, 'Inverted']],
+      [[25, 'Normal · Healthy'], [50, 'Flattening'], [75, 'Near Flat'], [101, 'Inverted']],
       'Inversion has preceded every US recession since 1955. The dangerous phase is the re-steepening that follows, which is typically when the damage shows up in markets.',
       'FRED T10Y2Y', 'daily', curve?.date ?? null),
 
@@ -542,10 +542,10 @@ function buildDollar(d: MacroTerminalData): Section {
     key: 'dollar', title: 'Dollar & Rates', weight: 0.15, metrics, risk, dataShare: share,
     color: riskColor(risk),
     status: risk == null ? 'Unavailable'
-      : risk < 25 ? 'Weak Dollar — Tailwind'
+      : risk < 25 ? 'Weak Dollar · Tailwind'
       : risk < 50 ? 'Dollar Neutral'
-      : risk < 75 ? 'Dollar Firm — Headwind'
-      : 'Strong Dollar — Headwind',
+      : risk < 75 ? 'Dollar Firm · Headwind'
+      : 'Strong Dollar · Headwind',
     blurb: 'The dollar is the denominator for every risk asset on earth. Strong dollar and high real yields work against Bitcoin; a weakening dollar has accompanied every major advance.',
     coverage: null,
   };
@@ -575,7 +575,7 @@ function buildVolatility(d: MacroTerminalData): Section {
       mvPct,
       mvLast == null ? '—' : `${mvLast.value.toFixed(0)}${mvPct != null ? ` · ${ordinal(mvPct)} pct` : ''}`,
       [[25, 'Calm'], [50, 'Normal'], [75, 'Elevated'], [101, 'Stressed']],
-      'Treasury market volatility. Bonds are the collateral underneath the whole financial system — when their volatility rises, collateral gets haircut and leverage unwinds everywhere.',
+      'Treasury market volatility. Bonds are the collateral underneath the whole financial system. When their volatility rises, collateral gets haircut and leverage unwinds everywhere.',
       'Yahoo ^MOVE', 'weekly', mvLast?.date ?? null),
 
     metric('vxn', 'Tech Volatility (VXN)',
@@ -609,11 +609,11 @@ function buildVolatility(d: MacroTerminalData): Section {
     key: 'volatility', title: 'Volatility', weight: 0.10, metrics, risk, dataShare: share,
     color: riskColor(risk),
     status: risk == null ? 'Unavailable'
-      : risk < 25 ? 'Calm — Risk-On'
+      : risk < 25 ? 'Calm · Risk-On'
       : risk < 50 ? 'Normal'
-      : risk < 75 ? 'Elevated — Caution'
+      : risk < 75 ? 'Elevated · Caution'
       : 'Risk-Off',
-    blurb: 'Volatility is the transmission mechanism. Whatever the shock, it reaches Bitcoin through forced position reduction — and volatility is what forces it.',
+    blurb: 'Volatility is the transmission mechanism. Whatever the shock, it reaches Bitcoin through forced position reduction, and volatility is what forces it.',
     coverage: 'Currency volatility (EVZ) was discontinued in 2025 and is excluded.',
   };
 }
@@ -634,7 +634,7 @@ function buildPsychology(d: MacroTerminalData, fearGreed: number | null): Sectio
       fearGreed,
       fearGreed == null ? '—' : `${fearGreed.toFixed(0)} / 100`,
       [[25, 'Extreme Fear'], [50, 'Fear'], [75, 'Greed'], [101, 'Extreme Greed']],
-      'Read as a contrarian gauge: greed is when risk is highest and fear is when it has already been priced. Scored directly — greed raises macro risk.',
+      'Read as a contrarian gauge: greed is when risk is highest and fear is when it has already been priced. Scored directly, so greed raises macro risk.',
       'alternative.me', 'daily', null),
 
     metric('froth', 'Equity Extension',
@@ -668,7 +668,7 @@ function buildPsychology(d: MacroTerminalData, fearGreed: number | null): Sectio
     key: 'psychology', title: 'Market Psychology', weight: 0.05, metrics, risk, dataShare: share,
     color: riskColor(risk),
     status: risk == null ? 'Unavailable'
-      : risk < 25 ? 'Fear — Contrarian Positive'
+      : risk < 25 ? 'Fear · Contrarian Positive'
       : risk < 50 ? 'Balanced'
       : risk < 75 ? 'Complacent'
       : 'Speculative Excess',
@@ -746,7 +746,7 @@ export function buildCorrelations(d: MacroTerminalData): CorrelationRow[] {
   const defs: Array<[string, Pt[], string]> = [
     ['BTC vs S&P 500',       d.spx,    'The headline risk-asset relationship. Above 0.6 means Bitcoin is trading as leveraged equity beta, not as an independent asset.'],
     ['BTC vs Nasdaq',        d.nasdaq, 'Bitcoin\'s tightest equity relationship. Tends to run above the S&P correlation through risk-on and risk-off alike.'],
-    ['BTC vs Gold',          d.gold,   'Rises when the market treats Bitcoin as a monetary hedge rather than a risk asset — historically a late-cycle-bottom characteristic.'],
+    ['BTC vs Gold',          d.gold,   'Rises when the market treats Bitcoin as a monetary hedge rather than a risk asset, historically a late-cycle-bottom characteristic.'],
     ['BTC vs Dollar (DXY)',  d.dxy,    'Normally negative. A move toward zero or positive means dollar strength has stopped being the dominant driver.'],
     ['BTC vs Net Liquidity', net,      'Against Fed net liquidity. The relationship that best explains multi-month Bitcoin trends, though it is noisy week to week.'],
   ];
@@ -773,7 +773,7 @@ export type MacroRiskResult = {
   coverage:   number;
   /** True when coverage is too thin for the score to be read at face value. */
   provisional: boolean;
-  /** Sections that returned nothing at all — named so the gap is visible. */
+  /** Sections that returned nothing at all, named so the gap is visible. */
   missing:    string[];
   asOf:       string;
 };
@@ -802,7 +802,7 @@ export function computeMacroRisk(
 
   const headline =
     score == null                  ? 'Macro data unavailable'
-    : provisional                  ? 'Partial macro data — score is provisional'
+    : provisional                  ? 'Partial macro data: score is provisional'
     : score >= 70                  ? 'Macro environment is working AGAINST Bitcoin'
     : score >= 55                  ? 'Macro environment is leaning against Bitcoin'
     : score >= 45                  ? 'Macro environment is broadly NEUTRAL for Bitcoin'

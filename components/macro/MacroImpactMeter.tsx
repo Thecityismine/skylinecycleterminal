@@ -58,7 +58,7 @@ export function MacroImpactMeter({ impact, score }: {
       <p className="text-[10px] leading-relaxed mt-4 pt-3 border-t"
         style={{ color: 'var(--sct-muted)', borderColor: 'var(--sct-border)' }}>
         Derived from the Macro Risk Score&apos;s distance from neutral (50). This measures the direction
-        and force of the macro backdrop — not the probability of any particular price outcome.
+        and force of the macro backdrop, not the probability of any particular price outcome.
       </p>
     </div>
   );

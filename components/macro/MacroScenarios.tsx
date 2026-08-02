@@ -50,7 +50,7 @@ export function MacroScenarios({ scenarios }: { scenarios: Scenario[] }) {
       <p className="text-[10px] leading-relaxed mt-3" style={{ color: 'var(--sct-muted)' }}>
         The base case always carries 50%; the remaining 50% is split between the bull and bear paths
         in proportion to the Macro Risk Score&apos;s distance from neutral. Levels referenced are Bitcoin&apos;s
-        own moving averages and prior extremes — computed from price history, not price targets.
+        own moving averages and prior extremes, computed from price history rather than price targets.
       </p>
     </div>
   );

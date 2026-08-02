@@ -69,7 +69,7 @@ export default async function MacroTerminalPage() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
         title="Skyline Macro Terminal"
-        subtitle="Bitcoin looks cheap — but is the macro environment about to make it cheaper?"
+        subtitle="Bitcoin looks cheap. Is the macro environment about to make it cheaper?"
       />
 
       {/* ── Data coverage warning ──────────────────────────────────────────── */}
@@ -87,8 +87,8 @@ export default async function MacroTerminalPage() {
           <div>
             <p className="text-sm font-semibold" style={{ color: risk.provisional ? '#FF5C5C' : '#E6B450' }}>
               {risk.provisional
-                ? `Provisional score — only ${(risk.coverage * 100).toFixed(0)}% of inputs returned data`
-                : `Partial data — ${(risk.coverage * 100).toFixed(0)}% of inputs returned data`}
+                ? `Provisional score: only ${(risk.coverage * 100).toFixed(0)}% of inputs returned data`
+                : `Partial data: ${(risk.coverage * 100).toFixed(0)}% of inputs returned data`}
             </p>
             <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--sct-secondary)' }}>
               {risk.provisional
@@ -199,7 +199,7 @@ export default async function MacroTerminalPage() {
       {/* ── Six sections ───────────────────────────────────────────────────── */}
       <div>
         <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: 'var(--sct-muted)' }}>
-          Macro Dashboard — Six Lenses
+          Macro Dashboard · Six Lenses
         </p>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
           {risk.sections.map(s => <MacroSectionCard key={s.key} section={s} />)}
@@ -226,12 +226,12 @@ export default async function MacroTerminalPage() {
         <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
           Every number on this page runs in the same direction:{' '}
           <strong style={{ color: 'var(--sct-text)' }}>0 means macro conditions are supportive of Bitcoin, 100 means they are hostile.</strong>{' '}
-          That includes Liquidity, which is shown as liquidity <em>risk</em> — a high reading means
+          That includes Liquidity, which is shown as liquidity <em>risk</em>. A high reading means
           liquidity is draining, not that liquidity is strong. Each metric is scored against
           historical anchors or against its own distribution since 2006, then blended by the weights
           shown on each section card. Where a data source is unavailable, that metric is excluded and
           the section&apos;s remaining weights are renormalised rather than back-filled with an assumption.
-          This is a simplified heuristic built from publicly available macro data — it measures the
+          This is a simplified heuristic built from publicly available macro data. It measures the
           current environment and what similar conditions have meant historically.{' '}
           <strong style={{ color: 'var(--sct-text)' }}>It is not a prediction and not financial advice.</strong>
         </p>
@@ -240,7 +240,7 @@ export default async function MacroTerminalPage() {
       <InsightPanel title="How to read this page">
         <InsightRow
           label="What this answers"
-          value="Not &quot;is Bitcoin cheap?&quot; — the Skyline Cycle Score answers that. This page answers whether the rest of the financial system is likely to help or fight Bitcoin over the coming months. Bitcoin does not trade in a vacuum: if global liquidity contracts, leverage unwinds, or equities enter a major bear market, price can fall further even when on-chain metrics suggest long-term value."
+          value="The Skyline Cycle Score already answers whether Bitcoin is cheap. This page answers whether the rest of the financial system is likely to help or fight Bitcoin over the coming months. Bitcoin does not trade in a vacuum: if global liquidity contracts, leverage unwinds, or equities enter a major bear market, price can fall further even when on-chain metrics suggest long-term value."
           stack
         />
         <InsightRow
@@ -251,7 +251,7 @@ export default async function MacroTerminalPage() {
         />
         <InsightRow
           label="Credit (20%) & Equities (20%)"
-          value="Credit spreads reprice risk before equities do, and equities reprice before crypto. Together these capture the forced-deleveraging channel — the mechanism by which an equity bear market reaches Bitcoin regardless of its own fundamentals."
+          value="Credit spreads reprice risk before equities do, and equities reprice before crypto. Together these capture the forced-deleveraging channel, the mechanism by which an equity bear market reaches Bitcoin regardless of its own fundamentals."
           stack
         />
         <InsightRow

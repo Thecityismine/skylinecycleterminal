@@ -12,8 +12,8 @@ type Props = {
 /**
  * Reads the two scores together. They are deliberately independent:
  *
- *   Skyline Cycle Score — low = Bitcoin is cheap against its own history
- *   Macro Risk Score    — high = the outside world is working against Bitcoin
+ *   Skyline Cycle Score: low = Bitcoin is cheap against its own history
+ *   Macro Risk Score:    high = the outside world is working against Bitcoin
  *
  * The combination that matters most is a low Cycle Score sitting under a high
  * Macro Risk Score: historically attractive, but with the financial system still
@@ -27,7 +27,7 @@ function readCombination(cycle: number, macro: number): { title: string; body: s
   const friendly  = macro < 45;
 
   if (cheap && hostile) return {
-    title: 'Historically attractive — but macro is still fighting it',
+    title: 'Historically attractive, but macro is still fighting it',
     body:  'Long-term valuation signals are in the range that has previously marked accumulation, while the broader financial system is still withdrawing support. This is the combination that explains a price that keeps falling even as on-chain models say value. It has historically rewarded patience over urgency.',
   };
   if (cheap && friendly) return {
@@ -36,14 +36,14 @@ function readCombination(cycle: number, macro: number): { title: string; body: s
   };
   if (expensive && hostile) return {
     title: 'Stretched valuation into a hostile backdrop',
-    body:  'Cycle signals are elevated at the same time as macro conditions are tightening. Historically the least forgiving combination — valuation offers no cushion if the macro shock arrives.',
+    body:  'Cycle signals are elevated at the same time as macro conditions are tightening. Historically the least forgiving combination: valuation offers no cushion if the macro shock arrives.',
   };
   if (expensive && friendly) return {
     title: 'Stretched valuation, but macro is still supportive',
     body:  'Cycle signals are elevated while liquidity and credit remain supportive. Trends can extend a long way in this regime, which is precisely what makes it dangerous to extrapolate.',
   };
   return {
-    title: 'Mixed — neither score is decisive',
+    title: 'Mixed: neither score is decisive',
     body:  'Neither the cycle position nor the macro backdrop is at an extreme. In this regime the two scores are best read as context rather than as a signal, and position sizing matters more than direction.',
   };
 }
@@ -119,7 +119,7 @@ export function CycleVsMacroBridge({ macroScore, macroBand, macroColor }: Props)
 
       {error && (
         <p className="text-[11px] font-mono mt-4" style={{ color: 'var(--sct-muted)' }}>
-          Cycle Score could not be loaded — the Macro Risk Score above is unaffected.
+          Cycle Score could not be loaded. The Macro Risk Score above is unaffected.
         </p>
       )}
     </div>

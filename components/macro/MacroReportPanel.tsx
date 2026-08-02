@@ -48,7 +48,7 @@ export function MacroReportPanel({
                 <li key={h.label} className="flex gap-2">
                   <span className="shrink-0" style={{ color: GREEN }}>✓</span>
                   <span className="text-xs leading-relaxed" style={{ color: 'var(--sct-secondary)' }}>
-                    <span style={{ color: 'var(--sct-text)' }}>{h.label}</span> — {h.detail}
+                    <span style={{ color: 'var(--sct-text)' }}>{h.label}</span>: {h.detail}
                   </span>
                 </li>
               ))}
@@ -71,7 +71,7 @@ export function MacroReportPanel({
                 <li key={h.label} className="flex gap-2">
                   <span className="shrink-0" style={{ color: AMBER }}>⚠</span>
                   <span className="text-xs leading-relaxed" style={{ color: 'var(--sct-secondary)' }}>
-                    <span style={{ color: 'var(--sct-text)' }}>{h.label}</span> — {h.detail}
+                    <span style={{ color: 'var(--sct-text)' }}>{h.label}</span>: {h.detail}
                   </span>
                 </li>
               ))}

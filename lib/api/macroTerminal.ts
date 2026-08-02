@@ -1,8 +1,8 @@
-// Macro Terminal — raw data layer
+// Macro Terminal: raw data layer
 //
 // Aggregates every series the Macro Risk Score is built from. Each source is
 // fetched independently and degrades to an empty array on failure, so one dead
-// endpoint never takes the page down — the scoring layer treats a missing
+// endpoint never takes the page down. The scoring layer treats a missing
 // series as "unavailable" rather than substituting a fabricated value.
 //
 // Sources: FRED (St. Louis Fed), Yahoo Finance, CoinMetrics, DeFiLlama.
@@ -97,12 +97,12 @@ async function yahooWeekly(ticker: string): Promise<Pt[]> {
 
 export type MacroTerminalData = {
   // Liquidity
-  fedAssets:      Pt[];   // WALCL      — Fed total assets, $M, weekly
-  reverseRepo:    Pt[];   // RRPONTSYD  — overnight RRP, $B, daily
-  tga:            Pt[];   // WTREGEN    — Treasury General Account, $M, weekly
-  usM2:           Pt[];   // WM2NS      — US M2, $B, weekly
-  ecbAssets:      Pt[];   // ECBASSETSW — ECB total assets, €M, weekly
-  bojAssets:      Pt[];   // JPNASSETS  — BOJ total assets, ¥100M, monthly
+  fedAssets:      Pt[];   // WALCL      Fed total assets, $M, weekly
+  reverseRepo:    Pt[];   // RRPONTSYD  overnight RRP, $B, daily
+  tga:            Pt[];   // WTREGEN    Treasury General Account, $M, weekly
+  usM2:           Pt[];   // WM2NS      US M2, $B, weekly
+  ecbAssets:      Pt[];   // ECBASSETSW ECB total assets, €M, weekly
+  bojAssets:      Pt[];   // JPNASSETS  BOJ total assets, ¥100M, monthly
   usdPerEur:      Pt[];   // DEXUSEU
   jpyPerUsd:      Pt[];   // DEXJPUS
 
@@ -111,17 +111,17 @@ export type MacroTerminalData = {
   nasdaq:         Pt[];   // NASDAQCOM
   dow:            Pt[];   // DJIA
   russell:        Pt[];   // Yahoo ^RUT, weekly
-  marginDebt:     Pt[];   // BOGZ1FL663067003Q — margin accounts at broker-dealers, $M, quarterly
+  marginDebt:     Pt[];   // BOGZ1FL663067003Q: margin accounts at broker-dealers, $M, quarterly
 
   // Credit
   hyOas:          Pt[];   // BAMLH0A0HYM2
   igOas:          Pt[];   // BAMLC0A0CM
   cccOas:         Pt[];   // BAMLH0A3HYC
-  cpRate:         Pt[];   // DCPN3M — 3M nonfinancial commercial paper
+  cpRate:         Pt[];   // DCPN3M: 3M nonfinancial commercial paper
   tbill3m:        Pt[];   // DTB3
-  lendingStd:     Pt[];   // DRTSCILM — net % of banks tightening C&I standards, quarterly
-  bankCredit:     Pt[];   // TOTBKCR — all commercial banks, $B, weekly
-  nfci:           Pt[];   // NFCI — Chicago Fed National Financial Conditions Index
+  lendingStd:     Pt[];   // DRTSCILM: net % of banks tightening C&I standards, quarterly
+  bankCredit:     Pt[];   // TOTBKCR: all commercial banks, $B, weekly
+  nfci:           Pt[];   // NFCI: Chicago Fed National Financial Conditions Index
 
   // Dollar & rates
   dxy:            Pt[];   // DTWEXBGS
@@ -133,9 +133,9 @@ export type MacroTerminalData = {
   // Volatility
   vix:            Pt[];   // VIXCLS
   vxn:            Pt[];   // VXNCLS
-  ovx:            Pt[];   // OVXCLS — crude oil vol
-  gvz:            Pt[];   // GVZCLS — gold vol
-  move:           Pt[];   // Yahoo ^MOVE, weekly — bond vol
+  ovx:            Pt[];   // OVXCLS: crude oil vol
+  gvz:            Pt[];   // GVZCLS: gold vol
+  move:           Pt[];   // Yahoo ^MOVE, weekly: bond vol
 
   // Crypto / cross-asset
   btc:            Pt[];

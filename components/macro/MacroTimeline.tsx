@@ -9,7 +9,7 @@ export function MacroTimeline({ eras }: { eras: MacroEra[] }) {
       <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>Macro Timeline</p>
       <p className="text-xs mt-0.5 mb-5" style={{ color: 'var(--sct-muted)' }}>
         Every Bitcoin cycle has had a macro cause behind it. The pattern is consistent enough to be
-        worth knowing, but it is a historical tendency shaped by many forces — not a rule.
+        worth knowing, but it is a historical tendency shaped by many forces, not a rule.
       </p>
 
       <div className="relative pl-6">
