@@ -144,6 +144,7 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "MACRO",
     items: [
+      { label: "Macro Terminal",   href: "/macro/terminal",      icon: Gauge },
       { label: "SPX & Recession",  href: "/macro/spx-recession", icon: BarChart2 },
       { label: "DXY",              href: "/macro",               icon: DollarSign, exact: true },
       { label: "Fed Funds Rate",   href: "/macro?chart=fed",     icon: Landmark,   exact: true },
