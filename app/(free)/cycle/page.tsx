@@ -21,6 +21,9 @@ const ZONE_REGIME: Record<ScoreZone, 'accumulate' | 'hold' | 'caution' | 'distri
 
 type HistoryResponse = { points: HistoricalScorePoint[] };
 
+// Only the live BTC spot price is needed here; /api/market returns more.
+type MarketSnapshot = { btcPrice: number };
+
 const BANDS = [
   { range: '0–25',   label: 'Accumulate',   color: '#3B82F6' },
   { range: '25–50',  label: 'Hold / Build',  color: '#35D07F' },
@@ -38,6 +41,7 @@ function scoreColor(score: number): string {
 export default function CyclePage() {
   const { data: cycle, loading, error } = useApiData<CycleScoreResult>('/api/cycle');
   const { data: history }               = useApiData<HistoryResponse>('/api/cycle/history');
+  const { data: market }                = useApiData<MarketSnapshot>('/api/market');
   const [showShareModal, setShowShareModal] = useState(false);
 
   const regime = cycle ? ZONE_REGIME[cycle.zone] : 'neutral';
@@ -314,7 +318,11 @@ export default function CyclePage() {
           currentScore: cycle.score,
           zoneLabel:    cycle.zoneLabel,
           zoneColor:    cycle.zoneColor,
-          btcPrice:     chartPoints[chartPoints.length - 1]?.btcClose ?? 0,
+          // Live spot from /api/market (CoinGecko, 5-min cache) — the same number
+          // the header ticker shows. The chart's own series is CoinMetrics
+          // settled daily closes, whose last point lags spot by a day or more,
+          // so reading btcClose here printed a stale price on the card.
+          btcPrice:     market?.btcPrice ?? chartPoints[chartPoints.length - 1]?.btcClose ?? 0,
           generatedAt:  new Date().toISOString(),
         }}
         onClose={() => setShowShareModal(false)}
