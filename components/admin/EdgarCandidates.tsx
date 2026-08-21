@@ -67,7 +67,13 @@ export function EdgarCandidates({ candidates }: { candidates: Candidate[] }) {
     }
   }, [router]);
 
-  const visible = candidates.filter((c) => !hidden.has(c.id));
+  // Financial filers first, then newest. Firestore orders by filing date alone,
+  // because sorting on `notable` server-side would need another composite index
+  // for no benefit: the page holds one screenful, so re-sorting it here is free
+  // and puts the rows most likely to matter where the eye lands first.
+  const visible = candidates
+    .filter((c) => !hidden.has(c.id))
+    .sort((a, b) => Number(b.notable) - Number(a.notable) || b.fileDate.localeCompare(a.fileDate));
 
   return (
     <div
