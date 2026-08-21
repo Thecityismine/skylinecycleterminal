@@ -7,6 +7,7 @@ import { computeAlerts, toStoredState, type SignalsPayload, type CyclePayload, t
 
 const TELEGRAM_BOT_TOKEN = defineSecret('TELEGRAM_BOT_TOKEN');
 const TELEGRAM_CHAT_ID   = defineSecret('TELEGRAM_CHAT_ID');
+const CRON_SECRET        = defineSecret('CRON_SECRET');
 
 const APP_URL = 'https://skylinecycleterminal.com';
 
@@ -65,5 +66,43 @@ export const dailyAlertCheck = onSchedule(
       ...toStoredState(signals, cycle),
       updatedAt: new Date().toISOString(),
     });
+  }
+);
+
+// Daily snapshot of the observation store.
+//
+// Runs at 08:30 Eastern, half an hour ahead of dailyAlertCheck, so the day's
+// reading is on record before anything reacts to it.
+//
+// The work happens in the Next app rather than here: app/api/cron/snapshot owns
+// the report computation and the Firestore write, and this function only
+// triggers it. Duplicating the twelve vendor adapters into functions/ would
+// create a second implementation that could drift from the one the terminal
+// actually renders, and a stored history that disagrees with what was shown is
+// worse than no stored history at all.
+export const dailySnapshot = onSchedule(
+  {
+    schedule: '30 8 * * *',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/snapshot`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      // Thrown so the run is marked failed and Cloud Scheduler retries. A
+      // silently skipped day leaves a gap in the history that nothing
+      // downstream can tell apart from a genuine one.
+      throw new Error(`snapshot failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[dailySnapshot]', body.slice(0, 500));
   }
 );

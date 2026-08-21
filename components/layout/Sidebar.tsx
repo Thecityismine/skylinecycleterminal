@@ -39,6 +39,7 @@ import {
   Rocket,
   Gauge,
   Coins,
+  Database,
 } from "lucide-react";
 
 type NavItem = {
@@ -47,6 +48,7 @@ type NavItem = {
   icon: React.ElementType;
   exact?: boolean;
   free?: boolean;
+  admin?: boolean;
 };
 
 type NavSection = {
@@ -185,10 +187,32 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Methodology",       href: "/methodology",          icon: BookOpen },
     ],
   },
+  {
+    section: "ADMIN",
+    items: [
+      { label: "Data Store", href: "/admin/store", icon: Database, admin: true },
+    ],
+  },
 ];
 
 function isSection(entry: NavItem | NavSection): entry is NavSection {
   return "section" in entry;
+}
+
+// Admin-only entries are filtered out of the tree rather than hidden with CSS,
+// so a subscriber never sees a link to a page that would 404 on them. The page
+// itself still checks isAdmin(); this is presentation, not access control.
+function visibleNav(entries: (NavItem | NavSection)[], isAdmin: boolean): (NavItem | NavSection)[] {
+  if (isAdmin) return entries;
+  return entries.reduce<(NavItem | NavSection)[]>((acc, entry) => {
+    if (!isSection(entry)) {
+      if (!entry.admin) acc.push(entry);
+      return acc;
+    }
+    const items = entry.items.filter((i) => !i.admin);
+    if (items.length) acc.push({ ...entry, items });
+    return acc;
+  }, []);
 }
 
 function NavLink({
@@ -247,9 +271,10 @@ type SidebarProps = {
   isOpen:  boolean;
   onClose: () => void;
   hideFreeBadges?: boolean;
+  isAdmin?: boolean;
 };
 
-export function Sidebar({ isOpen, onClose, hideFreeBadges }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, hideFreeBadges, isAdmin }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -298,7 +323,7 @@ export function Sidebar({ isOpen, onClose, hideFreeBadges }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-        {nav.map((entry, i) => {
+        {visibleNav(nav, isAdmin ?? false).map((entry, i) => {
           if (isSection(entry)) {
             return (
               <div key={entry.section} className={i > 0 ? "pt-4" : ""}>

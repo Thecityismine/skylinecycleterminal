@@ -9,16 +9,17 @@ type Props = {
   email?: string | null;
   hideFreeBadges?: boolean;
   hasBilling?: boolean;
+  isAdmin?: boolean;
 };
 
-export function LayoutShell({ children, email, hideFreeBadges, hasBilling }: Props) {
+export function LayoutShell({ children, email, hideFreeBadges, hasBilling, isAdmin }: Props) {
   const [open, setOpen] = useState(false);
   const close  = useCallback(() => setOpen(false),  []);
   const toggle = useCallback(() => setOpen(v => !v), []);
 
   return (
     <>
-      <Sidebar isOpen={open} onClose={close} hideFreeBadges={hideFreeBadges} />
+      <Sidebar isOpen={open} onClose={close} hideFreeBadges={hideFreeBadges} isAdmin={isAdmin} />
 
       {/* Mobile backdrop */}
       {open && (

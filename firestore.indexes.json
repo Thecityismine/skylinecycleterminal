@@ -1,4 +1,24 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "//": "readSeries() without a metricDate window: metric equality plus the point-in-time cutoff.",
+      "collectionGroup": "observations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metric", "order": "ASCENDING" },
+        { "fieldPath": "observedDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "readSeries() with from/to: two range filters, so all three fields must be indexed together.",
+      "collectionGroup": "observations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metric", "order": "ASCENDING" },
+        { "fieldPath": "metricDate", "order": "ASCENDING" },
+        { "fieldPath": "observedDate", "order": "ASCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

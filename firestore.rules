@@ -19,6 +19,16 @@ service cloud.firestore {
       allow write: if true;  // Vercel API routes (client SDK) write daily snapshots
     }
 
+    // ── Observation store ────────────────────────────────────────────────────
+    // Append-only point-in-time history of what the terminal read on each day —
+    // see lib/store/observations.ts. Written only by app/api/cron/* via
+    // firebase-admin (which bypasses rules). Closed to the client SDK in both
+    // directions on purpose: this is the record a track record would be argued
+    // from, and a publicly writable history is not evidence.
+    match /observations/{observationId} {
+      allow read, write: if false;
+    }
+
     // ── Subscriber entitlement records ───────────────────────────────────────
     // Written only by server-side code (firebase-admin, which bypasses rules
     // entirely) — via webhooks and the auth session route. The client SDK never
