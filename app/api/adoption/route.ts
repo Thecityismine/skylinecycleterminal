@@ -3,8 +3,9 @@ import { isAdmin } from '@/lib/auth/access';
 import {
   createInitiative, addStageEvent, deleteInitiative, listInitiatives,
   buildIndexSeries, breakdownByChain,
-  isStage, isIsoDate, INSTITUTION_TYPES, CATEGORIES,
-  type InstitutionType, type Category, type Stage, type StageEvent,
+  isStage, isIsoDate, isVerification, INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS,
+  breakdownByVerification,
+  type InstitutionType, type Category, type Stage, type StageEvent, type Verification,
 } from '@/lib/adoption/initiatives';
 
 // Institutional Adoption Index, admin CRUD.
@@ -28,6 +29,9 @@ type CreateBody = {
   institutionType?: string;
   name?: string;
   category?: string;
+  program?: string;
+  verification?: string;
+  observableMetric?: string;
   chain?: string;
   asset?: string;
   partner?: string;
@@ -83,6 +87,7 @@ export async function GET() {
       initiatives,
       series: buildIndexSeries(initiatives),
       byChain: breakdownByChain(initiatives),
+      byVerification: breakdownByVerification(initiatives),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -144,6 +149,11 @@ export async function POST(req: Request) {
         { error: `category must be one of: ${CATEGORIES.join(', ')}` }, { status: 400 },
       );
     }
+    if (!isVerification(b.verification)) {
+      return NextResponse.json(
+        { error: `verification must be one of: ${VERIFICATIONS.map((v) => v.key).join(', ')}` }, { status: 400 },
+      );
+    }
     if (!isStage(b.initialStage)) {
       return NextResponse.json({ error: 'initialStage must be 0-5' }, { status: 400 });
     }
@@ -156,6 +166,9 @@ export async function POST(req: Request) {
       institutionType: b.institutionType,
       name:            String(b.name),
       category:        b.category,
+      program:         nullableText(b.program),
+      verification:    b.verification as Verification,
+      observableMetric: nullableText(b.observableMetric),
       chain:           nullableText(b.chain),
       asset:           nullableText(b.asset),
       partner:         nullableText(b.partner),

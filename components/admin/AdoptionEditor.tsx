@@ -4,7 +4,8 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Loader2, Check, TriangleAlert, ArrowUpRight, Trash2, X } from 'lucide-react';
 import {
-  STAGES, INSTITUTION_TYPES, CATEGORIES, LIVE_STAGE, utcDate,
+  STAGES, INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS, LIVE_STAGE, utcDate,
+  initiativeWeight, verificationLabel,
   type Initiative, type Stage,
 } from '@/lib/adoption/schema';
 
@@ -32,6 +33,7 @@ const STAGE_COLOR: Record<number, string> = {
 
 const EMPTY = {
   institution: '', institutionType: 'bank', name: '', category: 'tokenization',
+  program: '', verification: 'press_only', observableMetric: '',
   chain: '', asset: '', partner: '', country: '', valueUsd: '', summary: '',
   initialStage: 2, initialDate: utcDate(), sourceUrl: '', note: '',
 };
@@ -130,6 +132,13 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
               <Select value={form.category} onChange={(v) => set('category', v)}
                 options={CATEGORIES.map((c) => ({ value: c, label: c }))} />
             </Field>
+            <Field label="Programme" hint="Parent banner, e.g. Kinexys. Leave blank if standalone">
+              <Input value={form.program} onChange={(v) => set('program', v)} placeholder="Kinexys" />
+            </Field>
+            <Field label="Observable metric" hint="What you can independently measure">
+              <Input value={form.observableMetric} onChange={(v) => set('observableMetric', v)}
+                placeholder="AUM, supply, holders" />
+            </Field>
             <Field label="Chain" hint="Tests where tokenization is actually landing">
               <Input value={form.chain} onChange={(v) => set('chain', v)} placeholder="ethereum" />
             </Field>
@@ -169,6 +178,38 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
               ))}
             </div>
           </Field>
+
+          <Field label="Verification" required hint="How much of the claim can be checked without the issuer">
+            <div className="flex flex-wrap gap-1.5">
+              {VERIFICATIONS.map((v) => (
+                <button
+                  key={v.key}
+                  onClick={() => set('verification', v.key)}
+                  title={v.note}
+                  className="rounded px-2.5 py-1 text-[11px] font-medium border transition-colors"
+                  style={{
+                    backgroundColor: form.verification === v.key ? 'rgba(247,147,26,0.16)' : 'transparent',
+                    borderColor: form.verification === v.key ? 'rgba(247,147,26,0.45)' : 'var(--sct-border)',
+                    color: form.verification === v.key ? 'var(--sct-btc)' : 'var(--sct-muted)',
+                  }}
+                >
+                  {v.label}
+                  <span className="ml-1 font-mono opacity-60">{v.weight.toFixed(1)}</span>
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <p className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
+            Contributes{' '}
+            <span style={{ color: 'var(--sct-btc)' }}>
+              {initiativeWeight(
+                Number(form.initialStage) as Stage,
+                form.verification as (typeof VERIFICATIONS)[number]['key'],
+              ).toFixed(2)}
+            </span>{' '}
+            to the weighted index
+          </p>
 
           <Field label="Summary" required hint="One line, plain language">
             <Input value={form.summary} onChange={(v) => set('summary', v)}
@@ -249,11 +290,14 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
                         }}>
                         {i.stage} {STAGES[i.stage]?.label}
                       </span>
-                      {i.history.length > 1 && (
-                        <span className="block text-[10px] font-mono mt-1" style={{ color: 'var(--sct-muted)' }}>
-                          {i.history.length} transitions
+                      <span className="block text-[10px] font-mono mt-1" style={{ color: 'var(--sct-muted)' }}>
+                        {verificationLabel(i.verification ?? 'press_only')}
+                        {' · '}
+                        <span style={{ color: 'var(--sct-secondary)' }}>
+                          {initiativeWeight(i.stage, i.verification ?? 'press_only').toFixed(2)}
                         </span>
-                      )}
+                        {i.history.length > 1 && ` · ${i.history.length} transitions`}
+                      </span>
                     </td>
                     <td className="py-2.5 px-4 font-mono tabular-nums" style={{ color: 'var(--sct-muted)' }}>
                       {i.stageDate}

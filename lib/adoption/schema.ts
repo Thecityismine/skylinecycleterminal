@@ -37,6 +37,85 @@ export function isStage(v: unknown): v is Stage {
   return typeof v === 'number' && STAGES.some((s) => s.value === v);
 }
 
+// ─── Verification ─────────────────────────────────────────────────────────────
+//
+// The second axis, and the one that stops this being a press-release counter.
+// Stage says how far an institution claims to have gone. Verification says how
+// much of that claim can be checked without taking their word for it.
+//
+// $5bn of BUIDL visible on Ethereum and a bank saying it is "exploring
+// blockchain" are not the same evidence, and an index that counts them equally
+// measures announcements rather than migration.
+
+export const VERIFICATIONS = [
+  {
+    key: 'onchain_public',
+    label: 'Public chain',
+    weight: 1.0,
+    note: 'Contracts are public. Supply, holders and transfers can be checked independently.',
+  },
+  {
+    key: 'onchain_private',
+    label: 'Private chain',
+    weight: 0.8,
+    note: 'Genuinely running on-chain, but on a permissioned network only the operator can see.',
+  },
+  {
+    key: 'issuer_attested',
+    label: 'Issuer reported',
+    weight: 0.7,
+    note: 'Institution publishes figures (AUM, volume) but the ledger cannot be inspected.',
+  },
+  {
+    key: 'press_only',
+    label: 'Press release',
+    weight: 0.5,
+    note: 'Nothing observable. The claim is the only evidence.',
+  },
+] as const;
+
+export type Verification = (typeof VERIFICATIONS)[number]['key'];
+
+export function isVerification(v: unknown): v is Verification {
+  return typeof v === 'string' && VERIFICATIONS.some((x) => x.key === v);
+}
+
+export function verificationLabel(v: Verification): string {
+  return VERIFICATIONS.find((x) => x.key === v)?.label ?? v;
+}
+
+/**
+ * How much each stage counts toward the weighted index.
+ *
+ * Deliberately not linear. The gap between a pilot and a production launch is
+ * the one that matters, so it is the one with the biggest step. Expansion goes
+ * above 1.0 because scaling a live product is more evidence than launching it,
+ * and the index is a weighted count rather than a percentage.
+ */
+export const STAGE_WEIGHT: Record<Stage, number> = {
+  0: 0.05,
+  1: 0.10,
+  2: 0.20,
+  3: 0.40,
+  4: 1.00,
+  5: 1.20,
+};
+
+export function verificationWeight(v: Verification): number {
+  return VERIFICATIONS.find((x) => x.key === v)?.weight ?? 0.5;
+}
+
+/**
+ * Stage and verification kept as separate multipliers rather than collapsed
+ * into one scale. Collapsing them double-counts, because "pilot" and
+ * "announcement" already live on the stage axis. Separating them also means a
+ * pilot you can verify on-chain outranks a production launch you cannot, which
+ * is the correct ordering and is not expressible on a single scale.
+ */
+export function initiativeWeight(stage: Stage, verification: Verification): number {
+  return STAGE_WEIGHT[stage] * verificationWeight(verification);
+}
+
 // ─── Taxonomy ─────────────────────────────────────────────────────────────────
 
 export const INSTITUTION_TYPES = [
@@ -72,6 +151,16 @@ export type Initiative = {
   institutionType: InstitutionType;
   name:            string;          // the initiative itself, e.g. "BUIDL"
   category:        Category;
+  /** Parent programme, where an institution runs several under one banner.
+   *  Kinexys is the obvious case: JPM Coin, on-chain FX, tokenized collateral
+   *  and tokenized money-market funds are separate initiatives at different
+   *  stages, and collapsing them into one row throws that information away. */
+  program:         string | null;
+  /** How much of the claim can be checked without taking the issuer's word. */
+  verification:    Verification;
+  /** What can actually be measured: "AUM, supply, holders" or "transaction
+   *  volume". Null when nothing is observable yet, which is itself the point. */
+  observableMetric: string | null;
   /** Which chain it settles on. This is the field that tests the claim that
    *  most tokenization is landing on Ethereum, using your own count. */
   chain:           string | null;
@@ -95,6 +184,9 @@ export type InitiativeInput = {
   institutionType: InstitutionType;
   name:            string;
   category:        Category;
+  program:         string | null;
+  verification:    Verification;
+  observableMetric: string | null;
   chain:           string | null;
   asset:           string | null;
   partner:         string | null;
@@ -145,9 +237,18 @@ export function currentFrom(history: StageEvent[]): { stage: Stage; stageDate: s
 // ─── The index itself ─────────────────────────────────────────────────────────
 
 export type IndexPoint = {
-  date:  string;
-  live:  number;   // initiatives at stage >= LIVE_STAGE on that date
-  total: number;   // initiatives at any stage on that date
+  date:     string;
+  live:     number;   // initiatives at stage >= LIVE_STAGE on that date
+  total:    number;   // initiatives at any stage on that date
+  /**
+   * The number worth charting. Sums stage weight times verification weight
+   * across every initiative, so scaling a public on-chain product moves it far
+   * more than another bank announcing it is exploring blockchain.
+   *
+   * `live` is a headcount and will drift upward with press-release volume alone.
+   * `weighted` only moves when something actually migrates.
+   */
+  weighted: number;
 };
 
 /**
@@ -166,15 +267,44 @@ export function buildIndexSeries(initiatives: Initiative[]): IndexPoint[] {
   return [...dates].sort().map((date) => {
     let live = 0;
     let total = 0;
+    let weighted = 0;
     for (const i of initiatives) {
       // The stage as of this date is the newest event on or before it.
       const asOf = sortHistory(i.history).filter((h) => h.date <= date).pop();
       if (!asOf) continue;
       total += 1;
       if (asOf.stage >= LIVE_STAGE) live += 1;
+      // Verification is a property of the initiative rather than of a single
+      // event, so the current value is used at every date. It changes rarely,
+      // and when it does it is usually because something became observable that
+      // was not before, which is a change worth reflecting backwards.
+      weighted += initiativeWeight(asOf.stage, i.verification ?? 'press_only');
     }
-    return { date, live, total };
+    return { date, live, total, weighted: Math.round(weighted * 100) / 100 };
   });
+}
+
+export type VerificationBreakdown = {
+  verification: Verification;
+  label:        string;
+  count:        number;
+  weighted:     number;
+};
+
+/** How much of the index rests on evidence versus on assertion. If most of the
+ *  weight sits in `press_only`, the index is measuring announcements. */
+export function breakdownByVerification(initiatives: Initiative[]): VerificationBreakdown[] {
+  return VERIFICATIONS.map((v) => {
+    const rows = initiatives.filter((i) => (i.verification ?? 'press_only') === v.key);
+    return {
+      verification: v.key,
+      label:        v.label,
+      count:        rows.length,
+      weighted:     Math.round(
+        rows.reduce((sum, i) => sum + initiativeWeight(i.stage, v.key), 0) * 100,
+      ) / 100,
+    };
+  }).filter((r) => r.count > 0);
 }
 
 export type ChainBreakdown = { chain: string; live: number; total: number };
