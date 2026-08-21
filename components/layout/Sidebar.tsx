@@ -281,7 +281,7 @@ export function Sidebar({ isOpen, onClose, hideFreeBadges, isAdmin }: SidebarPro
     <aside
       className={cn(
         // Base: fixed, full height, slide via transform
-        "fixed left-0 top-0 h-screen w-[260px] z-40 flex flex-col border-r overflow-hidden",
+        "fixed left-0 top-0 h-dvh w-[260px] z-40 flex flex-col border-r overflow-hidden",
         "transition-transform duration-300 ease-in-out",
         // Mobile: hidden by default, slide in when open
         isOpen ? "translate-x-0" : "-translate-x-full",
@@ -322,7 +322,14 @@ export function Sidebar({ isOpen, onClose, hideFreeBadges, isAdmin }: SidebarPro
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+      {/* overscroll-contain stops a scroll that reaches the end of the nav from
+          chaining to the page behind it. The bottom padding clears the iPhone
+          home indicator where a safe area is reported, and otherwise just keeps
+          the last item off the edge. */}
+      <nav
+        className="flex-1 overflow-y-auto overscroll-contain pt-4 px-3 space-y-0.5"
+        style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+      >
         {visibleNav(nav, isAdmin ?? false).map((entry, i) => {
           if (isSection(entry)) {
             return (

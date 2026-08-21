@@ -17,7 +17,7 @@ export default async function FreeLayout({
   const admin = await isAdmin();
 
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="h-dvh overflow-hidden">
       <LayoutShell email={session?.email} hideFreeBadges={hideFreeBadges} isAdmin={admin}>{children}</LayoutShell>
     </div>
   );

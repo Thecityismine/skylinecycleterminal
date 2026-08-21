@@ -10,7 +10,7 @@ export default async function ProtectedLayout({
   const admin = await isAdmin();
 
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="h-dvh overflow-hidden">
       <LayoutShell email={session.email} hideFreeBadges hasBilling={hasBilling} isAdmin={admin}>
         {children}
       </LayoutShell>

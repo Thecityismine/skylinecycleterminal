@@ -31,7 +31,7 @@ export function LayoutShell({ children, email, hideFreeBadges, hasBilling, isAdm
       )}
 
       {/* Main column */}
-      <div className="flex flex-col h-screen lg:ml-[260px]">
+      <div className="flex flex-col h-dvh lg:ml-[260px]">
         <Header onMenuClick={toggle} email={email} hasBilling={hasBilling} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {children}
