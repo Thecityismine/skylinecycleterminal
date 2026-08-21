@@ -73,6 +73,16 @@ export type ReadOptions = {
 
 export const COLLECTION = 'observations';
 
+// Registry of every metric id the store has ever written.
+//
+// Firestore has no DISTINCT, and the evidence-ledger ids are generated per run
+// rather than declared anywhere, so there is no static list to read them off.
+// Scanning the collection to derive them would mean reading every row, which
+// grows without bound. One document, updated on write, answers it in a single
+// read no matter how large the history gets.
+const REGISTRY_COLLECTION = 'observations_meta';
+const REGISTRY_DOC = 'registry';
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Today in UTC, YYYY-MM-DD. All dates in this store are UTC calendar dates. */
@@ -145,7 +155,34 @@ export async function writeObservations(rows: Observation[]): Promise<WriteResul
     await batch.commit();
   }
 
+  // arrayUnion rather than a keyed map: evidence ids contain dots, which
+  // Firestore reads as field paths in some write forms. Array entries have no
+  // such restriction, and the list is bounded by the number of distinct
+  // metrics rather than by the size of the history.
+  await db.collection(REGISTRY_COLLECTION).doc(REGISTRY_DOC).set(
+    {
+      metrics:   FieldValue.arrayUnion(...new Set(usable.map((r) => r.metric))),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
+
   return { written: usable.length, skipped };
+}
+
+/**
+ * Every metric id the store has written, from the registry.
+ *
+ * Returns an empty list rather than throwing when the registry does not exist
+ * yet, so a store written before the registry existed degrades to whatever the
+ * caller already knows statically instead of failing.
+ */
+export async function listKnownMetrics(): Promise<MetricId[]> {
+  const db = await getDb();
+  const snap = await db.collection(REGISTRY_COLLECTION).doc(REGISTRY_DOC).get();
+  if (!snap.exists) return [];
+  const metrics = (snap.data()?.metrics ?? []) as unknown;
+  return Array.isArray(metrics) ? metrics.filter((m): m is string => typeof m === 'string') : [];
 }
 
 // ─── Read ─────────────────────────────────────────────────────────────────────

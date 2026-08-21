@@ -29,6 +29,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Observation store registry ───────────────────────────────────────────
+    // One document listing every metric id the store has written. Exists because
+    // Firestore has no DISTINCT and the evidence-ledger ids are generated per
+    // run, so the admin panel would otherwise have to read the whole collection
+    // to know what is in it. Written by the same cron routes, via firebase-admin.
+    match /observations_meta/{docId} {
+      allow read, write: if false;
+    }
+
     // ── Subscriber entitlement records ───────────────────────────────────────
     // Written only by server-side code (firebase-admin, which bypasses rules
     // entirely) — via webhooks and the auth session route. The client SDK never

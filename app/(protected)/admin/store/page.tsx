@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { isAdmin } from '@/lib/auth/access';
-import { getStoreHealth, type MetricSummary } from '@/lib/store/health';
+import { getStoreHealth, type MetricSummary, type MetricGroup } from '@/lib/store/health';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StoreControls } from '@/components/admin/StoreControls';
 
@@ -63,33 +63,51 @@ export default async function StoreAdminPage() {
 
 // ─── Coverage ─────────────────────────────────────────────────────────────────
 
+const GROUPS: { group: MetricGroup; title: string; note: string }[] = [
+  {
+    group: 'report',
+    title: 'Headline readings',
+    note: 'Written point-in-time, one row per metric per run. These are what a track record can be argued from.',
+  },
+  {
+    group: 'evidence',
+    title: 'Evidence ledger',
+    note: 'Every indicator the report could read that day, stored as its normalised extension: 0 is deep value, 100 is extended.',
+  },
+  {
+    group: 'series',
+    title: 'Seeded history',
+    note: 'Backfilled from vendor series. Real data, but not point-in-time.',
+  },
+];
+
 function CoverageTable({
   health,
 }: {
   health: Extract<Awaited<ReturnType<typeof getStoreHealth>>, { state: 'ready' }>;
 }) {
-  const report = health.metrics.filter((m) => m.group === 'report');
-  const series = health.metrics.filter((m) => m.group === 'series');
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-baseline gap-2">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>Coverage</span>
         <span className="text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>
           {health.populated} of {health.total} metrics populated
         </span>
+        {health.lastObserved && (
+          <span className="text-xs font-mono" style={{ color: 'var(--sct-secondary)' }}>
+            latest reading {fmtDate(health.lastObserved)}
+          </span>
+        )}
       </div>
 
-      <Group
-        title="From the daily snapshot"
-        note="Written point-in-time, one row per metric per run. These are what a track record can be argued from."
-        rows={report}
-      />
-      <Group
-        title="Seeded history"
-        note="Backfilled from vendor series. Real data, but not point-in-time."
-        rows={series}
-      />
+      {GROUPS.map(({ group, title, note }) => (
+        <Group
+          key={group}
+          title={title}
+          note={note}
+          rows={health.metrics.filter((m) => m.group === group)}
+        />
+      ))}
     </div>
   );
 }
@@ -126,7 +144,7 @@ function Group({ title, note, rows }: { title: string; note: string; rows: Metri
             {rows.map((m) => (
               <tr key={m.metric} style={{ borderBottom: '1px solid var(--sct-border)' }}>
                 <td className="py-2.5 px-4 font-mono" style={{ color: 'var(--sct-secondary)' }}>
-                  {m.metric}
+                  {m.label}
                 </td>
                 <td
                   className="py-2.5 px-4 font-mono tabular-nums"
