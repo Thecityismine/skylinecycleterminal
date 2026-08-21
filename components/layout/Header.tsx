@@ -102,7 +102,7 @@ export function Header({
 
   return (
     <header
-      className="h-16 shrink-0 sticky top-0 z-30 flex items-center justify-between px-8 border-b backdrop-blur-sm"
+      className="h-16 shrink-0 sticky top-0 z-30 flex items-center justify-between gap-2 px-4 sm:px-8 border-b backdrop-blur-sm"
       style={{
         backgroundColor: 'rgba(9,13,19,0.85)',
         borderColor: 'var(--sct-border)',
@@ -146,7 +146,7 @@ export function Header({
       </div>
 
       {/* Right: F&G + regime badge + status dot */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3 sm:gap-5">
         <div className="hidden sm:flex items-center gap-2">
           <span className="text-xs tracking-wider" style={{ color: 'var(--sct-muted)' }}>
             F&amp;G
@@ -156,9 +156,15 @@ export function Header({
           </span>
         </div>
 
-        {/* Cycle zone badge */}
+        {/* Cycle zone badge.
+            The labels are long enough to wrap onto two lines in a 64px header
+            on a phone ("Hold / Build", "Distribution Risk"), which pushes the
+            rest of the row around. Below sm it collapses to the score in the
+            zone colour with a matching dot: the colour carries the zone, the
+            number keeps it informative, and neither can wrap. The full label
+            stays available to screen readers and as a tooltip. */}
         <span
-          className="px-2.5 py-0.5 rounded text-[11px] font-medium tracking-wider uppercase border transition-colors duration-500"
+          className="hidden sm:inline-block px-2.5 py-0.5 rounded text-[11px] font-medium tracking-wider uppercase border whitespace-nowrap transition-colors duration-500"
           style={{
             backgroundColor: `${regime.color}18`,
             borderColor:     `${regime.color}40`,
@@ -166,6 +172,24 @@ export function Header({
           }}
         >
           {regime.label}
+        </span>
+        <span
+          className="sm:hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded border whitespace-nowrap transition-colors duration-500"
+          style={{
+            backgroundColor: `${regime.color}18`,
+            borderColor:     `${regime.color}40`,
+            color:            regime.color,
+          }}
+          title={regime.label}
+          aria-label={cycle ? `Skyline Cycle Score ${Math.round(cycle.score)}, ${regime.label}` : 'Skyline Cycle Score loading'}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full shrink-0"
+            style={{ backgroundColor: regime.color }}
+          />
+          <span className="text-[11px] font-mono font-semibold leading-none">
+            {cycle ? Math.round(cycle.score) : '—'}
+          </span>
         </span>
 
         {/* Live indicator */}
