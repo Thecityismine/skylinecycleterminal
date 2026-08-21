@@ -205,38 +205,38 @@ function VerificationTable({
 
 const SOURCES: { group: string; links: { label: string; url: string; note: string }[] }[] = [
   {
-    group: 'Discovery',
+    group: 'Discovery and verification',
     links: [
-      { label: 'RWA.xyz', url: 'https://app.rwa.xyz/', note: 'Aggregated tokenized assets. Scan here first, verify elsewhere' },
+      { label: 'RWA.xyz tokenized assets', url: 'https://app.rwa.xyz/', note: 'Aggregates AUM, holders, chains and transfers across issuers. Scan here first' },
+      { label: 'RWA.xyz treasuries', url: 'https://app.rwa.xyz/treasuries', note: 'BUIDL, BENJI and peers side by side, which is where their numbers are actually checkable' },
     ],
   },
   {
     group: 'Tokenized funds',
     links: [
-      { label: 'BlackRock BUIDL', url: 'https://www.blackrock.com/', note: 'Fund size, NAV, holdings, documents' },
-      { label: 'Franklin BENJI', url: 'https://www.benji.com/', note: '1 FOBXX share = 1 BENJI, so supply is independently checkable' },
-      { label: 'Franklin Digital Assets', url: 'https://www.franklintempleton.com/', note: 'New chain deployments' },
+      { label: 'Franklin BENJI', url: 'https://digitalassets.franklintempleton.com/benji/', note: '1 FOBXX share = 1 BENJI, so supply is independently verifiable on-chain' },
+      { label: 'Franklin Templeton', url: 'https://www.franklintempleton.com/', note: 'Issuer root, for filings and announcements' },
+      { label: 'BlackRock', url: 'https://www.blackrock.com/', note: 'BUIDL issuer. Geo-redirects, so set your region. Use RWA.xyz for its numbers' },
     ],
   },
   {
     group: 'Bank infrastructure',
     links: [
-      { label: 'JPMorgan Kinexys', url: 'https://www.jpmorgan.com/kinexys', note: 'Track sub-initiatives separately, not as one row' },
+      { label: 'JPMorgan Kinexys', url: 'https://www.jpmorgan.com/kinexys', note: 'Publishes cumulative and daily transaction volume. Track sub-initiatives separately, not as one row' },
     ],
   },
   {
-    group: 'Stablecoins and cash',
+    group: 'Spot ETFs and digital assets',
     links: [
-      { label: 'Fidelity Digital Assets', url: 'https://www.fidelitydigitalassets.com/', note: 'Institutional products and research' },
+      { label: 'iShares Bitcoin ETF', url: 'https://www.ishares.com/us/strategies/ways-to-invest-in-bitcoin', note: 'IBIT. Each ETF is its own initiative, not one generic record' },
+      { label: 'Fidelity digital assets', url: 'https://institutional.fidelity.com/advisors/investment-solutions/asset-classes/digital-assets', note: 'Institutional products, FBTC and FIDD' },
+      { label: 'Bitwise', url: 'https://bitwiseinvestments.com/', note: 'BITB fund documentation' },
     ],
   },
   {
-    group: 'Spot ETFs',
+    group: 'Filings',
     links: [
-      { label: 'iShares IBIT', url: 'https://www.ishares.com/', note: 'Each ETF is its own initiative, not one generic record' },
-      { label: 'Fidelity FBTC', url: 'https://institutional.fidelity.com/', note: 'Official AUM and holdings' },
-      { label: 'ARK 21Shares ARKB', url: 'https://www.ark-funds.com/', note: 'Fund documentation' },
-      { label: 'Bitwise BITB', url: 'https://bitwiseinvestments.com/', note: 'Fund documentation' },
+      { label: 'SEC EDGAR full-text search', url: 'https://www.sec.gov/edgar/search/#/q=tokenization', note: 'The primary source under every press release. Change the query to custody, stablecoin, digital assets' },
     ],
   },
 ];
