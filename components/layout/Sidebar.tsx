@@ -40,6 +40,7 @@ import {
   Gauge,
   Coins,
   Database,
+  Landmark as Bank,
 } from "lucide-react";
 
 type NavItem = {
@@ -190,7 +191,8 @@ const nav: (NavItem | NavSection)[] = [
   {
     section: "ADMIN",
     items: [
-      { label: "Data Store", href: "/admin/store", icon: Database, admin: true },
+      { label: "Data Store",     href: "/admin/store",    icon: Database, admin: true },
+      { label: "Adoption Index", href: "/admin/adoption", icon: Bank,     admin: true },
     ],
   },
 ];

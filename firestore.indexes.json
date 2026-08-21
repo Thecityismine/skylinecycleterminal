@@ -5,8 +5,14 @@
       "collectionGroup": "observations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "metric", "order": "ASCENDING" },
-        { "fieldPath": "observedDate", "order": "ASCENDING" }
+        {
+          "fieldPath": "metric",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "observedDate",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
@@ -14,9 +20,18 @@
       "collectionGroup": "observations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "metric", "order": "ASCENDING" },
-        { "fieldPath": "metricDate", "order": "ASCENDING" },
-        { "fieldPath": "observedDate", "order": "ASCENDING" }
+        {
+          "fieldPath": "metric",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "metricDate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "observedDate",
+          "order": "ASCENDING"
+        }
       ]
     }
   ],

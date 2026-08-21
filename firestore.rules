@@ -38,6 +38,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Institutional Adoption Index ─────────────────────────────────────────
+    // One document per institutional on-chain initiative, carrying its current
+    // stage and every transition it passed through. Written only by
+    // app/api/adoption via firebase-admin. Closed to the client SDK: the inputs
+    // are public but the classified series is the proprietary part, and it
+    // should not be readable before it is published deliberately.
+    match /initiatives/{initiativeId} {
+      allow read, write: if false;
+    }
+
     // ── Subscriber entitlement records ───────────────────────────────────────
     // Written only by server-side code (firebase-admin, which bypasses rules
     // entirely) — via webhooks and the auth session route. The client SDK never
