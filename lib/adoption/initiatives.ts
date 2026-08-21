@@ -115,3 +115,43 @@ export async function getInitiative(id: string): Promise<Initiative | null> {
   const snap = await db.collection(COLLECTION).doc(id).get();
   return snap.exists ? (snap.data() as Initiative) : null;
 }
+
+/**
+ * Edit an initiative's descriptive fields.
+ *
+ * Verification is the field this exists for. It is a property of the
+ * initiative rather than of any one stage event: an entry recorded as
+ * "press release" becomes "public chain" the day you find the contract, and
+ * that is a correction to what was always true, not a new event. Recording it
+ * as a stage change would put a fake transition on the chart.
+ *
+ * Stage, stageDate and history are deliberately not patchable. Stage moves
+ * through addStageEvent so every change keeps its date and its source. The id
+ * is frozen at creation, so renaming an initiative leaves its slug alone: the
+ * slug is an internal key, and rewriting it would orphan the document.
+ */
+export async function updateInitiative(
+  id: string,
+  patch: Partial<Omit<Initiative, 'id' | 'stage' | 'stageDate' | 'history' | 'createdAt' | 'updatedAt'>>,
+): Promise<Initiative> {
+  const db = await getDb();
+  const ref = db.collection(COLLECTION).doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) throw new Error('No initiative with id "' + id + '"');
+
+  const existing = snap.data() as Initiative;
+  const updated: Initiative = {
+    ...existing,
+    ...patch,
+    // Re-asserted after the spread so a malformed patch cannot rewrite history.
+    id:        existing.id,
+    stage:     existing.stage,
+    stageDate: existing.stageDate,
+    history:   existing.history,
+    createdAt: existing.createdAt,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await ref.set(updated);
+  return updated;
+}

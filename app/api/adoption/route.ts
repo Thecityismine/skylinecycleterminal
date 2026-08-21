@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth/access';
 import {
-  createInitiative, addStageEvent, deleteInitiative, listInitiatives,
+  createInitiative, addStageEvent, deleteInitiative, updateInitiative, listInitiatives,
   buildIndexSeries, breakdownByChain,
   isStage, isIsoDate, isVerification, INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS,
   breakdownByVerification,
@@ -55,7 +55,12 @@ type PromoteBody = {
 
 type DeleteBody = { action: 'delete'; id?: string };
 
-type Body = CreateBody | PromoteBody | DeleteBody;
+type UpdateBody = {
+  action: 'update';
+  id?: string;
+} & Omit<CreateBody, 'action' | 'initialStage' | 'initialDate' | 'sourceUrl' | 'note'>;
+
+type Body = CreateBody | PromoteBody | DeleteBody | UpdateBody;
 
 function nullableText(v: unknown): string | null {
   const s = typeof v === 'string' ? v.trim() : '';
@@ -129,6 +134,35 @@ export async function POST(req: Request) {
         ...(note?.trim() ? { note: note.trim() } : {}),
       };
       const updated = await addStageEvent(id, event);
+      return NextResponse.json({ ok: true, initiative: updated });
+    }
+
+    if (body.action === 'update') {
+      const u = body as UpdateBody;
+      if (!u.id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
+
+      // Only fields actually supplied are patched, so an edit dialog that omits
+      // a field leaves it alone rather than nulling it.
+      const patch: Record<string, unknown> = {};
+      if (u.institution?.trim())     patch.institution = u.institution.trim();
+      if (u.name?.trim())            patch.name = u.name.trim();
+      if (u.summary?.trim())         patch.summary = u.summary.trim();
+      if (isInstitutionType(u.institutionType)) patch.institutionType = u.institutionType;
+      if (isCategory(u.category))    patch.category = u.category;
+      if (isVerification(u.verification)) patch.verification = u.verification;
+      if (u.program !== undefined)   patch.program = nullableText(u.program);
+      if (u.observableMetric !== undefined) patch.observableMetric = nullableText(u.observableMetric);
+      if (u.chain !== undefined)     patch.chain = nullableText(u.chain);
+      if (u.asset !== undefined)     patch.asset = nullableText(u.asset);
+      if (u.partner !== undefined)   patch.partner = nullableText(u.partner);
+      if (u.country !== undefined)   patch.country = nullableText(u.country);
+      if (u.valueUsd !== undefined)  patch.valueUsd = nullableNumber(u.valueUsd);
+
+      if (Object.keys(patch).length === 0) {
+        return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
+      }
+
+      const updated = await updateInitiative(u.id, patch);
       return NextResponse.json({ ok: true, initiative: updated });
     }
 

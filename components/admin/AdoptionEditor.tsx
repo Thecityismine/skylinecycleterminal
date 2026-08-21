@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Loader2, Check, TriangleAlert, ArrowUpRight, Trash2, X } from 'lucide-react';
+import { Plus, Loader2, Check, TriangleAlert, ArrowUpRight, Trash2, X, Pencil } from 'lucide-react';
 import {
   STAGES, INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS, LIVE_STAGE, utcDate,
   initiativeWeight, verificationLabel,
@@ -44,6 +44,7 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
   const [form, setForm] = useState<Record<string, string | number>>({ ...EMPTY });
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [promoting, setPromoting] = useState<Initiative | null>(null);
+  const [editing, setEditing] = useState<Initiative | null>(null);
 
   const set = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -313,6 +314,14 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
                           <ArrowUpRight size={14} />
                         </button>
                         <button
+                          onClick={() => setEditing(i)}
+                          title="Edit details"
+                          className="rounded p-1 transition-colors"
+                          style={{ color: 'var(--sct-secondary)' }}
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
                           onClick={() => {
                             if (confirm(`Delete "${i.institution} · ${i.name}" and its ${i.history.length} stage events?`)) {
                               void post({ action: 'delete', id: i.id }, 'Deleting', 'Deleted');
@@ -334,6 +343,21 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
         </div>
       )}
 
+      {editing && (
+        <EditDialog
+          initiative={editing}
+          onClose={() => setEditing(null)}
+          onSubmit={async (patch) => {
+            const ok = await post(
+              { action: 'update', id: editing.id, ...patch },
+              'Saving changes',
+              `Updated ${editing.institution} · ${editing.name}`,
+            );
+            if (ok) setEditing(null);
+          }}
+        />
+      )}
+
       {promoting && (
         <PromoteDialog
           initiative={promoting}
@@ -353,6 +377,127 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
 }
 
 // ─── Pieces ───────────────────────────────────────────────────────────────────
+
+function EditDialog({
+  initiative, onClose, onSubmit,
+}: {
+  initiative: Initiative;
+  onClose: () => void;
+  onSubmit: (patch: Record<string, string>) => void;
+}) {
+  // Seeded from the current values, so saving without touching anything is a
+  // no-op rather than a wipe.
+  const [f, setF] = useState<Record<string, string>>({
+    institution:      initiative.institution,
+    name:             initiative.name,
+    institutionType:  initiative.institutionType,
+    category:         initiative.category,
+    verification:     initiative.verification ?? 'press_only',
+    program:          initiative.program ?? '',
+    observableMetric: initiative.observableMetric ?? '',
+    chain:            initiative.chain ?? '',
+    asset:            initiative.asset ?? '',
+    partner:          initiative.partner ?? '',
+    country:          initiative.country ?? '',
+    valueUsd:         initiative.valueUsd != null ? String(initiative.valueUsd) : '',
+    summary:          initiative.summary,
+  });
+  const set = (k: string, v: string) => setF((x) => ({ ...x, [k]: v }));
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto"
+      style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}>
+      <div
+        className="w-full max-w-2xl rounded-lg border p-5 flex flex-col gap-4 my-8"
+        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
+              Edit {initiative.institution} &middot; {initiative.name}
+            </h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
+              Stage is not editable here. It moves through Record a stage change, so every
+              transition keeps its own date and source.
+            </p>
+          </div>
+          <button onClick={onClose} style={{ color: 'var(--sct-muted)' }}><X size={16} /></button>
+        </div>
+
+        <Field label="Verification" hint="The field most likely to need correcting later">
+          <div className="flex flex-wrap gap-1.5">
+            {VERIFICATIONS.map((v) => (
+              <button
+                key={v.key}
+                onClick={() => set('verification', v.key)}
+                title={v.note}
+                className="rounded px-2.5 py-1 text-[11px] font-medium border transition-colors"
+                style={{
+                  backgroundColor: f.verification === v.key ? 'rgba(247,147,26,0.16)' : 'transparent',
+                  borderColor: f.verification === v.key ? 'rgba(247,147,26,0.45)' : 'var(--sct-border)',
+                  color: f.verification === v.key ? 'var(--sct-btc)' : 'var(--sct-muted)',
+                }}
+              >
+                {v.label}
+                <span className="ml-1 font-mono opacity-60">{v.weight.toFixed(1)}</span>
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        <p className="text-[11px] font-mono" style={{ color: 'var(--sct-muted)' }}>
+          Now contributes{' '}
+          <span style={{ color: 'var(--sct-btc)' }}>
+            {initiativeWeight(
+              initiative.stage,
+              f.verification as (typeof VERIFICATIONS)[number]['key'],
+            ).toFixed(2)}
+          </span>{' '}
+          to the weighted index
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Institution"><Input value={f.institution} onChange={(v) => set('institution', v)} /></Field>
+          <Field label="Initiative name"><Input value={f.name} onChange={(v) => set('name', v)} /></Field>
+          <Field label="Institution type">
+            <Select value={f.institutionType} onChange={(v) => set('institutionType', v)}
+              options={INSTITUTION_TYPES.map((t) => ({ value: t, label: t.replace('_', ' ') }))} />
+          </Field>
+          <Field label="Category">
+            <Select value={f.category} onChange={(v) => set('category', v)}
+              options={CATEGORIES.map((c) => ({ value: c, label: c }))} />
+          </Field>
+          <Field label="Programme"><Input value={f.program} onChange={(v) => set('program', v)} /></Field>
+          <Field label="Observable metric"><Input value={f.observableMetric} onChange={(v) => set('observableMetric', v)} /></Field>
+          <Field label="Chain"><Input value={f.chain} onChange={(v) => set('chain', v)} /></Field>
+          <Field label="Asset"><Input value={f.asset} onChange={(v) => set('asset', v)} /></Field>
+          <Field label="Partner"><Input value={f.partner} onChange={(v) => set('partner', v)} /></Field>
+          <Field label="Country"><Input value={f.country} onChange={(v) => set('country', v)} /></Field>
+          <Field label="Value USD"><Input value={f.valueUsd} onChange={(v) => set('valueUsd', v)} /></Field>
+        </div>
+
+        <Field label="Summary"><Input value={f.summary} onChange={(v) => set('summary', v)} /></Field>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => onSubmit(f)}
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium border"
+            style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: 'rgba(247,147,26,0.35)', color: 'var(--sct-btc)' }}
+          >
+            <Check size={13} /> Save changes
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-md px-3 py-1.5 text-xs font-medium border"
+            style={{ borderColor: 'var(--sct-border)', color: 'var(--sct-secondary)' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PromoteDialog({
   initiative, onClose, onSubmit,
