@@ -3,7 +3,8 @@ import { isAdmin } from '@/lib/auth/access';
 import {
   createInitiative, addStageEvent, deleteInitiative, updateInitiative, listInitiatives,
   buildIndexSeries, breakdownByChain,
-  isStage, isIsoDate, isVerification, INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS,
+  isStage, isIsoDate, isVerification, normalizeChains,
+  INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS,
   breakdownByVerification,
   type InstitutionType, type Category, type Stage, type StageEvent, type Verification,
 } from '@/lib/adoption/initiatives';
@@ -32,7 +33,7 @@ type CreateBody = {
   program?: string;
   verification?: string;
   observableMetric?: string;
-  chain?: string;
+  chains?: string | string[];
   asset?: string;
   partner?: string;
   country?: string;
@@ -152,7 +153,7 @@ export async function POST(req: Request) {
       if (isVerification(u.verification)) patch.verification = u.verification;
       if (u.program !== undefined)   patch.program = nullableText(u.program);
       if (u.observableMetric !== undefined) patch.observableMetric = nullableText(u.observableMetric);
-      if (u.chain !== undefined)     patch.chain = nullableText(u.chain);
+      if (u.chains !== undefined)    patch.chains = normalizeChains(u.chains);
       if (u.asset !== undefined)     patch.asset = nullableText(u.asset);
       if (u.partner !== undefined)   patch.partner = nullableText(u.partner);
       if (u.country !== undefined)   patch.country = nullableText(u.country);
@@ -203,7 +204,7 @@ export async function POST(req: Request) {
       program:         nullableText(b.program),
       verification:    b.verification as Verification,
       observableMetric: nullableText(b.observableMetric),
-      chain:           nullableText(b.chain),
+      chains:          normalizeChains(b.chains),
       asset:           nullableText(b.asset),
       partner:         nullableText(b.partner),
       country:         nullableText(b.country),

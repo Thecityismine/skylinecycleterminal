@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Loader2, Check, TriangleAlert, ArrowUpRight, Trash2, X, Pencil } from 'lucide-react';
 import {
   STAGES, INSTITUTION_TYPES, CATEGORIES, VERIFICATIONS, LIVE_STAGE, utcDate,
-  initiativeWeight, verificationLabel,
+  initiativeWeight, verificationLabel, chainsOf,
   type Initiative, type Stage,
 } from '@/lib/adoption/schema';
 
@@ -34,7 +34,7 @@ const STAGE_COLOR: Record<number, string> = {
 const EMPTY = {
   institution: '', institutionType: 'bank', name: '', category: 'tokenization',
   program: '', verification: 'press_only', observableMetric: '',
-  chain: '', asset: '', partner: '', country: '', valueUsd: '', summary: '',
+  chains: '', asset: '', partner: '', country: '', valueUsd: '', summary: '',
   initialStage: 2, initialDate: utcDate(), sourceUrl: '', note: '',
 };
 
@@ -140,8 +140,8 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
               <Input value={form.observableMetric} onChange={(v) => set('observableMetric', v)}
                 placeholder="AUM, supply, holders" />
             </Field>
-            <Field label="Chain" hint="Tests where tokenization is actually landing">
-              <Input value={form.chain} onChange={(v) => set('chain', v)} placeholder="ethereum" />
+            <Field label="Chains" hint="Comma separated. Only chains with confirmed issuance">
+              <Input value={form.chains} onChange={(v) => set('chains', v)} placeholder="ethereum, avalanche" />
             </Field>
             <Field label="Asset">
               <Input value={form.asset} onChange={(v) => set('asset', v)} placeholder="US Treasuries" />
@@ -280,7 +280,7 @@ export function AdoptionEditor({ initiatives }: { initiatives: Initiative[] }) {
                       </span>
                     </td>
                     <td className="py-2.5 px-4 font-mono" style={{ color: 'var(--sct-secondary)' }}>
-                      {i.chain ?? '—'}
+                      {chainsOf(i).join(', ') || '—'}
                     </td>
                     <td className="py-2.5 px-4">
                       <span className="rounded px-2 py-0.5 text-[10px] font-medium border whitespace-nowrap"
@@ -395,7 +395,7 @@ function EditDialog({
     verification:     initiative.verification ?? 'press_only',
     program:          initiative.program ?? '',
     observableMetric: initiative.observableMetric ?? '',
-    chain:            initiative.chain ?? '',
+    chains:           chainsOf(initiative).join(', '),
     asset:            initiative.asset ?? '',
     partner:          initiative.partner ?? '',
     country:          initiative.country ?? '',
@@ -469,7 +469,7 @@ function EditDialog({
           </Field>
           <Field label="Programme"><Input value={f.program} onChange={(v) => set('program', v)} /></Field>
           <Field label="Observable metric"><Input value={f.observableMetric} onChange={(v) => set('observableMetric', v)} /></Field>
-          <Field label="Chain"><Input value={f.chain} onChange={(v) => set('chain', v)} /></Field>
+          <Field label="Chains" hint="Comma separated"><Input value={f.chains} onChange={(v) => set('chains', v)} /></Field>
           <Field label="Asset"><Input value={f.asset} onChange={(v) => set('asset', v)} /></Field>
           <Field label="Partner"><Input value={f.partner} onChange={(v) => set('partner', v)} /></Field>
           <Field label="Country"><Input value={f.country} onChange={(v) => set('country', v)} /></Field>

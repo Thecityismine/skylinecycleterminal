@@ -161,9 +161,12 @@ export type Initiative = {
   /** What can actually be measured: "AUM, supply, holders" or "transaction
    *  volume". Null when nothing is observable yet, which is itself the point. */
   observableMetric: string | null;
-  /** Which chain it settles on. This is the field that tests the claim that
-   *  most tokenization is landing on Ethereum, using your own count. */
-  chain:           string | null;
+  /** Which chains it settles on. A list, because tokenized funds routinely
+   *  issue across several: HINC is on Ethereum and Avalanche, BENJI on nine.
+   *  Collapsing that into one string produced a chain bucket named
+   *  "multiple, Avalanche, Ethereum" that aggregated with nothing, silently
+   *  breaking the breakdown this field exists for. */
+  chains:          string[];
   asset:           string | null;
   partner:         string | null;
   country:         string | null;
@@ -187,7 +190,7 @@ export type InitiativeInput = {
   program:         string | null;
   verification:    Verification;
   observableMetric: string | null;
-  chain:           string | null;
+  chains:          string[];
   asset:           string | null;
   partner:         string | null;
   country:         string | null;
@@ -215,6 +218,35 @@ export function slugify(institution: string, name: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 120);
+}
+
+/**
+ * Parse a chain field from free text or a list.
+ *
+ * Lowercased and deduplicated so "Ethereum" and "ethereum" land in one bucket.
+ * Accepts commas or whitespace, because both are what people actually type.
+ */
+export function normalizeChains(input: string | string[] | null | undefined): string[] {
+  const parts = Array.isArray(input) ? input : (input ?? '').split(/[,;]/);
+  const out: string[] = [];
+  for (const raw of parts) {
+    const c = String(raw).trim().toLowerCase();
+    if (c && !out.includes(c)) out.push(c);
+  }
+  return out;
+}
+
+/**
+ * The chains an initiative settles on, tolerating the pre-list shape.
+ *
+ * Rows written before `chains` existed carry a single `chain` string. Reading
+ * through this accessor keeps them working indefinitely, which is cheaper and
+ * safer than migrating documents that are still being hand-entered.
+ */
+export function chainsOf(i: Initiative): string[] {
+  const legacy = (i as unknown as { chain?: string | null }).chain;
+  if (Array.isArray(i.chains) && i.chains.length) return i.chains;
+  return legacy ? normalizeChains(legacy) : [];
 }
 
 export function isIsoDate(v: unknown): v is string {
@@ -309,16 +341,25 @@ export function breakdownByVerification(initiatives: Initiative[]): Verification
 
 export type ChainBreakdown = { chain: string; live: number; total: number };
 
-/** Live initiatives by settlement chain. The number that either supports or
- *  falsifies "most tokenization is landing on Ethereum". */
+/**
+ * Live initiatives by settlement chain. The number that either supports or
+ * falsifies "most tokenization is landing on Ethereum".
+ *
+ * An initiative counts once on every chain it issues on, so the column totals
+ * exceed the number of initiatives. That is presence, not a partition, and it
+ * is the honest shape: a fund live on both Ethereum and Avalanche genuinely is
+ * on both, and splitting its weight between them would understate each.
+ */
 export function breakdownByChain(initiatives: Initiative[]): ChainBreakdown[] {
   const map = new Map<string, ChainBreakdown>();
   for (const i of initiatives) {
-    const chain = i.chain?.trim() || 'unspecified';
-    const row = map.get(chain) ?? { chain, live: 0, total: 0 };
-    row.total += 1;
-    if (i.stage >= LIVE_STAGE) row.live += 1;
-    map.set(chain, row);
+    const chains = chainsOf(i);
+    for (const chain of chains.length ? chains : ['unspecified']) {
+      const row = map.get(chain) ?? { chain, live: 0, total: 0 };
+      row.total += 1;
+      if (i.stage >= LIVE_STAGE) row.live += 1;
+      map.set(chain, row);
+    }
   }
   return [...map.values()].sort((a, b) => b.live - a.live || b.total - a.total);
 }

@@ -128,7 +128,9 @@ function ChainTable({ rows }: { rows: { chain: string; live: number; total: numb
       <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--sct-border)' }}>
         <p className="text-xs font-semibold" style={{ color: 'var(--sct-secondary)' }}>By settlement chain</p>
         <p className="text-[11px] mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-          Your own count of where institutional activity is actually landing, rather than anyone else&apos;s claim about it.
+          Your own count of where institutional activity is actually landing, rather than anyone else&apos;s claim
+          about it. An initiative counts on every chain it issues on, so these totals exceed the number of
+          initiatives.
         </p>
       </div>
       <div className="overflow-x-auto">

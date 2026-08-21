@@ -1,6 +1,6 @@
 import type { Firestore } from 'firebase-admin/firestore';
 import {
-  COLLECTION, currentFrom, slugify, sortHistory,
+  COLLECTION, currentFrom, slugify, sortHistory, normalizeChains,
   type Initiative, type InitiativeInput, type StageEvent,
 } from '@/lib/adoption/schema';
 
@@ -54,7 +54,7 @@ export async function createInitiative(input: InitiativeInput): Promise<Initiati
     program:         input.program,
     verification:    input.verification,
     observableMetric: input.observableMetric,
-    chain:           input.chain,
+    chains:          normalizeChains(input.chains),
     asset:           input.asset,
     partner:         input.partner,
     country:         input.country,
