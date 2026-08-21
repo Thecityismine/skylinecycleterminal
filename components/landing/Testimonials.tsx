@@ -49,9 +49,11 @@ export function Testimonials() {
         What subscribers say
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {TESTIMONIALS.map((t) => (
+        {/* Keyed by position, not name: the placeholders share a name, and real
+            testimonials are a fixed, non-reordering list where index is stable. */}
+        {TESTIMONIALS.map((t, i) => (
           <figure
-            key={t.name}
+            key={i}
             className="rounded-xl border p-6 flex flex-col"
             style={{ backgroundColor: "var(--sct-card)", borderColor: "var(--sct-border)" }}
           >
