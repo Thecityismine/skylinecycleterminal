@@ -12,6 +12,13 @@ import type { Firestore } from 'firebase-admin/firestore';
 // judgement that makes the index worth owning, so the feed's only job is to put
 // candidates in front of a person.
 //
+// One row per FILING, not per document. EDGAR indexes each matching exhibit
+// separately, so a single S-1/A whose cover letter, trust agreement and
+// prospectus all mention "tokenization" arrives as three hits. Keying on the
+// accession number collapses those into one row with the exhibits listed under
+// it, which is the difference between reviewing a filing once and dismissing it
+// three times.
+//
 // SEC requires a declared User-Agent and refuses requests without one (403).
 // It does not require a personal email: a neutral identifier naming the
 // application is accepted, and SEC_USER_AGENT overrides it if you would rather
@@ -54,22 +61,30 @@ const FINANCE_SICS = new Set([
   '6199', '6200', '6211', '6221', '6282', '6289', '6311', '6411', '6722', '6726', '6770',
 ]);
 
+export type CandidateDocument = {
+  filename:    string;
+  fileType:    string;
+  description: string;
+  url:         string;
+};
+
 export type Candidate = {
-  id:          string;      // EDGAR's own "{accession}:{filename}", stable across pulls
+  /** The accession number. One filing, one row, however many exhibits matched. */
+  id:          string;
   accession:   string;
   cik:         string;
   company:     string;
   form:        string;
   fileDate:    string;      // YYYY-MM-DD
-  fileType:    string;
-  description: string;
   items:       string[];
   sics:        string[];
   /** Filer sits in a finance SIC. A hint for triage order, not a filter. */
   notable:     boolean;
   matchedTerms: string[];
-  url:         string;      // the document itself
-  indexUrl:    string;      // the filing index, more readable when the doc is an exhibit
+  /** Every matching exhibit within the filing. */
+  documents:   CandidateDocument[];
+  /** The filing index on sec.gov, which lists all its documents. */
+  indexUrl:    string;
   status:      'new' | 'dismissed' | 'linked';
   linkedInitiativeId?: string;
   firstSeen:   string;
@@ -98,49 +113,56 @@ type Hit = {
 
 /** EDGAR archive paths drop the leading zeros from the CIK and the dashes from
  *  the accession number. Getting either wrong yields a 404. */
-function archiveUrls(cik: string, accession: string, filename: string) {
-  const cikTrim = cik.replace(/^0+/, '');
-  const accFlat = accession.replace(/-/g, '');
-  const base = `https://www.sec.gov/Archives/edgar/data/${cikTrim}/${accFlat}`;
-  return { url: `${base}/${filename}`, indexUrl: `${base}/${accession}-index.htm` };
+function archiveBase(cik: string, accession: string): string {
+  return `https://www.sec.gov/Archives/edgar/data/${cik.replace(/^0+/, '')}/${accession.replace(/-/g, '')}`;
 }
 
-function toCandidate(hit: Hit, term: string, now: string): Candidate | null {
+function mergeHit(into: Map<string, Candidate>, hit: Hit, term: string, now: string): void {
   const src = hit._source ?? {};
   const [accession, filename] = hit._id.split(':');
   const cik = src.ciks?.[0];
-  if (!accession || !filename || !cik) return null;
+  if (!accession || !filename || !cik) return;
+
+  const doc: CandidateDocument = {
+    filename,
+    fileType:    src.file_type ?? '',
+    description: src.file_description ?? '',
+    url:         `${archiveBase(cik, accession)}/${filename}`,
+  };
+
+  const held = into.get(accession);
+  if (held) {
+    if (!held.matchedTerms.includes(term)) held.matchedTerms.push(term);
+    if (!held.documents.some((d) => d.filename === filename)) held.documents.push(doc);
+    return;
+  }
 
   const sics = src.sics ?? [];
-  const { url, indexUrl } = archiveUrls(cik, accession, filename);
-
-  return {
-    id:          hit._id,
+  into.set(accession, {
+    id:        accession,
     accession,
     cik,
     // display_names look like "CaliberCos Inc.  (CWD)  (CIK 0001627282)".
-    // The trailing identifiers are already separate fields, so they are trimmed.
-    company:     (src.display_names?.[0] ?? 'Unknown').replace(/\s*\(CIK[^)]*\)\s*$/, '').trim(),
-    form:        src.form ?? src.root_forms?.[0] ?? '',
-    fileDate:    src.file_date ?? '',
-    fileType:    src.file_type ?? '',
-    description: src.file_description ?? '',
-    items:       src.items ?? [],
+    // The CIK is already its own field, so the trailing copy is trimmed.
+    company:   (src.display_names?.[0] ?? 'Unknown').replace(/\s*\(CIK[^)]*\)\s*$/, '').trim(),
+    form:      src.form ?? src.root_forms?.[0] ?? '',
+    fileDate:  src.file_date ?? '',
+    items:     src.items ?? [],
     sics,
-    notable:     sics.some((s) => FINANCE_SICS.has(s)),
+    notable:   sics.some((s) => FINANCE_SICS.has(s)),
     matchedTerms: [term],
-    url,
-    indexUrl,
-    status:      'new',
-    firstSeen:   now,
-    lastSeen:    now,
-  };
+    documents: [doc],
+    indexUrl:  `${archiveBase(cik, accession)}/${accession}-index.htm`,
+    status:    'new',
+    firstSeen: now,
+    lastSeen:  now,
+  });
 }
 
 export type SearchResult = { candidates: Candidate[]; errors: string[] };
 
 /**
- * Run every query over a date window and merge the hits.
+ * Run every query over a date window and merge the hits by filing.
  *
  * A filing that matches several terms appears once with all of them recorded,
  * because how many phrases it hit is a rough relevance signal worth keeping.
@@ -163,16 +185,7 @@ export async function searchEdgar(from: string, to: string): Promise<SearchResul
         continue;
       }
       const json = (await res.json()) as { hits?: { hits?: Hit[] } };
-      for (const hit of json.hits?.hits ?? []) {
-        const c = toCandidate(hit, term, now);
-        if (!c) continue;
-        const held = merged.get(c.id);
-        if (held) {
-          if (!held.matchedTerms.includes(term)) held.matchedTerms.push(term);
-        } else {
-          merged.set(c.id, c);
-        }
-      }
+      for (const hit of json.hits?.hits ?? []) mergeHit(merged, hit, term, now);
     } catch (e) {
       errors.push(`${term}: ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -197,9 +210,10 @@ export type StoreResult = { added: number; refreshed: number };
 /**
  * Persist candidates, preserving triage.
  *
- * A filing that reappears in a later pull updates lastSeen and its matched
- * terms but keeps its status. Dismissing something and having it come back the
- * next morning would make the feed useless within a week.
+ * A filing that reappears in a later pull updates lastSeen, its matched terms
+ * and any newly-matching exhibits, but keeps its status. Dismissing something
+ * and having it come back the next morning would make the feed useless within
+ * a week.
  */
 export async function storeCandidates(candidates: Candidate[]): Promise<StoreResult> {
   if (!candidates.length) return { added: 0, refreshed: 0 };
@@ -219,9 +233,14 @@ export async function storeCandidates(candidates: Candidate[]): Promise<StoreRes
       const snap = existing[n];
       if (snap.exists) {
         const prev = snap.data() as Candidate;
+        const docs = [...(prev.documents ?? [])];
+        for (const d of c.documents) {
+          if (!docs.some((x) => x.filename === d.filename)) docs.push(d);
+        }
         batch.update(col.doc(c.id), {
           lastSeen: c.lastSeen,
           matchedTerms: [...new Set([...(prev.matchedTerms ?? []), ...c.matchedTerms])],
+          documents: docs,
         });
         refreshed += 1;
       } else {
@@ -262,4 +281,111 @@ export async function setCandidateStatus(
     status,
     ...(linkedInitiativeId ? { linkedInitiativeId } : {}),
   });
+}
+
+// ─── Migration ────────────────────────────────────────────────────────────────
+
+export type MigrationResult = {
+  scanned:   number;
+  collapsed: number;   // filings written in the new shape
+  removed:   number;   // old per-document rows deleted
+  preserved: number;   // filings whose triage carried across
+};
+
+/**
+ * Collapse per-document rows into per-filing rows.
+ *
+ * The feed originally keyed on EDGAR's "{accession}:{filename}", so one filing
+ * with three matching exhibits became three rows. This rewrites those as one
+ * row per accession and deletes the originals.
+ *
+ * Triage carries across, and deliberately errs toward respecting a decision
+ * already made: if any document of a filing was dismissed, the filing is
+ * dismissed. Re-surfacing something already judged is worse than hiding
+ * something not yet judged, because the first erodes trust in the feed.
+ *
+ * Idempotent. Rows already keyed on an accession have no colon in their id and
+ * are skipped, so running it twice is harmless.
+ */
+export async function migrateToAccessionKeys(): Promise<MigrationResult> {
+  const db = await getDb();
+  const col = db.collection(COLLECTION);
+  const snap = await col.get();
+
+  type Legacy = Candidate & { url?: string; fileType?: string; description?: string };
+
+  const groups = new Map<string, { docs: Legacy[]; ids: string[] }>();
+  let scanned = 0;
+
+  for (const d of snap.docs) {
+    if (!d.id.includes(':')) continue;   // already migrated
+    scanned += 1;
+    const data = d.data() as Legacy;
+    const accession = d.id.split(':')[0];
+    const g = groups.get(accession) ?? { docs: [], ids: [] };
+    g.docs.push(data);
+    g.ids.push(d.id);
+    groups.set(accession, g);
+  }
+
+  if (groups.size === 0) return { scanned: 0, collapsed: 0, removed: 0, preserved: 0 };
+
+  let collapsed = 0;
+  let removed = 0;
+  let preserved = 0;
+
+  for (const [accession, g] of groups) {
+    const first = g.docs[0];
+    const statuses = g.docs.map((d) => d.status);
+    const status: Candidate['status'] =
+      statuses.includes('dismissed') ? 'dismissed'
+      : statuses.includes('linked') ? 'linked'
+      : 'new';
+    if (status !== 'new') preserved += 1;
+
+    const documents: CandidateDocument[] = [];
+    for (const d of g.docs) {
+      const filename = (d as unknown as { id?: string }).id?.split(':')[1]
+        ?? d.url?.split('/').pop()
+        ?? '';
+      if (!filename || documents.some((x) => x.filename === filename)) continue;
+      documents.push({
+        filename,
+        fileType:    d.fileType ?? '',
+        description: d.description ?? '',
+        url:         d.url ?? `${archiveBase(first.cik, accession)}/${filename}`,
+      });
+    }
+
+    const merged: Candidate = {
+      id: accession,
+      accession,
+      cik:       first.cik,
+      company:   first.company,
+      form:      first.form,
+      fileDate:  first.fileDate,
+      items:     first.items ?? [],
+      sics:      first.sics ?? [],
+      notable:   first.notable ?? false,
+      matchedTerms: [...new Set(g.docs.flatMap((d) => d.matchedTerms ?? []))],
+      documents,
+      indexUrl:  first.indexUrl ?? `${archiveBase(first.cik, accession)}/${accession}-index.htm`,
+      status,
+      ...(g.docs.find((d) => d.linkedInitiativeId)
+        ? { linkedInitiativeId: g.docs.find((d) => d.linkedInitiativeId)!.linkedInitiativeId }
+        : {}),
+      firstSeen: g.docs.map((d) => d.firstSeen).sort()[0] ?? new Date().toISOString(),
+      lastSeen:  g.docs.map((d) => d.lastSeen).sort().pop() ?? new Date().toISOString(),
+    };
+
+    const batch = db.batch();
+    batch.set(col.doc(accession), merged);
+    for (const oldId of g.ids) batch.delete(col.doc(oldId));
+    await batch.commit();
+
+    collapsed += 1;
+    removed += g.ids.length;
+  }
+
+  return { scanned, collapsed, removed, preserved };
 }

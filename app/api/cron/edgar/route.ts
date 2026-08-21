@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isCronAuthorised } from '@/lib/auth/cron';
-import { searchEdgar, storeCandidates, QUERIES } from '@/lib/adoption/edgar';
+import { searchEdgar, storeCandidates, migrateToAccessionKeys, QUERIES } from '@/lib/adoption/edgar';
 
 // Daily pull of SEC EDGAR full-text search into the Adoption Index candidate feed.
 //
@@ -43,6 +43,13 @@ async function run(req: Request) {
   const startedAt = Date.now();
 
   try {
+    // One-shot collapse of the old per-document rows into per-filing rows.
+    // Idempotent, so leaving the parameter on a scheduled call is harmless.
+    if (url.searchParams.get('migrate') === '1') {
+      const result = await migrateToAccessionKeys();
+      return NextResponse.json({ ok: true, migrated: result, elapsedMs: Date.now() - startedAt });
+    }
+
     const { candidates, errors } = await searchEdgar(from, to);
 
     if (dryRun) {

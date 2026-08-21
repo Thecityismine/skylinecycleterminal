@@ -125,8 +125,8 @@ export function EdgarCandidates({ candidates }: { candidates: Candidate[] }) {
             <li key={c.id} className="px-4 py-3 flex items-start justify-between gap-3"
               style={{ borderTop: '1px solid var(--sct-border)' }}>
               <div className="min-w-0 flex flex-col gap-0.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium truncate" style={{ color: 'var(--sct-text)' }}>
+                <div className="flex flex-col gap-1 items-start">
+                  <span className="text-xs font-medium truncate max-w-full" style={{ color: 'var(--sct-text)' }}>
                     {c.company}
                   </span>
                   {c.notable && (
@@ -142,9 +142,14 @@ export function EdgarCandidates({ candidates }: { candidates: Candidate[] }) {
                 </div>
                 <span className="text-[10px] font-mono" style={{ color: 'var(--sct-muted)' }}>
                   {c.form} · {c.fileDate}
-                  {c.description ? ` · ${c.description}` : ''}
+                  {c.documents?.length > 1 ? ` · ${c.documents.length} exhibits` : ''}
                   {c.matchedTerms.length > 1 ? ` · ${c.matchedTerms.length} terms` : ''}
                 </span>
+                {c.documents?.[0]?.description && (
+                  <span className="text-[10px] leading-snug line-clamp-2" style={{ color: 'var(--sct-muted)' }}>
+                    {c.documents[0].description}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <a
