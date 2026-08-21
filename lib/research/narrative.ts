@@ -1,6 +1,10 @@
 import type { EvidenceLedger, EvidenceItem, Thesis } from '@/lib/research/evidence';
 import { THESIS_LABEL } from '@/lib/research/evidence';
 
+// Every phrase below is keyed by Record<Thesis, string> rather than switched on,
+// so adding a band to the regime is a compile error here instead of prose that
+// silently falls through to a default.
+
 // ─── The seam ─────────────────────────────────────────────────────────────────
 //
 // Prose is generated from `NarrativeInput` — a bundle of already-computed facts.
@@ -41,16 +45,42 @@ function list(items: string[]): string {
   return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
 
-function valuationPhrase(thesis: Thesis): string {
-  switch (thesis) {
-    case 'accumulation':
-      return 'a historically attractive long-term valuation zone';
-    case 'distribution':
-      return 'territory that has historically coincided with late-cycle extension';
-    default:
-      return 'the middle of its historical valuation range';
-  }
-}
+const VALUATION_PHRASE: Record<Thesis, string> = {
+  accumulate:   'a historically attractive long-term valuation zone',
+  build:        'the lower half of its historical valuation range',
+  caution:      'the upper half of its historical valuation range',
+  distribution: 'territory that has historically coincided with late-cycle extension',
+};
+
+// The band label reads as a heading ("Hold / Build"), which is wrong mid-sentence.
+const REGIME_NOUN: Record<Thesis, string> = {
+  accumulate:   'accumulation',
+  build:        'lower-range',
+  caution:      'upper-range',
+  distribution: 'distribution-risk',
+};
+
+const CLOSING: Record<Thesis, string> = {
+  accumulate:
+    ' Taken together, the measured evidence sits closer to conditions that have historically preceded accumulation phases than to those preceding distribution, while noting that no combination of these indicators has ever identified a low in advance.',
+  build:
+    ' Taken together, the measured evidence sits below the midpoint of its historical range without reaching the depths that marked past cycle lows.',
+  caution:
+    ' Taken together, the measured evidence sits above the midpoint of its historical range without reaching the levels that marked past cycle tops.',
+  distribution:
+    ' Taken together, the measured evidence sits closer to conditions that have historically preceded distribution phases, though extended readings have persisted for long stretches in past cycles.',
+};
+
+const OUTLOOK_BASE: Record<Thesis, string> = {
+  accumulate:
+    'If current conditions persist, the historical pattern associated with these readings is a continued accumulation phase before any transition into recovery.',
+  build:
+    'If current conditions persist, the historical pattern associated with these readings is a market still in the lower half of its range, which historically has carried no consistent signal about when a transition arrives.',
+  caution:
+    'If current conditions persist, the historical pattern associated with these readings is a market in the upper half of its range, where risk has historically accumulated gradually rather than resolving quickly.',
+  distribution:
+    'If current conditions persist, the historical pattern associated with these readings is continued late-cycle extension, which in past cycles has preceded distribution.',
+};
 
 function balancePhrase(supporting: number, weakening: number): string {
   if (supporting === 0 && weakening === 0) return 'the evidence is currently inconclusive';
@@ -77,7 +107,7 @@ const deterministicComposer: NarrativeComposer = {
     const parts: string[] = [];
 
     parts.push(
-      `Bitcoin is currently in ${valuationPhrase(thesis)}, with a Skyline Cycle Score of ${Math.round(cycleScore)} ` +
+      `Bitcoin is currently in ${VALUATION_PHRASE[thesis]}, with a Skyline Cycle Score of ${Math.round(cycleScore)} ` +
       `out of 100 placing it in the ${THESIS_LABEL[thesis].toLowerCase()} band.`,
     );
 
@@ -115,30 +145,20 @@ const deterministicComposer: NarrativeComposer = {
     const weakNames = topWeakening.slice(0, 3).map((i) => i.label.toLowerCase());
 
     const opening = supNames.length
-      ? `The strongest evidence for the current ${THESIS_LABEL[thesis].toLowerCase()} reading comes from ${list(supNames)}.`
+      ? `The strongest evidence for the current ${REGIME_NOUN[thesis]} reading comes from ${list(supNames)}.`
       : `No indicator currently registers a strong reading in either direction.`;
 
     const counter = weakNames.length
       ? ` Working against it, ${list(weakNames)} ${weakNames.length === 1 ? 'sits' : 'sit'} on the opposite side of ${weakNames.length === 1 ? 'its' : 'their'} historical range.`
       : ' No indicator currently registers a meaningful reading on the opposite side.';
 
-    const closing = thesis === 'accumulation'
-      ? ' Taken together, the measured evidence sits closer to conditions that have historically preceded accumulation phases than to those preceding distribution — while noting that no combination of these indicators has ever identified a low in advance.'
-      : thesis === 'distribution'
-      ? ' Taken together, the measured evidence sits closer to conditions that have historically preceded distribution phases, though extended readings have persisted for long stretches in past cycles.'
-      : ' Taken together, the measured evidence does not currently favour either extreme, which historically has been the least informative state for this indicator set.';
-
-    return opening + counter + closing;
+    return opening + counter + CLOSING[thesis];
   },
 
   outlook(input) {
     const { thesis, bottomProbability, topWeakening } = input;
 
-    const base = thesis === 'accumulation'
-      ? `If current conditions persist, the historical pattern associated with these readings is a continued accumulation phase before any transition into recovery.`
-      : thesis === 'distribution'
-      ? `If current conditions persist, the historical pattern associated with these readings is continued late-cycle extension, which in past cycles has preceded distribution.`
-      : `If current conditions persist, the historical pattern associated with these readings offers little directional information in either direction.`;
+    const base = OUTLOOK_BASE[thesis];
 
     const qualifier = topWeakening.length
       ? ` This reading would weaken materially if ${list(topWeakening.slice(0, 2).map((i) => i.label.toLowerCase()))} deteriorate further.`
@@ -164,7 +184,7 @@ const deterministicComposer: NarrativeComposer = {
 
     out.push(
       `${ledger.supporting.length} of ${ledger.available.length} usable indicators support the ` +
-      `${THESIS_LABEL[thesis].toLowerCase()} reading.`,
+      `${REGIME_NOUN[thesis]} reading.`,
     );
 
     if (weeksSinceAth != null && medianWeeksToLow != null) {

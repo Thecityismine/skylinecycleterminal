@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
 import { useApiData } from "@/lib/hooks/useApiData";
-import type { CycleScoreResult } from "@/lib/indicators/skylineScore";
-import { fromCycleScore, buildEvidenceLedger, THESIS_LABEL } from "@/lib/research/evidence";
+import type { ResearchSummary } from "@/lib/research/summary";
 
-// Runs the real evidence engine over the live cycle score, so the preview on
-// the landing page is the same computation the report itself performs — not a
-// mock with invented numbers. `evidence.ts` is pure and imports only types,
-// which is what makes it safe to pull into a client component.
+// Every figure here is a projection of the actual report, served by
+// /api/research/summary. This card previously rebuilt the ledger client-side
+// from the cycle score alone, which weighted 11 indicators where the report
+// weights 19 — so the two surfaces could name different regimes on the same
+// day. Nothing in this file computes a reading any more.
 
 function extensionColor(e: number): string {
   if (e < 25) return "#3B82F6";
@@ -47,28 +47,22 @@ function Skeleton() {
 }
 
 export function DeepResearchPreview() {
-  const { data: cycle, loading } = useApiData<CycleScoreResult>("/api/cycle");
+  const { data: summary, loading } = useApiData<ResearchSummary>("/api/research/summary");
 
-  if (loading || !cycle) return <Skeleton />;
+  if (loading || !summary) return <Skeleton />;
 
-  const ledger = buildEvidenceLedger([fromCycleScore(cycle)]);
-  const rank = (a: { extension: number | null; weight: number }, b: { extension: number | null; weight: number }) =>
-    Math.abs((b.extension ?? 50) - 50) * b.weight - Math.abs((a.extension ?? 50) - 50) * a.weight;
-
-  const supporting = [...ledger.supporting].sort(rank).slice(0, 4);
-  const weakening = [...ledger.weakening].sort(rank).slice(0, 4);
-
-  const accent = extensionColor(ledger.weightedExtension);
+  const { supporting, weakening } = summary;
+  const accent = extensionColor(summary.weightedExtension);
 
   // A count of zero is a neutral fact, not a warning — colouring it red reads as
   // an alarm when it means the opposite.
   const countColor = (n: number, active: string) => (n === 0 ? "var(--sct-muted)" : active);
 
   const tiles = [
-    { label: "Skyline Cycle Score", value: `${Math.round(cycle.score)}`, sub: cycle.zoneLabel, color: cycle.zoneColor },
-    { label: "Current Regime", value: THESIS_LABEL[ledger.thesis], sub: `${ledger.available.length} indicators read`, color: accent },
-    { label: "Supporting", value: `${ledger.supporting.length}`, sub: "aligned with the reading", color: countColor(ledger.supporting.length, "#35D07F") },
-    { label: "Weakening", value: `${ledger.weakening.length}`, sub: "pointing the other way", color: countColor(ledger.weakening.length, "#FF5C5C") },
+    { label: "Skyline Cycle Score", value: `${Math.round(summary.cycleScore)}`, sub: summary.zoneLabel, color: summary.zoneColor },
+    { label: "Current Regime", value: summary.thesisLabel, sub: `${summary.indicatorsRead} indicators read`, color: accent },
+    { label: "Supporting", value: `${summary.supportingCount}`, sub: "aligned with the reading", color: countColor(summary.supportingCount, "#35D07F") },
+    { label: "Weakening", value: `${summary.weakeningCount}`, sub: "pointing the other way", color: countColor(summary.weakeningCount, "#FF5C5C") },
   ];
 
   return (
@@ -160,10 +154,10 @@ export function DeepResearchPreview() {
         </div>
       </div>
 
-      {ledger.gaps.length > 0 && (
+      {summary.gapCount > 0 && (
         <p className="text-[11px] mt-6 pt-4" style={{ color: "var(--sct-muted)", borderTop: "1px solid var(--sct-border)" }}>
-          {ledger.gaps.length} tracked indicator{ledger.gaps.length === 1 ? "" : "s"} unavailable right now and excluded from every
-          figure above. The report lists {ledger.gaps.length === 1 ? "it" : "them"} rather than hiding {ledger.gaps.length === 1 ? "it" : "them"}.
+          {summary.gapCount} tracked indicator{summary.gapCount === 1 ? "" : "s"} unavailable right now and excluded from every
+          figure above. The report lists {summary.gapCount === 1 ? "it" : "them"} rather than hiding {summary.gapCount === 1 ? "it" : "them"}.
         </p>
       )}
     </Link>

@@ -14,6 +14,10 @@ import type { Observation } from '@/lib/store/observations';
 // So there is exactly one computation and this file projects it. Any new metric
 // worth storing should be added to the report first and picked up here, never
 // fetched independently.
+//
+// lib/research/summary.ts is the same decision made for the landing preview,
+// and records what it cost to learn: the preview built its own ledger and could
+// name a different regime than the report on the same day.
 
 // ─── Metric ids ───────────────────────────────────────────────────────────────
 

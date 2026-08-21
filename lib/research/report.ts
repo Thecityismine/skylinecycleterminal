@@ -14,7 +14,7 @@ import {
 import type { ActiveCyclePosition, CompletedCycleStats } from '@/lib/indicators/cycleAnchors';
 import {
   fromCycleScore, fromValuation, fromMacro, fromTiming,
-  buildEvidenceLedger, directionOf, THESIS_LABEL,
+  buildEvidenceLedger, directionOf, regimeSide, THESIS_LABEL,
 } from '@/lib/research/evidence';
 import type { EvidenceLedger, EvidenceItem, Thesis } from '@/lib/research/evidence';
 import { getComposer } from '@/lib/research/narrative';
@@ -290,11 +290,13 @@ function contrarianRisks(thesis: Thesis, weakening: EvidenceItem[]): string[] {
   risks.push('A large exchange or lender failure forces distressed selling independent of valuation.');
   risks.push('Regulatory action materially changes access or custody for a major market.');
 
-  if (thesis === 'accumulation') {
-    risks.push('Valuation floors are reference levels, not support: price has traded through every one of them at some point in its history.');
-  } else if (thesis === 'distribution') {
-    risks.push('Extended readings have persisted for many months in past cycles without resolving downward.');
-  }
+  // Keyed on the side rather than the exact band, so the two middle bands get a
+  // tailored risk instead of falling through to none.
+  risks.push(
+    regimeSide(thesis) === 'cold'
+      ? 'Valuation floors are reference levels, not support: price has traded through every one of them at some point in its history.'
+      : 'Extended readings have persisted for many months in past cycles without resolving downward.',
+  );
 
   risks.push('Four completed cycles is a small sample. Every timing figure here rests on it.');
 

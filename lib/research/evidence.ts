@@ -1,4 +1,5 @@
-import type { CycleScoreResult }   from '@/lib/indicators/skylineScore';
+import { ZONE_CONFIG, zoneFromScore } from '@/lib/indicators/skylineScore';
+import type { CycleScoreResult, ScoreZone } from '@/lib/indicators/skylineScore';
 import type { ValueFloorPoint, FloorProximityScore } from '@/lib/indicators/valueFloors';
 import type { ActiveCyclePosition, CompletedCycleStats } from '@/lib/indicators/cycleAnchors';
 import type { MacroResponse }      from '@/lib/api/fred';
@@ -43,7 +44,16 @@ export type EvidenceItem = {
   gapReason?:    string;          // why it could not be computed
 };
 
-export type Thesis = 'accumulation' | 'neutral' | 'distribution';
+// ─── Regime ───────────────────────────────────────────────────────────────────
+//
+// The regime names the same four bands as the Skyline Cycle Score, cut at the
+// same thresholds, because both are read off a 0–100 axis running value →
+// extension and the landing page shows them side by side. They used to
+// disagree: the regime cut at 40/65 while the score cuts at 25/50/75, so a
+// weighted extension of 28 was labelled "Accumulation" directly beneath a score
+// of 25 labelled "Hold / Build", and the report's own summary line claimed a
+// score of 25 sat "in the accumulation band" when it does not.
+export type Thesis = ScoreZone;
 
 export type EvidenceLedger = {
   items:              EvidenceItem[];
@@ -80,27 +90,35 @@ function fromFloorComponent(floorScore: number): number {
 }
 
 export function thesisFromExtension(extension: number): Thesis {
-  if (extension < 40) return 'accumulation';
-  if (extension < 65) return 'neutral';
-  return 'distribution';
+  return zoneFromScore(extension);
 }
 
+// The band labels are the score's own, not a parallel set of names.
 export const THESIS_LABEL: Record<Thesis, string> = {
-  accumulation: 'Accumulation',
-  neutral:      'Neutral / Transitional',
-  distribution: 'Distribution Risk',
+  accumulate:   ZONE_CONFIG.accumulate.label,
+  build:        ZONE_CONFIG.build.label,
+  caution:      ZONE_CONFIG.caution.label,
+  distribution: ZONE_CONFIG.distribution.label,
 };
 
-// An item supports the thesis when it points the same way the thesis does.
+// Which way a reading points, coarser than the four bands. Direction has to be
+// judged on this rather than on band equality: an item at 10 and a regime of
+// 'build' fall in different bands but both point cold, and filing that item as
+// counter-evidence would invert its meaning.
+export type RegimeSide = 'cold' | 'hot';
+
+export function regimeSide(thesis: Thesis): RegimeSide {
+  return thesis === 'accumulate' || thesis === 'build' ? 'cold' : 'hot';
+}
+
+// An item supports the reading when it points the same way the reading does.
 // Items sitting in the middle of their own range are neutral regardless.
 export function directionOf(item: EvidenceItem, thesis: Thesis): EvidenceDirection {
   if (!item.available || item.extension == null) return 'neutral';
   const e = item.extension;
   if (e >= 42 && e <= 58) return 'neutral';
-  const itemSide: Thesis = thesisFromExtension(e);
-  if (itemSide === 'neutral') return 'neutral';
-  if (thesis === 'neutral')   return 'neutral';
-  return itemSide === thesis ? 'supports' : 'weakens';
+  const itemSide: RegimeSide = e < 50 ? 'cold' : 'hot';
+  return itemSide === regimeSide(thesis) ? 'supports' : 'weakens';
 }
 
 // ─── Builders ─────────────────────────────────────────────────────────────────

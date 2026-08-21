@@ -94,7 +94,11 @@ function signalLabel(score: number): string {
   return 'Sell';
 }
 
-function zoneFromScore(score: number): ScoreZone {
+// Also the cut points for the research report's regime — lib/research/evidence.ts
+// calls this rather than keeping its own thresholds, because the landing page
+// shows the score band and the regime beside each other and they used to
+// disagree. Moving a threshold here moves it in both places.
+export function zoneFromScore(score: number): ScoreZone {
   if (score < 25) return 'accumulate';
   if (score < 50) return 'build';
   if (score < 75) return 'caution';
