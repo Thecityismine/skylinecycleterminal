@@ -106,3 +106,36 @@ export const dailySnapshot = onSchedule(
     console.log('[dailySnapshot]', body.slice(0, 500));
   }
 );
+
+// Daily EDGAR candidate pull for the Institutional Adoption Index.
+//
+// Runs at 07:00 Eastern, before the snapshot, so anything filed overnight is
+// waiting by the time the day starts. Same arrangement as dailySnapshot: the
+// Next app owns the query and the write, this only triggers it.
+//
+// A failure here is less serious than a missed snapshot. The route re-covers a
+// trailing window rather than only yesterday, so one bad morning is picked up
+// by the next run rather than leaving a permanent hole.
+export const dailyEdgarPull = onSchedule(
+  {
+    schedule: '0 7 * * *',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/edgar`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`edgar pull failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[dailyEdgarPull]', body.slice(0, 500));
+  }
+);

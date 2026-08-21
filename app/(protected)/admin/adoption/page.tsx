@@ -7,6 +7,8 @@ import {
 } from '@/lib/adoption/initiatives';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { AdoptionEditor } from '@/components/admin/AdoptionEditor';
+import { EdgarCandidates } from '@/components/admin/EdgarCandidates';
+import { listCandidates, type Candidate } from '@/lib/adoption/edgar';
 
 // Institutional Adoption Index, admin surface.
 //
@@ -31,6 +33,15 @@ export default async function AdoptionAdminPage() {
     initiatives = await listInitiatives();
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
+  }
+
+  // The feed is a convenience, so it fails quietly. A missing composite index
+  // on the candidate collection should not take down the index itself.
+  let candidates: Candidate[] = [];
+  try {
+    candidates = await listCandidates('new');
+  } catch {
+    candidates = [];
   }
 
   const series = buildIndexSeries(initiatives);
@@ -79,6 +90,8 @@ export default async function AdoptionAdminPage() {
           </div>
 
           <AdoptionEditor initiatives={initiatives} />
+
+          <EdgarCandidates candidates={candidates} />
 
           {byVerification.length > 0 && <VerificationTable rows={byVerification} total={weighted} />}
           {byChain.length > 0 && <ChainTable rows={byChain} />}

@@ -48,6 +48,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── EDGAR candidate feed ─────────────────────────────────────────────────
+    // SEC full-text search results awaiting review for the Adoption Index.
+    // Written by app/api/cron/edgar and triaged through app/api/adoption/
+    // candidates, both via firebase-admin. Nothing here is classified data yet,
+    // but it is closed like everything else: the client SDK has no business
+    // reading the research pipeline.
+    match /edgar_candidates/{candidateId} {
+      allow read, write: if false;
+    }
+
     // ── Subscriber entitlement records ───────────────────────────────────────
     // Written only by server-side code (firebase-admin, which bypasses rules
     // entirely) — via webhooks and the auth session route. The client SDK never

@@ -33,6 +33,21 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "//": "listCandidates() filters by status and orders by filing date.",
+      "collectionGroup": "edgar_candidates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fileDate",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
