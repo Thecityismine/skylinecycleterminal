@@ -8,45 +8,77 @@ const BROWSER_UA =
 type Credentials = { crumb: string; cookie: string; ts: number };
 let credCache: Credentials | null = null;
 
+// Collect Set-Cookie off a response. getSetCookie() returns an array (Node
+// 18.14+); fall back to splitting the folded header for older runtimes.
+function cookieHeaderFrom(res: Response): string {
+  const raw: string[] =
+    (res.headers as unknown as { getSetCookie?: () => string[] }).getSetCookie?.() ??
+    (res.headers.get('set-cookie') ?? '').split(/,(?=[^\s])/).map((s) => s.trim());
+
+  return raw.map((s) => s.split(';')[0].trim()).filter(Boolean).join('; ');
+}
+
+// Cookie sources, in order of preference.
+//
+// fc.yahoo.com answers 404 and sets the A3 session cookie with no consent
+// interstitial, which is the only reason it is here. finance.yahoo.com used to
+// work and no longer does from most regions: it 302s to
+// consent.yahoo.com/v2/collectConsent, and following that redirect leaves us
+// with no usable cookie, an empty Cookie header, a 401 from getcrumb, and the
+// JSON error body landing in `crumb`. Every equities route 500'd on that.
+// Kept as a fallback in case the consent wall is not served everywhere.
+const COOKIE_SOURCES = [
+  'https://fc.yahoo.com/',
+  'https://finance.yahoo.com/',
+];
+
+async function fetchCrumb(cookie: string): Promise<string> {
+  const res = await fetch('https://query2.finance.yahoo.com/v1/test/getcrumb', {
+    headers: { 'User-Agent': BROWSER_UA, 'Cookie': cookie, 'Accept': '*/*' },
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) return '';
+  return (await res.text()).trim();
+}
+
+function usableCrumb(crumb: string): boolean {
+  return !!crumb && !crumb.includes('<') && !crumb.includes('{') && crumb.length <= 30;
+}
+
 async function getCredentials(): Promise<Credentials> {
   if (credCache && Date.now() - credCache.ts < 3_600_000) return credCache;
 
-  const homeRes = await fetch('https://finance.yahoo.com/', {
-    headers: {
-      'User-Agent': BROWSER_UA,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-    },
-    signal: AbortSignal.timeout(20_000),
-    redirect: 'follow',
-  });
+  let lastSeen = '';
 
-  // getSetCookie() returns an array (Node 18.14+); fall back to .get() string
-  const rawArr: string[] =
-    (homeRes.headers as any).getSetCookie?.() ??
-    (homeRes.headers.get('set-cookie') ?? '').split(/,(?=[^\s])/).map((s: string) => s.trim());
+  for (const source of COOKIE_SOURCES) {
+    let cookie: string;
+    try {
+      const res = await fetch(source, {
+        headers: {
+          'User-Agent': BROWSER_UA,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+        },
+        signal: AbortSignal.timeout(20_000),
+        redirect: 'follow',
+      });
+      cookie = cookieHeaderFrom(res);
+    } catch {
+      continue;
+    }
 
-  const cookie = rawArr
-    .map((s: string) => s.split(';')[0].trim())
-    .filter(Boolean)
-    .join('; ');
+    if (!cookie) continue;
 
-  const crumbRes = await fetch(
-    'https://query2.finance.yahoo.com/v1/test/getcrumb',
-    {
-      headers: { 'User-Agent': BROWSER_UA, 'Cookie': cookie, 'Accept': '*/*' },
-      signal: AbortSignal.timeout(10_000),
-    },
-  );
-  const crumb = (await crumbRes.text()).trim();
-
-  if (!crumb || crumb.includes('<') || crumb.length > 30) {
-    throw new Error(`Yahoo crumb invalid (${crumb.slice(0, 40)})`);
+    const crumb = await fetchCrumb(cookie);
+    if (usableCrumb(crumb)) {
+      credCache = { crumb, cookie, ts: Date.now() };
+      return credCache;
+    }
+    lastSeen = crumb || lastSeen;
   }
 
-  credCache = { crumb, cookie, ts: Date.now() };
-  return credCache;
+  throw new Error(`Yahoo crumb invalid (${lastSeen.slice(0, 40)})`);
 }
 
 // ── Weekly price history ──────────────────────────────────────────────────────
