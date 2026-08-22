@@ -126,7 +126,7 @@ function IssuerTable({ points, source }: { points: EtfFlowPoint[]; source: EtfFl
             <th className="text-left pb-2 pr-4">ETF</th>
             <th className="text-left pb-2 pr-4">Issuer</th>
             <th className="text-right pb-2 pr-4">Daily Flow</th>
-            <th className="text-right pb-2">{hasIssuerHistory ? '30D Flow' : 'Today Only'}</th>
+            {hasIssuerHistory && <th className="text-right pb-2">30D Flow</th>}
           </tr>
         </thead>
         <tbody>
@@ -139,9 +139,11 @@ function IssuerTable({ points, source }: { points: EtfFlowPoint[]; source: EtfFl
               <td className="py-2 pr-4 text-right" style={{ color: flowColor(r.daily) }}>
                 {fmtFlow(r.daily)}
               </td>
-              <td className="py-2 text-right" style={{ color: flowColor(hasIssuerHistory ? r.flow30d : r.daily) }}>
-                {hasIssuerHistory ? fmtFlow(r.flow30d) : '—'}
-              </td>
+              {hasIssuerHistory && (
+                <td className="py-2 text-right" style={{ color: flowColor(r.flow30d) }}>
+                  {fmtFlow(r.flow30d)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
