@@ -185,17 +185,35 @@ async function tryFetch(url: string, timeout = 8000): Promise<string | null> {
   }
 }
 
+// Negative cache for the Farside attempt.
+//
+// A failed fetch is not stored in the Next data cache, so every render used to
+// re-run the whole ladder: Cloudflare 403s the direct call in under a second,
+// but a dead CORS proxy then burns its full timeout, and /etf-flows spent ~9s
+// per request discovering the same failure. Remember the failure instead and go
+// straight to SoSoValue until it is worth another try.
+const FARSIDE_RETRY_MS = 30 * 60_000;
+let farsideFailedAt = 0;
+
 async function fetchFarsideHtml(): Promise<string> {
+  if (Date.now() - farsideFailedAt < FARSIDE_RETRY_MS) {
+    throw new Error('Farside skipped — recent failure still cached');
+  }
+
+  const usable = (html: string | null) =>
+    !!html && html.length > 5000 && html.includes('IBIT');
+
   // 1. Direct fetch (works when running on Edge/Cloudflare; blocked from AWS Lambda)
   const direct = await tryFetch(FARSIDE_URL, 10000);
-  if (direct && direct.length > 5000 && direct.includes('IBIT')) return direct;
+  if (usable(direct)) return direct!;
 
   // 2. External CORS proxies as fallback
   for (const proxy of CORS_PROXIES) {
-    const html = await tryFetch(proxy, 8000);
-    if (html && html.length > 5000 && html.includes('IBIT')) return html;
+    const html = await tryFetch(proxy, 5000);
+    if (usable(html)) return html!;
   }
 
+  farsideFailedAt = Date.now();
   throw new Error('All Farside fetch strategies failed');
 }
 
@@ -224,7 +242,7 @@ export async function fetchEtfFlows(): Promise<EtfFlowsResult> {
       })),
     };
   } catch (err) {
-    console.error('[etfFlows] Farside fetch failed, falling back to SoSoValue:', err);
+    console.warn('[etfFlows] Farside unavailable, using SoSoValue:', (err as Error).message);
     try {
       const flows = await fetchSoSoValueEtfFlows();
       return { source: 'sosovalue', flows };
