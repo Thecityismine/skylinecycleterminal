@@ -4,6 +4,7 @@ import { NUPLChartSection } from '@/components/charts/NUPLChartSection';
 import { PageHeader }        from '@/components/dashboard/PageHeader';
 import { StatCard }          from '@/components/dashboard/StatCard';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 function fmtUSD(v: number | null | undefined): string {
@@ -79,13 +80,9 @@ export default async function NUPLPage() {
 
       {/* ── Stat cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={fmtUSD(current.price)}
-          sub="Latest daily close"
+        <BtcPriceStat
+          close={current.price}
           accent="#F7931A"
-          freshness="daily"
-          source="CoinMetrics"
         />
         <StatCard
           label="NUPL"

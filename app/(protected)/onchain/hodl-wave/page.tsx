@@ -9,6 +9,7 @@ import { BTCHodlWaveChartSection } from '@/components/charts/BTCHodlWaveChartSec
 import { PageHeader }       from '@/components/dashboard/PageHeader';
 import { StatCard }         from '@/components/dashboard/StatCard';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -152,10 +153,8 @@ export default async function HodlWavePage() {
       {/* ── BTC price + current level ──────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard
-            label="BTC Price"
-            value={fmtUSD(last.btcClose)}
-            sub="Current"
+          <BtcPriceStat
+            close={last.btcClose}
             accent="rgba(230,237,243,0.8)"
           />
           <StatCard

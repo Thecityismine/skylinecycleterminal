@@ -11,6 +11,7 @@ import { BTC100WChartSection }  from '@/components/charts/BTC100WChartSection';
 import { PageHeader }           from '@/components/dashboard/PageHeader';
 import { StatCard }             from '@/components/dashboard/StatCard';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -114,13 +115,9 @@ export default async function BTC100WMAPage() {
       {/* ── Stat cards ──────────────────────────────────────────────────── */}
       {last && (
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <StatCard
-            label="BTC Price"
-            value={fmtUSD(last.close)}
-            sub={last.time}
+          <BtcPriceStat
+            close={last.close}
             accent="#F7931A"
-            freshness="daily"
-            source="CoinMetrics"
           />
           <StatCard
             label="100-Week MA"

@@ -5,6 +5,7 @@ import { PageHeader }          from '@/components/dashboard/PageHeader';
 import { StatCard }            from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 function fmtUSD(v: number | null): string {
@@ -63,12 +64,9 @@ export default async function PowerLawPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={fmtUSD(stats?.price ?? null)}
-          sub="Latest close"
+        <BtcPriceStat
+          close={stats?.price ?? null}
           accent="var(--sct-text)"
-          freshness="daily"
         />
         <StatCard
           label="Fair Value"

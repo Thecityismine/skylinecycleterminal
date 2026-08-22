@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // O(n) sliding window MA — avoids nested loops on large arrays
@@ -83,12 +84,9 @@ export default async function RealizedPricePage() {
 
       {/* Stat row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard
-          label="BTC Price"
-          value={fmtUSD(currentPrice)}
+        <BtcPriceStat
+          close={currentPrice}
           accent="var(--sct-btc)"
-          freshness="daily"
-          source="CoinMetrics"
         />
         <StatCard
           label="200-Week MA"

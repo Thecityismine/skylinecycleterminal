@@ -11,6 +11,7 @@ import { useApiData } from '@/lib/hooks/useApiData';
 import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 // ── API response type ─────────────────────────────────────────────────────────
 type ChartPoint = {
   time:   string;
@@ -225,6 +226,9 @@ function SlopeIndicator({ value, label }: { value: number | null; label: string 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function GoldenDeathCrossPage() {
   const { data, loading, error } = useApiData<ApiResponse>('/api/price/golden-death-cross');
+  // Live spot for the price stat, so the page agrees with the card generated
+  // from it. The moving averages stay on daily closes.
+  const { price: livePrice } = useLiveSpot();
 
   const [range,     setRange]     = useState<RangeKey>('2Y');
   const [timeframe, setTimeframe] = useState<TimeframeKey>('daily');
@@ -315,7 +319,8 @@ export default function GoldenDeathCrossPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard
           label="BTC Price"
-          value={fmtPrice(current.price)}
+          value={fmtPrice(livePrice ?? current.price)}
+          sub={livePrice != null ? 'Live spot' : 'Latest close'}
           color="#F7931A"
         />
         <StatCard

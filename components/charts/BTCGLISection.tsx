@@ -96,7 +96,7 @@ export function BTCGLISection({ btcPrices, gliRaw }: Props) {
     <div className="space-y-4">
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-        <StatCard label="BTC Price" value={fmtPrice(current.btcPrice)} sub="Latest close" accent="#F7931A" freshness="daily" />
+        <StatCard label="BTC Price" value={fmtPrice(livePrice ?? current.btcPrice)} sub={livePrice != null ? 'Live spot' : 'Latest close'} accent="#F7931A" freshness={livePrice != null ? 'live' : 'daily'} />
         <StatCard label="GLI (Shifted)" value={current.gli != null ? current.gli.toFixed(1) : '—'} sub={`${current.gliTrend} phase`} accent="var(--sct-text)" freshness="daily" />
         <StatCard label="Active Lag" value={`${current.lagDays}D`} sub="Forward shift" accent="var(--sct-text)" />
         <StatCard

@@ -3,6 +3,7 @@ import { PageHeader }                 from '@/components/dashboard/PageHeader';
 import { StatCard }                   from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow }   from '@/components/dashboard/InsightPanel';
 import { BTCDrawdownPageClient }      from '@/components/charts/BTCDrawdownPageClient';
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 import {
   calculateDrawdownFromATH,
   getDrawdownRegime,
@@ -85,10 +86,8 @@ export default async function BTCDrawdownPage() {
           accent="var(--sct-text)"
           freshness="daily"
         />
-        <StatCard
-          label="BTC Price"
-          value={fmtUSD(currentPrice)}
-          sub={`Recovery to ATH: ${fmtPct(recovery, 1)}`}
+        <BtcPriceStat
+          close={currentPrice}
           accent="#F7931A"
         />
         <StatCard

@@ -15,6 +15,7 @@ import { BTCBottomConfluenceChartSection } from '@/components/charts/BTCBottomCo
 import { StatCard } from '@/components/dashboard/StatCard';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -197,11 +198,8 @@ export default async function BottomConfluencePage() {
 
       {/* Quick stat row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={fmtPrice(last.btcClose)}
-          source="CoinMetrics"
-          freshness="daily"
+        <BtcPriceStat
+          close={last.btcClose}
           accent="#E6EDF3"
         />
         <StatCard

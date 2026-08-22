@@ -4,6 +4,7 @@ import { StatCard }              from '@/components/dashboard/StatCard';
 import { PiCycleChartSection }  from '@/components/charts/PiCycleChartSection';
 import type { PiBottomPoint }   from '@/components/charts/PiCycleBottomChart';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -199,12 +200,9 @@ export default async function PiCycleBottomPage() {
 
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={fmtUSD(currentPrice)}
-          sub="Latest close"
+        <BtcPriceStat
+          close={currentPrice}
           accent="var(--sct-text)"
-          freshness="daily"
         />
         <StatCard
           label="150-Day MA"

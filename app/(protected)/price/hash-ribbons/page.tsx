@@ -4,6 +4,7 @@ import { StatCard }                 from '@/components/dashboard/StatCard';
 import { HashRibbonChartSection }  from '@/components/charts/HashRibbonChartSection';
 import type { HRPoint }            from '@/components/charts/HashRibbonChart';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -227,12 +228,9 @@ export default async function HashRibbonsPage() {
 
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={fmtUSD(currentPrice)}
-          sub="Latest close"
+        <BtcPriceStat
+          close={currentPrice}
           accent="var(--sct-text)"
-          freshness="daily"
         />
         <StatCard
           label="30-Day MA"

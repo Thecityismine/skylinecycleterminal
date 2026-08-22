@@ -6,6 +6,7 @@ import { CDDChart } from '@/components/charts/CDDChart';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────
@@ -144,13 +145,9 @@ export default async function CycleMasterPage() {
           : 'Not available';
         return (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            <StatCard
-              label="BTC Price"
-              value={fmtUSD(last.price)}
-              sub="Current market price"
+            <BtcPriceStat
+              close={last.price}
               accent="#F7931A"
-              freshness="daily"
-              source="CoinMetrics"
             />
             <StatCard
               label="MVRV Ratio"

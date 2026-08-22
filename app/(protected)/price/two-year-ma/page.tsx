@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { InsightPanel, InsightRow } from "@/components/dashboard/InsightPanel";
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 export const dynamic = 'force-dynamic';
 
 export default async function TwoYearMAPage() {
@@ -97,12 +98,9 @@ export default async function TwoYearMAPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={fmt(latestPrice)}
-          sub="Latest close"
+        <BtcPriceStat
+          close={latestPrice}
           accent="var(--sct-text)"
-          freshness="daily"
         />
         <StatCard
           label="2-Year MA"

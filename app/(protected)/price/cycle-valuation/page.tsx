@@ -7,6 +7,7 @@ import { ValuationDeviationChartSection } from '@/components/charts/ValuationDev
 import { ZONE_META, halvingColor } from '@/lib/indicators/valuationCycle';
 import type { ValuationPoint, ValuationZone, CyclePosition } from '@/lib/indicators/valuationCycle';
 
+import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
 type CurrentSnapshot = {
   time:                 string;
   close:                number;
@@ -84,13 +85,9 @@ export default function CycleValuationPage() {
 
       {/* Stat row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
-          label="BTC Price"
-          value={loading ? '…' : fmtUSD(current?.close)}
-          sub="Latest daily close"
-          accent="#F7931A"
-          freshness="daily"
-        />
+        {loading
+          ? <StatCard label="BTC Price" value="…" sub="Latest daily close" accent="#F7931A" freshness="daily" />
+          : <BtcPriceStat close={current?.close ?? null} accent="#F7931A" />}
         <StatCard
           label="200D Moving Average"
           value={loading ? '…' : fmtUSD(current?.ma200)}
