@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 import { BTCSoprChart }    from '@/components/charts/BTCSoprChart';
 import { SoprShareModal }  from '@/components/share/SoprShareModal';
 import type { SoprPoint }  from '@/lib/indicators/sopr';
@@ -26,6 +27,10 @@ export function BTCSoprChartSection({
   points, regimeLabel, regimeColor,
   rawSopr, soprDev, sma30, sma90, btcClose,
 }: Props) {
+  // Live spot for the card headline. The chart itself stays on daily closes,
+  // because MVRV cannot be computed from a live tick.
+  const { price: livePrice } = useLiveSpot();
+
   // Mirror toggle defaults from BTCSoprChart
   const [showPrice,   setShowPrice]   = useState(true);
   const [showSma30,   setShowSma30]   = useState(false);
@@ -67,6 +72,8 @@ export function BTCSoprChartSection({
     sma30,
     sma90,
     btcClose,
+    livePrice,
+    dataAsOf: points[points.length - 1]?.time ?? null,
     generatedAt: new Date().toISOString(),
   };
 

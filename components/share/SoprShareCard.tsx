@@ -21,6 +21,13 @@ export type SoprSharePayload = {
   sma30:       number | null;
   sma90:       number | null;
   btcClose:    number | null;
+  /** Live spot at the moment the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published at noon showing
+   *  only the close reads as wrong to anyone who checks. */
+  livePrice?:  number | null;
+  /** YYYY-MM-DD of the newest point in the series, so the card can say which
+   *  close its indicator values were computed from. */
+  dataAsOf?:   string | null;
   generatedAt: string;
   logoSrc?:    never;
 };
@@ -69,17 +76,28 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
     points, showPrice, showSma30, showSma90, showShading,
     regimeLabel, regimeColor,
     rawSopr, soprDev, sma90, btcClose,
+    livePrice, dataAsOf,
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  // Stamped with the date of the data, not the moment the card was rendered.
+  // Those differ by a day for most of every day, and a card headed "Aug 22"
+  // showing Aug 21's close is the thing that makes a reader distrust the chart.
+  const asOfIso = dataAsOf ?? points[points.length - 1]?.time ?? null;
+  const dateStr = new Date((asOfIso ?? generatedAt).slice(0, 10) + 'T00:00:00Z')
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+
+  const closeDate = asOfIso
+    ? new Date(asOfIso.slice(0, 10) + 'T00:00:00Z')
+        .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+    : null;
 
   const devColor = soprDev == null ? '#94A3B8' : soprDev >= 0 ? '#35D07F' : '#F85149';
 
   const stats = [
-    { label: 'BTC Price',        value: fmtUSD(btcClose), sub: 'Latest close',          color: '#E6EDF3'    },
+    livePrice != null
+      ? { label: 'BTC Price', value: fmtUSD(livePrice), sub: 'Live spot', color: '#E6EDF3' }
+      : { label: 'BTC Price', value: fmtUSD(btcClose), sub: closeDate ? `${closeDate} close` : 'Latest close', color: '#E6EDF3' },
     { label: 'MVRV Ratio',       value: fmt3(rawSopr),    sub: (rawSopr ?? 0) >= 1 ? 'Above break-even' : 'Below break-even', color: devColor },
     { label: 'MVRV Deviation',   value: soprDev != null ? `${soprDev >= 0 ? '+' : ''}${soprDev.toFixed(3)}` : '—',
                                   sub: soprDev != null ? (soprDev >= 0 ? 'Net profit territory' : 'Net loss territory') : '—', color: devColor },
