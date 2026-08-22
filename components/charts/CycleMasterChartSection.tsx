@@ -7,6 +7,7 @@ import type { CycleMasterPoint }  from '@/lib/indicators/cycleMaster';
 import type { Range }             from '@/components/charts/CycleMasterChart';
 import type { CycleMasterSharePayload } from '@/components/share/CycleMasterShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 const DAYS: Record<Range, number> = { '4Y': 1460, '8Y': 2920, 'All': Infinity };
 
@@ -41,6 +42,8 @@ export function CycleMasterChartSection({
     return displayed.filter(d => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end);
   }, [displayed, zoomDomain]);
 
+  const { price: livePrice } = useLiveSpot();
+
   const sharePayload: CycleMasterSharePayload = {
     data: shareData,
     range,
@@ -52,6 +55,7 @@ export function CycleMasterChartSection({
     score,
     scoreLabel,
     scoreColor,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

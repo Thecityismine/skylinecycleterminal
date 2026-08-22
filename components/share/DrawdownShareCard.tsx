@@ -22,6 +22,7 @@ export type DrawdownSharePayload = {
   currentCycleMax: number;
   regimeLabel:     string;
   regimeColor:     string;
+  livePrice?:      number | null;
   generatedAt:     string;
   logoSrc?:        never;
 };
@@ -67,7 +68,7 @@ export function DrawdownShareCard({ payload }: { payload: DrawdownSharePayload }
   const {
     data, timeframe, showHalvings, showCycles,
     currentDD, currentATH, currentPrice, athDate, daysSinceATH, recovery,
-    regimeLabel, regimeColor, } = payload;
+    regimeLabel, regimeColor, livePrice, } = payload;
 
   const dateStr = formatCardDate(payload);
 
@@ -89,8 +90,8 @@ export function DrawdownShareCard({ payload }: { payload: DrawdownSharePayload }
     },
     {
       label: 'BTC Price',
-      value: fmtUSD(currentPrice),
-      sub:   recovery < 0.1 ? 'At all-time high' : `+${recovery.toFixed(1)}% to ATH`,
+      value: fmtUSD(livePrice ?? currentPrice),
+      sub:   `${livePrice != null ? 'Live spot' : 'Latest close'} · ${recovery < 0.1 ? 'at all-time high' : `+${recovery.toFixed(1)}% to ATH`}`,
       color: '#F7931A',
     },
     {

@@ -16,6 +16,7 @@ export type NUPLSharePayload = {
   zoneLabel:  string;
   zoneColor:  string;
   zone:       string;
+  livePrice?: number | null;
   generatedAt: string;
   logoSrc?:   never;
 };
@@ -68,7 +69,7 @@ function fmtUSD(v: number | null): string {
 }
 
 export function NUPLShareCard({ payload }: { payload: NUPLSharePayload }) {
-  const { points, nupl, price, ma730, zoneLabel, zoneColor, zone } = payload;
+  const { points, nupl, price, ma730, zoneLabel, zoneColor, zone, livePrice } = payload;
 
   const dateStr = formatCardDate(payload);
 
@@ -77,7 +78,7 @@ export function NUPLShareCard({ payload }: { payload: NUPLSharePayload }) {
     : '#94A3B8';
 
   const stats = [
-    { label: 'BTC Price',     value: fmtUSD(price),                           sub: 'Current price',      color: '#E6EDF3'  },
+    { label: 'BTC Price',     value: fmtUSD(livePrice ?? price),              sub: livePrice != null ? 'Live spot' : 'Latest close', color: '#E6EDF3'  },
     { label: 'NUPL',          value: nupl != null ? nupl.toFixed(3) : '—',    sub: zone,                 color: zoneColor  },
     { label: 'Market Zone',   value: zone,                                     sub: zoneLabel,            color: zoneColor  },
     { label: '2Y MA (Proxy)', value: ma730 != null ? fmtUSD(ma730) : '—',     sub: ma730 != null && price != null ? (price < ma730 ? 'Below cost basis' : 'Above cost basis') : '—', color: ma730Color },

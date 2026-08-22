@@ -6,6 +6,7 @@ import { ValueFloorShareModal }   from '@/components/share/ValueFloorShareModal'
 import type { ValueFloorPoint }   from '@/lib/indicators/valueFloors';
 import type { ValueFloorSharePayload } from '@/components/share/ValueFloorShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 type Range = '4Y' | '8Y' | 'All';
 const RANGES: Range[] = ['4Y', '8Y', 'All'];
@@ -66,6 +67,8 @@ export function BTCValueFloorChartSection({
     return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
   }, [zoomFiltered]);
 
+  const { price: livePrice } = useLiveSpot();
+
   const sharePayload: ValueFloorSharePayload = {
     points: downsampled,
     visible,
@@ -77,6 +80,7 @@ export function BTCValueFloorChartSection({
     deltaPrice,
     vsDeltaPct,
     drawdownPct,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

@@ -7,6 +7,7 @@ import { BTC100WMAShareModal } from '@/components/share/BTC100WMAShareModal';
 import type { BTC100WMASharePayload } from '@/components/share/BTC100WMAShareCard';
 import type { WeeklyPoint, RegimeSegment, MATrendScore } from '@/lib/indicators/weeklyMA';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 type Props = {
   points:        WeeklyPoint[];
@@ -50,6 +51,8 @@ export function BTC100WChartSection({
     return regimes.filter((r) => r.end >= zoomDomain.start && r.start <= zoomDomain.end);
   }, [regimes, zoomDomain]);
 
+  const { price: livePrice } = useLiveSpot();
+
   const sharePayload: BTC100WMASharePayload = {
     data:          sharePoints,
     regimes:       shareRegimes,
@@ -69,6 +72,7 @@ export function BTC100WChartSection({
     show100:       visibility.show100,
     show200:       visibility.show200,
     showShading:   visibility.showShading,
+    livePrice,
     generatedAt,
   };
 

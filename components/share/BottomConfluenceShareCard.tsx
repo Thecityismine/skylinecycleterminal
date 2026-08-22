@@ -20,6 +20,7 @@ export type BottomConfluenceSharePayload = {
   mvrv:            number | null;
   hrRatio:         number | null;
   priceTo2y:       number | null;
+  livePrice?:      number | null;
   generatedAt:     string;
   logoSrc?:        never;
 };
@@ -56,7 +57,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
   const {
     points, periods, visible,
     confluenceScore, regimeLabel, regimeColor,
-    btcClose, mvrv, hrRatio, priceTo2y,
+    btcClose, mvrv, hrRatio, priceTo2y, livePrice,
   } = payload;
 
   const dateStr = formatCardDate(payload);
@@ -66,7 +67,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
   const p2yColor   = priceTo2y == null ? '#94A3B8' : priceTo2y < 1.0 ? '#35D07F' : '#E6B450';
 
   const stats = [
-    { label: 'BTC Price',         value: fmtUSD(btcClose),  sub: 'Current price',                   color: '#E6EDF3'   },
+    { label: 'BTC Price',         value: fmtUSD(livePrice ?? btcClose), sub: livePrice != null ? 'Live spot' : 'Latest close', color: '#E6EDF3'   },
     { label: 'Confluence Score',  value: `${confluenceScore.toFixed(1)} / 4`, sub: regimeLabel,      color: regimeColor },
     { label: 'MVRV Ratio',        value: mvrv  != null ? mvrv.toFixed(2)  : '—', sub: mvrv != null  ? (mvrv < 1.0 ? 'Supply at loss' : mvrv < 1.5 ? 'Near cost basis' : 'Profitable') : '—', color: mvrvColor },
     { label: 'HR Ratio 30/60D',   value: hrRatio != null ? hrRatio.toFixed(3) : '—', sub: hrRatio != null ? (hrRatio < 1.0 ? 'Miner capitulation' : 'Miners healthy') : '—', color: hrColor },

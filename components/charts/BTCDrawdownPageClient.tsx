@@ -6,6 +6,7 @@ import type { DrawdownPoint } from '@/lib/indicators/drawdownFromATH';
 import { DrawdownShareModal } from '@/components/share/DrawdownShareModal';
 import type { DrawdownSharePayload } from '@/components/share/DrawdownShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 type Timeframe = 'All' | '4Y' | '2Y';
 const TIMEFRAMES: Timeframe[] = ['All', '4Y', '2Y'];
@@ -47,6 +48,8 @@ export function BTCDrawdownPageClient({
     return displayed.filter(d => d.ts >= zoomDomain.start && d.ts <= zoomDomain.end);
   }, [displayed, zoomDomain]);
 
+  const { price: livePrice } = useLiveSpot();
+
   const sharePayload: DrawdownSharePayload = {
     data: shareData,
     timeframe,
@@ -61,6 +64,7 @@ export function BTCDrawdownPageClient({
     currentCycleMax,
     regimeLabel,
     regimeColor,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

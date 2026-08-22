@@ -6,6 +6,7 @@ import { NUPLShareModal } from '@/components/share/NUPLShareModal';
 import type { NUPLPoint } from '@/lib/indicators/nupl';
 import type { NUPLSharePayload } from '@/components/share/NUPLShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 type Props = {
   points:     NUPLPoint[];
@@ -32,6 +33,8 @@ export function NUPLChartSection({ points, nupl, price, ma730, zoneLabel, zoneCo
     return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
   }, [zoomFiltered]);
 
+  const { price: livePrice } = useLiveSpot();
+
   const sharePayload: NUPLSharePayload = {
     points: downsampled,
     nupl,
@@ -40,6 +43,7 @@ export function NUPLChartSection({ points, nupl, price, ma730, zoneLabel, zoneCo
     zoneLabel,
     zoneColor,
     zone,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

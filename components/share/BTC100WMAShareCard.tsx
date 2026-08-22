@@ -32,6 +32,7 @@ export type BTC100WMASharePayload = {
   show100:       boolean;
   show200:       boolean;
   showShading:   boolean;
+  livePrice?:    number | null;
   generatedAt:   string;
   logoSrc?:      never;
 };
@@ -93,7 +94,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
     distancePct, distanceColor,
     trendScoreNum, trendLabel, trendColor,
     slope, slopeText, slopeColor,
-    show50, show100, show200, showShading,
+    show50, show100, show200, showShading, livePrice,
   } = payload;
 
   const allTimes = data.map((p) => p.time);
@@ -112,7 +113,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
   const dateStr = formatCardDate(payload);
 
   const stats = [
-    { label: 'BTC Price',        value: fmtFull(latestClose),  sub: 'Weekly close',             color: '#F7931A'  },
+    { label: 'BTC Price',        value: fmtFull(livePrice ?? latestClose), sub: livePrice != null ? 'Live spot' : 'Weekly close', color: '#F7931A'  },
     { label: '100-Week MA',      value: fmtFull(latestMA100),  sub: 'Medium-term trend',        color: '#EAB84D'  },
     { label: 'Distance 100W',    value: fmtPct(distancePct),   sub: distancePct == null ? '—' : distancePct > 5 ? 'Above trend' : distancePct < -5 ? 'Below trend' : 'Testing zone', color: distanceColor },
     { label: 'Trend Score',      value: `${trendScoreNum}/100`, sub: trendLabel,                color: trendColor  },

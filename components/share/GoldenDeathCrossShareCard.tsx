@@ -40,6 +40,7 @@ export type GoldenDeathCrossSharePayload = {
   lastCrossDate:  string | null;
   logScale:       boolean;
   rangeLabel:     string;
+  livePrice?:     number | null;
   generatedAt:    string;
 };
 
@@ -131,7 +132,7 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
     chartPoints, crossEvents, startTs,
     price, ma50, ma200, spread,
     regime, confidence, daysSinceCross, lastCrossType,
-    logScale, rangeLabel, } = payload;
+    logScale, rangeLabel, livePrice, } = payload;
 
   const ri      = REGIMES[regime];
   const visible = chartPoints.filter((p) => p.ts >= startTs);
@@ -143,7 +144,7 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
   const dateStr = formatCardDate(payload);
 
   const stats = [
-    { label: 'BTC Price', value: fmtP(price), sub: 'Bitcoin price',     color: PRICE },
+    { label: 'BTC Price', value: fmtP(livePrice ?? price), sub: livePrice != null ? 'Live spot' : 'Latest close', color: PRICE },
     { label: '50D MA',    value: fmtP(ma50),  sub: 'Short-term trend',  color: GOLD  },
     { label: '200D MA',   value: fmtP(ma200), sub: 'Long-term floor',   color: BLUE  },
     {

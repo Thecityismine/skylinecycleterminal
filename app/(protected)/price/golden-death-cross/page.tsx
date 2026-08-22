@@ -304,6 +304,7 @@ export default function GoldenDeathCrossPage() {
     lastCrossDate:  current.lastCrossDate,
     logScale,
     rangeLabel:     range,
+    livePrice,
     generatedAt:    new Date().toISOString().slice(0, 10),
   };
 

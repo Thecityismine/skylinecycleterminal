@@ -20,6 +20,7 @@ export type ValueFloorSharePayload = {
   deltaPrice:    number | null;
   vsDeltaPct:    number | null;   // (vsDelta ratio - 1) * 100
   drawdownPct:   number | null;
+  livePrice?:    number | null;
   generatedAt:   string;
   logoSrc?:      never;
 };
@@ -72,7 +73,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
   const {
     points, visible,
     scoreScore, scoreLabel, scoreColor,
-    btcClose, realizedPrice, deltaPrice, vsDeltaPct,
+    btcClose, realizedPrice, deltaPrice, vsDeltaPct, livePrice,
   } = payload;
 
   const dateStr = formatCardDate(payload);
@@ -84,7 +85,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
     : '#FF5C5C';
 
   const stats = [
-    { label: 'BTC Price',       value: fmtUSD(btcClose),       sub: 'Current price',               color: '#E6EDF3'  },
+    { label: 'BTC Price',       value: fmtUSD(livePrice ?? btcClose), sub: livePrice != null ? 'Live spot' : 'Latest close', color: '#E6EDF3'  },
     { label: 'Realized Price',  value: fmtUSD(realizedPrice),  sub: 'Aggregate holder cost basis',  color: '#3B82F6'  },
     { label: 'Delta Price',     value: fmtUSD(deltaPrice),     sub: 'Realized cap − average cap',   color: '#EC4899'  },
     { label: 'vs Delta Price',  value: fmtPct(vsDeltaPct),     sub: vsDeltaPct != null ? (vsDeltaPct < 0 ? 'Below the model' : 'Above the model') : '—', color: distColor(vsDeltaPct) },

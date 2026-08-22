@@ -6,6 +6,7 @@ import { BottomConfluenceShareModal }  from '@/components/share/BottomConfluence
 import type { BottomConfluencePoint, ConfluencePeriod } from '@/lib/indicators/bottomConfluence';
 import type { BottomConfluenceSharePayload } from '@/components/share/BottomConfluenceShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 type Props = {
   points:          BottomConfluencePoint[];
@@ -48,6 +49,8 @@ export function BTCBottomConfluenceChartSection({
     return zoomFiltered.filter((_, i) => i % step === 0 || i === zoomFiltered.length - 1);
   }, [zoomFiltered]);
 
+  const { price: livePrice } = useLiveSpot();
+
   const sharePayload: BottomConfluenceSharePayload = {
     points: downsampled,
     periods,
@@ -59,6 +62,7 @@ export function BTCBottomConfluenceChartSection({
     mvrv,
     hrRatio,
     priceTo2y,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 
