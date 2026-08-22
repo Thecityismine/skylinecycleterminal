@@ -80,7 +80,6 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
   const {
     data, ratioKey, ratioLabel, ratioDesc, logScale, range,
     current, ath, pctFromAth, oneYearChange,
-    generatedAt,
   } = payload;
 
   const col = COLORS[ratioKey];

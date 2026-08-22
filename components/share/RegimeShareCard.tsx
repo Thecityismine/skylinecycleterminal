@@ -64,7 +64,7 @@ function fmtUSD(n: number): string {
 }
 
 export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
-  const { points, zones, current, showMA, generatedAt, logoSrc } = payload;
+  const { points, zones, current, showMA, logoSrc } = payload;
   const yearTicks = buildYearTicks(points);
 
   const regimeColor = REGIME_COLOR[current.regime];

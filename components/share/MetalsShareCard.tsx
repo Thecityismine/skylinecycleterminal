@@ -70,7 +70,7 @@ function fmtPrice(v: number, isGold: boolean): string {
 }
 
 export function MetalsShareCard({ payload }: { payload: MetalsSharePayload }) {
-  const { metal, chartData, current, show50W, show200W, generatedAt } = payload;
+  const { metal, chartData, current, show50W, show200W } = payload;
   const config   = METAL_CONFIG[metal];
   const zones    = buildZones(chartData);
   const isGold   = metal === 'gold';

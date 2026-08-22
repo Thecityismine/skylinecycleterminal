@@ -40,7 +40,7 @@ function fmtUSD(v: number | null): string {
 }
 
 export function SmartDcaEngineShareCard({ payload }: { payload: SmartDcaEngineSharePayload }) {
-  const { price, score, zoneLabel, bestDayLabel, bestDayAvgDiscount, multiplierLabel, actionLabel, generatedAt } = payload;
+  const { price, score, zoneLabel, bestDayLabel, bestDayAvgDiscount, multiplierLabel, actionLabel } = payload;
 
   const dateStr = formatCardDate(payload);
   const color = score != null ? riskColor(score) : '#8B949E';

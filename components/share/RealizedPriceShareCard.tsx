@@ -67,7 +67,6 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
     currentPrice, ma200w, ratio, premium,
     zoneLabel, zoneColor,
     secondaryLabel, secondaryColor,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

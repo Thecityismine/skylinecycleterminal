@@ -65,7 +65,7 @@ const OVERLAY_META: Record<string, { color: string; label: string; dashed?: bool
 };
 
 export function PriceShareCard({ payload }: { payload: PriceSharePayload }) {
-  const { data, overlays, halvings, logScale, asset, timeframe, priceChange, generatedAt, logoSrc } = payload;
+  const { data, overlays, halvings, logScale, asset, timeframe, priceChange, logoSrc } = payload;
 
   const PRICE_COLOR = asset === 'eth' ? '#627EEA' : '#F7931A';
   const latest      = data[data.length - 1];

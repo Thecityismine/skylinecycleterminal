@@ -72,8 +72,7 @@ function fmtPrice(v: number): string {
 export function AltseasonShareCard({ payload }: { payload: AltseasonSharePayload }) {
   const {
     score, regimeLabel, regimeColor, btcDominance, ethBtc,
-    altcoinsTracked, altcoinsBeatingBtc, chartData, startTs, rangeLabel, generatedAt,
-  } = payload;
+    altcoinsTracked, altcoinsBeatingBtc, chartData, startTs, rangeLabel, } = payload;
 
   const dateStr = formatCardDate(payload);
   const visible  = chartData.filter((d) => d.ts >= startTs);

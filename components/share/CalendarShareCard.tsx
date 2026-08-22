@@ -34,8 +34,7 @@ function fmtPct(v: number): string {
 export function CalendarShareCard({ payload }: { payload: CalendarSharePayload }) {
   const {
     asset, monthName, medianReturn, medianVolatility, positiveYears, sampleSize,
-    currentPhase, heatmap, generatedAt,
-  } = payload;
+    currentPhase, heatmap, } = payload;
 
   const phaseColor = CYCLE_PHASE_COLOR[currentPhase];
   const dateStr = formatCardDate(payload);

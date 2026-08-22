@@ -77,7 +77,7 @@ export const SCORE_CARD_CHART_RECT = {
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
-  const { points, currentScore, zoneLabel, zoneColor, btcPrice, generatedAt, logoSrc } = payload;
+  const { points, currentScore, zoneLabel, zoneColor, btcPrice, logoSrc } = payload;
 
   const prices   = points.map((p) => p.btcClose).filter((v) => v > 0);
   const pMin     = prices.length ? Math.max(0.01, Math.min(...prices) * 0.6) : 0.01;

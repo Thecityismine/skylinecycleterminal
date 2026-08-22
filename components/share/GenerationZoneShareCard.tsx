@@ -66,8 +66,7 @@ export function GenerationZoneShareCard({ payload }: { payload: GenerationZoneSh
   const {
     points, episodes, rangeLabel, close, ema200, smma230,
     distanceToEma, distanceToSmma, weekLabel, isLive, inZone, depth,
-    conditionsMet, conditionsTotal, generatedAt,
-  } = payload;
+    conditionsMet, conditionsTotal, } = payload;
 
   const dateStr = formatCardDate(payload);
 

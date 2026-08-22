@@ -70,7 +70,6 @@ export function EquityShareCard({ payload }: { payload: EquitySharePayload }) {
     price, change1d, currency,
     trend, scores,
     logScale, startTs,
-    generatedAt,
   } = payload;
 
   const filtered     = startTs ? points.filter((p) => p.ts >= startTs) : points;

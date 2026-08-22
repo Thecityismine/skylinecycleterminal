@@ -52,8 +52,7 @@ const YEAR_TICKS = Array.from({ length: 20 }, (_, i) =>
 export function RotationShareCard({ payload }: { payload: RotationSharePayload }) {
   const {
     ticker, title, subtitle, color, isRatio, points, ma, rangeLabel, logScale,
-    score, regimeLabel, regimeColor, currentValue, distanceFromATH, trend, generatedAt,
-  } = payload;
+    score, regimeLabel, regimeColor, currentValue, distanceFromATH, trend, } = payload;
 
   const dateStr = formatCardDate(payload);
   const maKey = ma === 50 ? 'ma50' : ma === 100 ? 'ma100' : 'ma200';

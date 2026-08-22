@@ -51,7 +51,7 @@ function fmtY(v: number): string {
 }
 
 export function CycleComparisonShareCard({ payload }: { payload: CycleComparisonSharePayload }) {
-  const { chartData, cycles, medianPath, current, showMedian, generatedAt } = payload;
+  const { chartData, cycles, medianPath, current, showMedian } = payload;
 
   const dateStr = formatCardDate(payload);
 

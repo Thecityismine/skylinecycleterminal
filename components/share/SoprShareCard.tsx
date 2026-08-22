@@ -78,7 +78,6 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
     regimeLabel, regimeColor,
     rawSopr, soprDev, sma90, btcClose,
     livePrice, dataAsOf,
-    generatedAt,
   } = payload;
 
   // Stamped with the date of the data, not the moment the card was rendered.

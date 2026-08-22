@@ -46,7 +46,7 @@ function fmtPct(v: number): string {
 const LEGEND_STOPS = [0, 350, 700, 1050, 1400];
 
 export function ValuationDeviationShareCard({ payload }: { payload: ValuationDeviationSharePayload }) {
-  const { points, startTs, rangeLabel, generatedAt } = payload;
+  const { points, startTs, rangeLabel } = payload;
 
   const dateStr = formatCardDate(payload);
 

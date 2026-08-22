@@ -116,7 +116,7 @@ function CardNeonDots({ windows, startTs }: { windows: HalvingWindowData[]; star
 }
 
 export function HalvingWindowsShareCard({ payload }: { payload: HalvingWindowsSharePayload }) {
-  const { points, windows, logScale, rangeLabel, startTs, generatedAt } = payload;
+  const { points, windows, logScale, rangeLabel, startTs } = payload;
 
   const dateStr = formatCardDate(payload);
   const visible  = points.filter((p) => p.ts >= startTs);

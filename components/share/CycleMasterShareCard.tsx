@@ -57,7 +57,6 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
     data, range, logScale,
     price, realized, transferred, mvrv,
     score, scoreLabel, scoreColor,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

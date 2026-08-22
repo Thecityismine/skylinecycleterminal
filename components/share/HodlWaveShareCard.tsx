@@ -72,7 +72,6 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
     regimeLabel, regimeColor,
     exchPct, change30d, change90d, btcClose,
     scoreScore, scoreLabel, scoreColor,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

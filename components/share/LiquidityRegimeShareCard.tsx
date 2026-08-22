@@ -40,7 +40,7 @@ function fmtXTick(date: string): string {
 }
 
 export function LiquidityRegimeShareCard({ payload }: { payload: LiquidityRegimeSharePayload }) {
-  const { chartData, zones, current, generatedAt } = payload;
+  const { chartData, zones, current } = payload;
 
   const dateStr = formatCardDate(payload);
 

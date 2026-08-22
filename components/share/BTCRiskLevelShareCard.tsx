@@ -54,7 +54,7 @@ function fmtPrice(v: number): string {
 }
 
 export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelSharePayload }) {
-  const { points, modelLabel, currentPrice, currentScore, historicalPct, confidencePct, generatedAt } = payload;
+  const { points, modelLabel, currentPrice, currentScore, historicalPct, confidencePct } = payload;
 
   const dateStr = formatCardDate(payload);
   const zone = currentScore != null ? ZONE_META[riskZone(currentScore)] : null;

@@ -73,7 +73,6 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
     points, visible,
     scoreScore, scoreLabel, scoreColor,
     btcClose, realizedPrice, deltaPrice, vsDeltaPct,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

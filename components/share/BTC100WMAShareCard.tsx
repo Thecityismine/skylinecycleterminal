@@ -94,7 +94,6 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
     trendScoreNum, trendLabel, trendColor,
     slope, slopeText, slopeColor,
     show50, show100, show200, showShading,
-    generatedAt,
   } = payload;
 
   const allTimes = data.map((p) => p.time);

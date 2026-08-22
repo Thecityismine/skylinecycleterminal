@@ -56,7 +56,7 @@ function fmtFull(n: number | null): string {
 }
 
 export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload }) {
-  const { data, latestPrice, latestMA, latestMA5, multiplier, zoneLabel, zoneColor, generatedAt } = payload;
+  const { data, latestPrice, latestMA, latestMA5, multiplier, zoneLabel, zoneColor } = payload;
 
   const halvingTs = HALVINGS.slice(0, -1).map((h) => ({ ...h, ts: new Date(h.date).getTime() }));
 

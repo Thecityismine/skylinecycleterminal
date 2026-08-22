@@ -63,7 +63,6 @@ export function WeeklySMAShareCard({ payload }: { payload: WeeklySMASharePayload
   const {
     points, segments, assetLabel, assetColor,
     logScale, rangeLabel, currentPrice, ma50w, ma200w, zone,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

@@ -67,8 +67,7 @@ export function DrawdownShareCard({ payload }: { payload: DrawdownSharePayload }
   const {
     data, timeframe, showHalvings, showCycles,
     currentDD, currentATH, currentPrice, athDate, daysSinceATH, recovery,
-    regimeLabel, regimeColor, generatedAt,
-  } = payload;
+    regimeLabel, regimeColor, } = payload;
 
   const dateStr = formatCardDate(payload);
 

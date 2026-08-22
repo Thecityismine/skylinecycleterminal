@@ -48,7 +48,7 @@ function fmtP(v: number | null): string {
 }
 
 export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
-  const { rows, turningPoints, phaseZones, current, rangeLabel, showPhases, showTurningPoints, generatedAt } = payload;
+  const { rows, turningPoints, phaseZones, current, rangeLabel, showPhases, showTurningPoints } = payload;
 
   const dateStr = formatCardDate(payload);
   const signalColor = SIGNAL_COLOR[current.signal];

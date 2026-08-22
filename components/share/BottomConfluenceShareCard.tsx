@@ -57,7 +57,6 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
     points, periods, visible,
     confluenceScore, regimeLabel, regimeColor,
     btcClose, mvrv, hrRatio, priceTo2y,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

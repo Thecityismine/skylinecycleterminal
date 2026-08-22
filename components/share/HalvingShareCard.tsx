@@ -47,7 +47,7 @@ const ALL_YEAR_TICKS = Array.from({ length: 18 }, (_, i) =>
 );
 
 export function HalvingShareCard({ payload }: { payload: HalvingSharePayload }) {
-  const { points, segments, logScale, rangeLabel, startTs, generatedAt, logoSrc } = payload;
+  const { points, segments, logScale, rangeLabel, startTs, logoSrc } = payload;
 
   const dateStr = formatCardDate(payload);
 

@@ -75,8 +75,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
   const {
     data, range, price, fair, floor, ceil,
     pctVsFair, leadFloor, leadCeil,
-    zoneLabel, zoneColor, generatedAt,
-  } = payload;
+    zoneLabel, zoneColor, } = payload;
 
   const dateStr = formatCardDate(payload);
 

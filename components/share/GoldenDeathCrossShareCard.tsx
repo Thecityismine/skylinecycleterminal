@@ -131,8 +131,7 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
     chartPoints, crossEvents, startTs,
     price, ma50, ma200, spread,
     regime, confidence, daysSinceCross, lastCrossType,
-    logScale, rangeLabel, generatedAt,
-  } = payload;
+    logScale, rangeLabel, } = payload;
 
   const ri      = REGIMES[regime];
   const visible = chartPoints.filter((p) => p.ts >= startTs);

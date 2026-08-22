@@ -56,7 +56,7 @@ const YEAR_TICKS = Array.from({ length: 17 }, (_, i) =>
 );
 
 export function FourYearCycleShareCard({ payload }: { payload: FourYearCycleSharePayload }) {
-  const { data, cycleNum, daysSince, cycleProgress, daysToNext, nextHalvingDate, generatedAt } = payload;
+  const { data, cycleNum, daysSince, cycleProgress, daysToNext, nextHalvingDate } = payload;
 
   const halvingTs = HALVINGS.map((h) => ({ ...h, ts: new Date(h.date).getTime() }));
 

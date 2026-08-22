@@ -68,8 +68,7 @@ function fmtUSD(v: number | null): string {
 export function RoadToOneMillionShareCard({ payload }: { payload: RoadToOneMillionSharePayload }) {
   const {
     historical, scenarios, visibleScenarios, showHalvings, showMilestones,
-    zoomLabel, xMinOverride, lastPrice, roadStatusLabel, roadStatusColor, generatedAt,
-  } = payload;
+    zoomLabel, xMinOverride, lastPrice, roadStatusLabel, roadStatusColor, } = payload;
 
   const dateStr = formatCardDate(payload);
 

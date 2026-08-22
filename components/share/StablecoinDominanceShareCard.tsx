@@ -64,8 +64,7 @@ export function StablecoinDominanceShareCard({ payload }: { payload: StablecoinD
   const {
     points, dominance, ma30, stablecoinMC, btcPrice,
     dom30dChange, supply30dChange,
-    regimeLabel, regimeColor, liquidityScore, generatedAt,
-  } = payload;
+    regimeLabel, regimeColor, liquidityScore, } = payload;
 
   const dateStr = formatCardDate(payload);
 

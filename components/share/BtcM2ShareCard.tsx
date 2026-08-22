@@ -49,8 +49,7 @@ function fmtAxis(v: number): string {
 export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
   const {
     points, range, logScale, ratio, ema200, ema400, sma52,
-    zoneLabel, zoneColor, generatedAt,
-  } = payload;
+    zoneLabel, zoneColor, } = payload;
 
   const dateStr = formatCardDate(payload);
 

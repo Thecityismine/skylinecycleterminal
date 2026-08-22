@@ -49,7 +49,6 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
   const {
     data, range, statusLabel, statusColor,
     currentPrice, currentMA150, currentThreshold, ratio,
-    generatedAt,
   } = payload;
 
   const dateStr = formatCardDate(payload);

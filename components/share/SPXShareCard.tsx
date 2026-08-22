@@ -57,7 +57,7 @@ function fmtPct(v: number): string {
 }
 
 export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
-  const { chartData, spxPrice, pctVs200w, athDrawdown, riskScore, riskLabel, riskColor, show50w, show200w, showRecs, generatedAt } = payload;
+  const { chartData, spxPrice, pctVs200w, athDrawdown, riskScore, riskLabel, riskColor, show50w, show200w, showRecs } = payload;
 
   const dateStr = formatCardDate(payload);
 

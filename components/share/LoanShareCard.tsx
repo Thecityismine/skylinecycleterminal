@@ -32,7 +32,7 @@ const HIDDEN = '••••••';
 export function LoanShareCard({ payload }: { payload: LoanSharePayload }) {
   const {
     loanAmount, targetLtvPct, btcCollateral, entryPrice, marginCallPrice, liquidationPrice,
-    riskLabel, riskColor, generatedAt, hideLoanAmount, hideCollateral, percentagesOnly,
+    riskLabel, riskColor, hideLoanAmount, hideCollateral, percentagesOnly,
   } = payload;
 
   const dateStr = formatCardDate(payload);

@@ -51,7 +51,7 @@ function fmtPrice(v: number): string {
 }
 
 export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePayload }) {
-  const { candles, latest, lastSig, signalGain, generatedAt } = payload;
+  const { candles, latest, lastSig, signalGain } = payload;
 
   const isGreen    = latest?.isGreen ?? false;
   const isSignal   = latest?.isBearEndSignal ?? false;

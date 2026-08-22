@@ -68,7 +68,7 @@ function fmtUSD(v: number | null): string {
 }
 
 export function NUPLShareCard({ payload }: { payload: NUPLSharePayload }) {
-  const { points, nupl, price, ma730, zoneLabel, zoneColor, zone, generatedAt } = payload;
+  const { points, nupl, price, ma730, zoneLabel, zoneColor, zone } = payload;
 
   const dateStr = formatCardDate(payload);
 

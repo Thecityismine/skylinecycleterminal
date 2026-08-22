@@ -42,7 +42,7 @@ function formatDateTick(v: string): string {
 }
 
 export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
-  const { chartData, zones, current, show50W, show200W, generatedAt } = payload;
+  const { chartData, zones, current, show50W, show200W } = payload;
 
   const regimeColor = REGIME_COLOR[current.trendRegime];
   const regimeLabel = REGIME_LABEL[current.trendRegime];

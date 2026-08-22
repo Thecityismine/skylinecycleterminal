@@ -49,7 +49,7 @@ function isDiscountMetric(metric: Metric): boolean {
 }
 
 export function BTCDCAOptimizerShareCard({ payload }: { payload: BTCDCAOptimizerSharePayload }) {
-  const { buckets, metric, metricLabel, winWindow, groupByLabel, rangeLabel, maLabel, best, generatedAt } = payload;
+  const { buckets, metric, metricLabel, winWindow, groupByLabel, rangeLabel, maLabel, best } = payload;
 
   const dateStr = formatCardDate(payload);
 

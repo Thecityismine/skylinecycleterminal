@@ -66,8 +66,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
   const {
     data, range, statusLabel, statusColor,
     currentPrice, currentMA30, currentMA60, currentRatio,
-    dataSource, generatedAt,
-  } = payload;
+    dataSource, } = payload;
 
   const dateStr = formatCardDate(payload);
 
