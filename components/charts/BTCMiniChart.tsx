@@ -52,6 +52,12 @@ export function BTCMiniChart({ data }: { data: PricePoint[] }) {
   const low   = Math.min(...prices);
   const last  = clean[clean.length - 1].price;
 
+  // Which close this is. The header sits a few hundred pixels under a ticker
+  // labelled LIVE, and an unlabelled figure next to it reads as a second, wrong
+  // spot price rather than as the last point of a daily-close series.
+  const lastDate = new Date(clean[clean.length - 1].time + 'T00:00:00Z')
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
   // True YTD: find Jan 1 of the current year in the full dataset
   const yearStartStr = `${new Date().getFullYear()}-01-01`;
   const allClean = data.filter((d) => d.price > 0);
@@ -75,6 +81,9 @@ export function BTCMiniChart({ data }: { data: PricePoint[] }) {
           </p>
           <p className="text-2xl font-mono font-bold mt-1" style={{ color: '#F7931A' }}>
             ${Math.round(last).toLocaleString()}
+          </p>
+          <p className="text-[10px] font-mono mt-0.5" style={{ color: 'var(--sct-muted)' }}>
+            Close · {lastDate}
           </p>
         </div>
         <div className="text-right text-xs font-mono space-y-1">

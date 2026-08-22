@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { fetchDailyPrice } from '@/lib/api/coinmetrics';
 
 // Dynamic because it reads query params (?asset=, ?start=)
-// Underlying CoinMetrics fetch is cached at 24hr via Next.js fetch cache
+/// Underlying CoinMetrics fetch is cached for an hour via the Next.js fetch cache,
+// with a staleness bound in coinmetricsGet so a stale-while-revalidate hit cannot
+// serve a copy more than MAX_STALE_DAYS behind.
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {

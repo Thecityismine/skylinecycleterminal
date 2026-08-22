@@ -20,17 +20,56 @@ type CoinmetricsResponse = {
   next_page_token?: string;
 };
 
-async function coinmetricsGet(params: Record<string, string>): Promise<CoinmetricsResponse> {
-  const url = new URL('https://community-api.coinmetrics.io/v4/timeseries/asset-metrics');
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+// How far behind today the newest observation may fall before a cached copy is
+// treated as unusable. CoinMetrics publishes a day's close once the UTC day ends,
+// so yesterday is normal and two days is the widest honest window.
+const MAX_STALE_DAYS = 2;
 
-  const res = await fetch(url.toString(), {
+function newestTime(json: CoinmetricsResponse): string | null {
+  const rows = json.data;
+  if (!rows?.length) return null;
+  const t = rows[rows.length - 1]?.time;
+  return typeof t === 'string' ? t.slice(0, 10) : null;
+}
+
+function isStale(iso: string | null): boolean {
+  if (!iso) return false;
+  const ms = Date.parse(iso + 'T00:00:00Z');
+  if (Number.isNaN(ms)) return false;
+  return (Date.now() - ms) / 86_400_000 > MAX_STALE_DAYS;
+}
+
+async function coinmetricsFetch(url: string, init: RequestInit): Promise<CoinmetricsResponse> {
+  const res = await fetch(url, {
     headers: { 'Accept': 'application/json' },
-    next: { revalidate: 3600 },
     signal: AbortSignal.timeout(20000),
+    ...init,
   });
   if (!res.ok) throw new Error(`CoinMetrics HTTP ${res.status}`);
   return res.json();
+}
+
+async function coinmetricsGet(params: Record<string, string>): Promise<CoinmetricsResponse> {
+  const url = new URL('https://community-api.coinmetrics.io/v4/timeseries/asset-metrics');
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const href = url.toString();
+
+  const json = await coinmetricsFetch(href, { next: { revalidate: 3600 } });
+
+  // Next serves its data cache stale-while-revalidate, so the first request after
+  // a long idle gets whatever was cached last and only then kicks off a refresh.
+  // That entry can be arbitrarily old — a three-week-old copy once rendered on the
+  // dashboard as the current price, with the 52W high and low still correct so
+  // nothing looked wrong. Bound it: if the cached copy is too far behind, pay for
+  // one uncached round trip rather than publish a stale number as today's.
+  //
+  // Only the final page is checked. Earlier pages of a full-history fetch end in
+  // the past by definition and would refetch every time.
+  if (!json.next_page_token && isStale(newestTime(json))) {
+    return coinmetricsFetch(href, { cache: 'no-store' });
+  }
+
+  return json;
 }
 
 // Generic daily price fetch — asset can be 'btc' or 'eth'
