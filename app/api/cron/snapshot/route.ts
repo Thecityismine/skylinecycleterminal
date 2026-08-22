@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isCronAuthorised } from '@/lib/auth/cron';
 import { collectSnapshot } from '@/lib/store/snapshot';
 import { writeObservations, utcDate } from '@/lib/store/observations';
+import { trippedTheses } from '@/lib/theses/theses';
 
 // Daily writer for the observation store.
 //
@@ -55,6 +56,22 @@ async function run(req: Request) {
 
     const result = await writeObservations(snapshot.rows);
 
+    // Checked after the write, so today's reading is included. A thesis whose
+    // invalidation condition trips is the one thing in this response worth
+    // waking up to, which is why it is surfaced here rather than left for
+    // whenever the register next gets opened.
+    let tripped: { title: string; rules: string[] }[] = [];
+    try {
+      tripped = (await trippedTheses()).map((t) => ({
+        title: t.title,
+        rules: t.breaches.filter((b) => b.tripped).map((b) => b.description),
+      }));
+    } catch (e) {
+      // Never let the register take down the snapshot. The store is the thing
+      // that must not miss a day.
+      console.error('[cron/snapshot] thesis check failed:', e instanceof Error ? e.message : String(e));
+    }
+
     return NextResponse.json({
       ok: true,
       asOfDate: snapshot.asOfDate,
@@ -62,6 +79,7 @@ async function run(req: Request) {
       cycleScore: snapshot.cycleScore,
       written: result.written,
       skipped: result.skipped,
+      trippedTheses: tripped,
       elapsedMs: Date.now() - startedAt,
     });
   } catch (err) {

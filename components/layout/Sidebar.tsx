@@ -41,6 +41,7 @@ import {
   Coins,
   Database,
   Landmark as Bank,
+  ClipboardCheck,
 } from "lucide-react";
 
 type NavItem = {
@@ -192,7 +193,8 @@ const nav: (NavItem | NavSection)[] = [
     section: "ADMIN",
     items: [
       { label: "Data Store",     href: "/admin/store",    icon: Database, admin: true },
-      { label: "Adoption Index", href: "/admin/adoption", icon: Bank,     admin: true },
+      { label: "Adoption Index", href: "/admin/adoption", icon: Bank,           admin: true },
+      { label: "Thesis Register", href: "/admin/theses",  icon: ClipboardCheck, admin: true },
     ],
   },
 ];

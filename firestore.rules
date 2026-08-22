@@ -58,6 +58,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── Thesis register ──────────────────────────────────────────────────────
+    // Recorded views with their pre-registered invalidation criteria, including
+    // the ones that turned out wrong. Written only by app/api/theses via
+    // firebase-admin. Closed to the client SDK: this is the record of what was
+    // claimed and when, and a publicly writable version of that is worthless.
+    match /theses/{thesisId} {
+      allow read, write: if false;
+    }
+
     // ── Subscriber entitlement records ───────────────────────────────────────
     // Written only by server-side code (firebase-admin, which bypasses rules
     // entirely) — via webhooks and the auth session route. The client SDK never
