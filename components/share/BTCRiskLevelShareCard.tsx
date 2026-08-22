@@ -13,6 +13,10 @@ export type BTCRiskLevelSharePayload = {
   currentScore:      number | null;
   historicalPct:     number | null;
   confidencePct:     number | null;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:       string;
 };
 
@@ -78,7 +82,7 @@ export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelShareP
   const bandColors = Array.from({ length: BAND_COUNT }, (_, b) => riskColor((b + 0.5) / BAND_COUNT));
 
   const stats = [
-    { label: 'BTC Price',           value: fmtUSD(currentPrice),                                sub: 'Latest close',       color: '#F7931A' },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? currentPrice), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',       color: '#F7931A' },
     { label: 'Risk Score',          value: currentScore != null ? currentScore.toFixed(3) : '—', sub: zone?.label ?? '—',   color },
     { label: 'Historical Percentile', value: historicalPct != null ? `${historicalPct.toFixed(0)}%` : '—', sub: 'vs full BTC history', color: '#5B84FF' },
     { label: 'Confidence',          value: confidencePct != null ? `${confidencePct.toFixed(0)}%` : '—', sub: 'Data completeness', color: '#35D07F' },

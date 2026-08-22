@@ -19,6 +19,7 @@ import {
 import type { ModelKey, RiskPoint } from '@/lib/indicators/riskScore';
 import type { PricePoint, RiskFactorPoint } from '@/lib/api/coinmetrics';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Props = { prices: PricePoint[]; riskFactorData: RiskFactorPoint[] };
 
 const MODEL_OPTIONS: ModelKey[] = ['composite', ...FACTOR_KEYS];
@@ -71,6 +72,10 @@ function Card({ title, children, right }: { title: string; children: React.React
 }
 
 export function RiskLevelPageClient({ prices, riskFactorData }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [modelKey, setModelKey]   = useState<ModelKey>('composite');
   const [showBands, setShowBands] = useState(true);
   const context = useMemo(() => buildRiskContext(prices, riskFactorData), [prices, riskFactorData]);
@@ -130,6 +135,7 @@ export function RiskLevelPageClient({ prices, riskFactorData }: Props) {
     currentScore,
     historicalPct,
     confidencePct: last?.confidencePct ?? null,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

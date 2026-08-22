@@ -23,6 +23,7 @@ import type { CrossAssetPoint } from '@/lib/api/crossAsset';
 import type { MacroDataPoint, LiquiditySeriesData } from '@/lib/api/fred';
 import type { StablecoinHistoryPoint } from '@/lib/api/defillama';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Props = {
   btcPrices:    PricePoint[];
   crossAsset:   CrossAssetPoint[];
@@ -84,6 +85,10 @@ function Card({ title, children, right }: { title: string; children: React.React
 }
 
 export function SevenYearCyclePageClient({ btcPrices, crossAsset, liquidity, yieldCurve, creditSpread, stablecoins }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [modelView, setModelView] = useState<ModelView>('both');
   const [showInstitutionalEras, setShowInstitutionalEras] = useState(false);
   const [showScenarioBands, setShowScenarioBands] = useState(true);
@@ -153,6 +158,7 @@ export function SevenYearCyclePageClient({ btcPrices, crossAsset, liquidity, yie
     stressWindows,
     cycleMarkers: cycleMarkers.map((m) => ({ ts: m.ts, price: m.price, kind: m.kind })),
     scenarioBands: showScenarioBands ? scenarioBands : null,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

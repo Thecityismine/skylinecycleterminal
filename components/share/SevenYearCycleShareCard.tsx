@@ -14,6 +14,10 @@ export type SevenYearCycleSharePayload = {
   stressWindows:  { startTs: number; endTs: number; label: string; projected: boolean }[];
   cycleMarkers:   { ts: number; price: number; kind: 'low' | 'high' }[];
   scenarioBands:  { bullish: { low: number; high: number }; hybrid: { low: number; high: number }; stress: { low: number; high: number } } | null;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:    string;
 };
 
@@ -59,7 +63,7 @@ export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSh
   const dateStr = formatCardDate(payload);
 
   const stats = [
-    { label: 'BTC Price',       value: fmtUSD(price),  sub: 'Latest close',        color: '#F7931A' },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? price), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',        color: '#F7931A' },
     { label: '4-Year Model',    value: fourYearPhase,  sub: 'Halving cycle phase', color: '#F7931A' },
     { label: '7-Year Model',    value: sevenYearPhase, sub: 'Stress cycle phase',  color: '#F85149' },
     { label: 'Model Agreement', value: modelAgreement, sub: 'Do models align?',    color: '#5B84FF' },

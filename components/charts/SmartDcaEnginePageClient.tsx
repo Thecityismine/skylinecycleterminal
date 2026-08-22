@@ -14,6 +14,7 @@ import { computeDcaSeries, aggregateByBucket, pickBest } from '@/lib/indicators/
 import { MULTIPLIER_TABLE, multiplierFor, fmtMultiplier } from '@/lib/indicators/smartDcaEngine';
 import type { PricePoint, RiskFactorPoint } from '@/lib/api/coinmetrics';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Props = { prices: PricePoint[]; riskFactorData: RiskFactorPoint[] };
 
 // Fixed, opinionated defaults — this page gives one answer, it doesn't expose
@@ -47,6 +48,10 @@ function CrossLinkCard({ href, title, sub }: { href: string; title: string; sub:
 }
 
 export function SmartDcaEnginePageClient({ prices, riskFactorData }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const riskContext = useMemo(() => buildRiskContext(prices, riskFactorData), [prices, riskFactorData]);
 
   // Same lag-safety pattern as the Risk Level page: skip trailing days whose
@@ -71,6 +76,7 @@ export function SmartDcaEnginePageClient({ prices, riskFactorData }: Props) {
     bestDayAvgDiscount: bestDay?.avgDiscount ?? null,
     multiplierLabel: band ? fmtMultiplier(band.multiplier) : '—',
     actionLabel:  band?.label ?? '—',
+    livePrice,
     generatedAt:  new Date().toISOString(),
   };
 

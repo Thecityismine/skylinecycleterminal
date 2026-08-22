@@ -12,6 +12,10 @@ export type SmartDcaEngineSharePayload = {
   bestDayAvgDiscount: number | null;
   multiplierLabel:  string;
   actionLabel:      string;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:      string;
 };
 
@@ -47,7 +51,7 @@ export function SmartDcaEngineShareCard({ payload }: { payload: SmartDcaEngineSh
   const zone  = score != null ? riskZone(score) : null;
 
   const stats = [
-    { label: 'BTC Price',  value: fmtUSD(price),                          sub: 'Latest close',    color: '#F7931A' },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? price), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',    color: '#F7931A' },
     { label: 'Risk Score', value: score != null ? score.toFixed(3) : '—', sub: zoneLabel,          color },
     { label: 'Best DCA Day', value: bestDayLabel,                         sub: `Avg discount ${fmtPct(bestDayAvgDiscount)}`, color: '#5B84FF' },
   ];

@@ -18,6 +18,10 @@ export type HashRibbonSharePayload = {
   currentMA60:   number | null;
   currentRatio:  number | null;
   dataSource:    string;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:   string;
   logoSrc?:      never;
 };
@@ -79,7 +83,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
   const maLabel  = dataSource === 'DiffLast' ? 'Difficulty' : 'Hash Rate';
 
   const stats = [
-    { label: 'BTC Price',        value: fmtUSD(currentPrice),                              sub: 'Latest close',                  color: '#F7F9FC'    },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? currentPrice), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',                  color: '#F7F9FC'    },
     { label: `30d ${maLabel} MA`, value: fmtHashRate(currentMA30, dataSource),             sub: '30-day moving average',         color: '#E6B450'    },
     { label: `60d ${maLabel} MA`, value: fmtHashRate(currentMA60, dataSource),             sub: '60-day moving average',         color: '#3B82F6'    },
     { label: 'Ribbon Ratio',     value: currentRatio != null ? `${currentRatio.toFixed(3)}×` : '—', sub: statusLabel,            color: ratioColor   },

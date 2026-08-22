@@ -7,6 +7,7 @@ import type { PowerLawPoint }   from '@/lib/indicators/powerLaw';
 import type { PowerLawSharePayload } from '@/components/share/PowerLawShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Range = '2Y' | '4Y' | 'All';
 const RANGES: Range[] = ['All', '4Y', '2Y'];
 const RANGE_DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, All: Infinity };
@@ -30,6 +31,10 @@ export function PowerLawPageClient({
   pctVsFair, leadFloor, leadCeil,
   zoneLabel, zoneColor,
 }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [range, setRange] = useState<Range>('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
@@ -58,6 +63,7 @@ export function PowerLawPageClient({
     leadCeil,
     zoneLabel,
     zoneColor,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

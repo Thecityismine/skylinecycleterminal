@@ -8,6 +8,7 @@ import type { ValuationPoint } from '@/lib/indicators/valuationCycle';
 import type { ValuationDeviationSharePayload } from '@/components/share/ValuationDeviationShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Range = '4Y' | '8Y' | 'All';
 const RANGES: Range[] = ['4Y', '8Y', 'All'];
 const RANGE_MS: Record<Range, number> = { '4Y': 4 * 365.25 * 86_400_000, '8Y': 8 * 365.25 * 86_400_000, 'All': 0 };
@@ -19,6 +20,10 @@ type Props = {
 };
 
 export function ValuationDeviationChartSection({ points }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [range, setRange]           = useState<Range>('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
@@ -52,6 +57,7 @@ export function ValuationDeviationChartSection({ points }: Props) {
             points: sharePoints,
             startTs,
             rangeLabel: zoomDomain ? 'Zoomed' : range,
+            livePrice,
             generatedAt: new Date().toISOString(),
           } satisfies ValuationDeviationSharePayload}
         />

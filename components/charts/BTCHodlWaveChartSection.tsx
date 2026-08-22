@@ -7,6 +7,7 @@ import type { HodlWavePoint }   from '@/lib/indicators/exchangeReserve';
 import type { HodlWaveSharePayload } from '@/components/share/HodlWaveShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Props = {
   points:      HodlWavePoint[];
   regimeLabel: string;
@@ -25,6 +26,10 @@ export function BTCHodlWaveChartSection({
   exchPct, change30d, change90d, btcClose,
   scoreScore, scoreLabel, scoreColor,
 }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   // Mirror toggle defaults from BTCHodlWaveChart
   const [showPrice,    setShowPrice]    = useState(true);
   const [show30d,      setShow30d]      = useState(false);
@@ -65,6 +70,7 @@ export function BTCHodlWaveChartSection({
     scoreScore,
     scoreLabel,
     scoreColor,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

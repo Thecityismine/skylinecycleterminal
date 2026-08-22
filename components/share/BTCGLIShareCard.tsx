@@ -17,6 +17,10 @@ export type BTCGLISharePayload = {
   rangeLabel:    string;
   showPhases:        boolean;
   showTurningPoints: boolean;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:   string;
 };
 
@@ -60,7 +64,7 @@ export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
     : [];
 
   const stats = [
-    { label: 'BTC Price',       value: fmtP(current.btcPrice),                                          sub: 'Latest close',        color: '#F7931A' },
+    { label: 'BTC Price', value: fmtP(payload.livePrice ?? current.btcPrice), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',        color: '#F7931A' },
     { label: 'GLI (Shifted)',   value: current.gli != null ? current.gli.toFixed(1) : '—',               sub: `${current.gliTrend} phase`, color: '#F5F7FA' },
     { label: 'Active Lag',      value: `${current.lagDays}D`,                                            sub: 'Forward shift',       color: '#F5F7FA' },
     { label: '90D Correlation', value: current.correlation90d != null ? current.correlation90d.toFixed(2) : '—', sub: 'BTC vs shifted GLI', color: '#8B949E' },

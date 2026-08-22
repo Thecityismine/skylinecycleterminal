@@ -20,6 +20,10 @@ export type PowerLawSharePayload = {
   leadCeil:   number | null;
   zoneLabel:  string | null;
   zoneColor:  string | null;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt: string;
   logoSrc?:   never;
 };
@@ -94,7 +98,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
   const halvingTs = HALVINGS.map(h => new Date(h.date + 'T00:00:00Z').getTime());
 
   const stats = [
-    { label: 'BTC Price',       value: fmtUSD(price), sub: 'Latest close',     color: '#F7F9FC'   },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? price), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',     color: '#F7F9FC'   },
     { label: 'Fair Value',      value: fmtUSD(fair),  sub: fmtPct(pctVsFair),  color: '#38BDF8'   },
     { label: 'Floor (×0.42)',   value: fmtUSD(floor), sub: fmtYrs(leadFloor),  color: '#818CF8'   },
     { label: 'Ceiling (×4.27)', value: fmtUSD(ceil),  sub: fmtYrs(leadCeil),   color: '#F472B6'   },

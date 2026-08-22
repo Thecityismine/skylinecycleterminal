@@ -7,6 +7,7 @@ import type { RealizedPriceSharePayload } from '@/components/share/RealizedPrice
 import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 function fmtZoomLabel(domain: ZoomDomain<string>): string {
   const fmt = (s: string) => new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
   return `${fmt(domain.start)} – ${fmt(domain.end)}`;
@@ -36,6 +37,10 @@ export function RealizedPriceChartSection({
   data, currentPrice, ma200w, ratio, premium, zoneLabel, zoneColor,
   secondaryLabel, secondaryColor, generatedAt,
 }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   // Must match RealizedPriceChart's own default period, otherwise the share
   // card would export a different window than the one on screen.
   const [period, setPeriod] = useState('All');
@@ -73,6 +78,7 @@ export function RealizedPriceChartSection({
     zoneColor,
     secondaryLabel,
     secondaryColor,
+    livePrice,
     generatedAt,
   };
 

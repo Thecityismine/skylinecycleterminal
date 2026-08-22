@@ -21,6 +21,10 @@ export type TwoYearMASharePayload = {
   multiplier:  number | null;
   zoneLabel:   string;
   zoneColor:   string;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt: string;
   logoSrc?:    never;
 };
@@ -63,7 +67,7 @@ export function TwoYearMAShareCard({ payload }: { payload: TwoYearMASharePayload
   const dateStr = formatCardDate(payload);
 
   const stats = [
-    { label: 'BTC Price',        value: fmtFull(latestPrice), sub: 'Latest close',             color: '#F7F9FC'  },
+    { label: 'BTC Price', value: fmtFull(payload.livePrice ?? latestPrice), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',             color: '#F7F9FC'  },
     { label: '2-Year MA',        value: fmtFull(latestMA),    sub: '730-day simple MA',         color: '#F7931A'  },
     { label: '2Y MA × 5',        value: fmtFull(latestMA5),   sub: 'Historical top band',       color: '#FF5C5C'  },
     { label: 'Current Multiple', value: multiplier != null ? `${multiplier.toFixed(2)}×` : '—', sub: zoneLabel, color: zoneColor },

@@ -7,6 +7,7 @@ import { HashRibbonShareModal } from '@/components/share/HashRibbonShareModal';
 import type { HashRibbonSharePayload } from '@/components/share/HashRibbonShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
 type Props = {
@@ -25,6 +26,10 @@ export function HashRibbonChartSection({
   data, fetchError, statusLabel, statusColor,
   currentPrice, currentMA30, currentMA60, currentRatio, dataSource,
 }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [range, setRange] = useState<Range>('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<string> | null>(null);
 
@@ -51,6 +56,7 @@ export function HashRibbonChartSection({
     currentMA60,
     currentRatio,
     dataSource,
+    livePrice,
     generatedAt: new Date().toISOString(),
   };
 

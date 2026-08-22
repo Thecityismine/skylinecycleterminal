@@ -17,6 +17,10 @@ export type PiCycleSharePayload = {
   currentMA150:     number | null;
   currentThreshold: number | null;
   ratio:            number | null;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:      string;
   logoSrc?:         never;
 };
@@ -60,7 +64,7 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
     : '#6B7280';
 
   const stats = [
-    { label: 'BTC Price',        value: fmtUSD(currentPrice),                         sub: 'Latest close',            color: '#F7F9FC'   },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? currentPrice), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',            color: '#F7F9FC'   },
     { label: '150-Day MA',       value: fmtUSD(currentMA150),                         sub: 'Short-term trend line',   color: '#E6B450'   },
     { label: '471d MA × 0.745',  value: fmtUSD(currentThreshold),                     sub: 'Pi Cycle threshold',      color: '#3B82F6'   },
     { label: 'Ratio (150d / T)', value: ratio != null ? `${ratio.toFixed(3)}×` : '—', sub: statusLabel,               color: ratioColor  },

@@ -17,6 +17,7 @@ import {
 } from '@/lib/indicators/gliLag';
 import type { GliPoint } from '@/lib/indicators/gliLag';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Range = '1Y' | '2Y' | '4Y' | 'All';
 const RANGES: Range[] = ['1Y', '2Y', '4Y', 'All'];
 const DAYS: Record<Range, number> = { '1Y': 365, '2Y': 730, '4Y': 1460, 'All': Infinity };
@@ -32,6 +33,10 @@ type Props = {
 };
 
 export function BTCGLISection({ btcPrices, gliRaw }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [range,             setRange]             = useState<Range>('4Y');
   const [lagDays,            setLagDays]           = useState<number>(75);
   const [showRaw,            setShowRaw]           = useState(false);
@@ -80,8 +85,9 @@ export function BTCGLISection({ btcPrices, gliRaw }: Props) {
     rangeLabel:    isZoomed ? 'Zoomed' : range,
     showPhases,
     showTurningPoints,
+    livePrice,
     generatedAt:   new Date().toISOString(),
-  }), [displayedRows, result.turningPoints, displayedZones, result.current, range, isZoomed, showPhases, showTurningPoints]);
+  }), [displayedRows, result.turningPoints, displayedZones, result.current, range, isZoomed, showPhases, showTurningPoints, livePrice]);
 
   const { current } = result;
   const confidenceColor = current.confidence === 'High' ? '#35D07F' : current.confidence === 'Moderate' ? '#E6B450' : '#8B949E';

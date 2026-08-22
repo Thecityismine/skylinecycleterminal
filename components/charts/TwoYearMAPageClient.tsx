@@ -6,6 +6,7 @@ import { TwoYearMAShareModal } from '@/components/share/TwoYearMAShareModal';
 import type { MAPoint } from '@/lib/indicators/cycleHelpers';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 type Props = {
   chartData:   MAPoint[];
   latestPrice: number;
@@ -20,6 +21,10 @@ type Props = {
 export function TwoYearMAPageClient({
   chartData, latestPrice, latestMA, latestMA5, multiplier, zoneLabel, zoneColor, children,
 }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<number> | null>(null);
 
   // Zoom-filter on top of the full series so the share card matches what's on screen
@@ -66,6 +71,7 @@ export function TwoYearMAPageClient({
             multiplier,
             zoneLabel,
             zoneColor,
+            livePrice,
             generatedAt: new Date().toISOString(),
           }} />
         </div>

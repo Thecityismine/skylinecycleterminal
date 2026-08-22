@@ -25,6 +25,10 @@ export type HodlWaveSharePayload = {
   scoreScore:   number;
   scoreLabel:   string;
   scoreColor:   string;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt:  string;
   logoSrc?:     never;
 };
@@ -79,7 +83,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
   const changeColor = change30d == null ? '#94A3B8' : change30d < 0 ? '#35D07F' : '#F85149';
 
   const stats = [
-    { label: 'BTC Price',           value: fmtUSD(btcClose), sub: 'Latest close',          color: '#E6EDF3'    },
+    { label: 'BTC Price', value: fmtUSD(payload.livePrice ?? btcClose), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',          color: '#E6EDF3'    },
     { label: 'Exchange Reserve',    value: fmtPct(exchPct),  sub: '% of circulating supply', color: '#F7931A'  },
     { label: '30D Change',          value: fmtPp(change30d), sub: change30d != null ? (change30d < 0 ? 'Coins leaving exchanges' : 'Coins entering exchanges') : '—', color: changeColor },
     { label: 'Distribution Score',  value: `${scoreScore}/100`, sub: scoreLabel,              color: scoreColor },

@@ -14,6 +14,10 @@ export type ValuationDeviationSharePayload = {
   points:      ValuationPoint[];
   startTs:     number;
   rangeLabel:  string;
+  /** Live spot when the card was made. The newest daily close is
+   *  yesterday's until the UTC day ends, so a card published midday showing
+   *  only the close reads as wrong to anyone who checks an exchange. */
+  livePrice?:  number | null;
   generatedAt: string;
 };
 
@@ -60,7 +64,7 @@ export function ValuationDeviationShareCard({ payload }: { payload: ValuationDev
   const now = Date.now();
 
   const stats = [
-    { label: 'BTC Price',       value: current ? fmtPrice(current.close) : '—',                          sub: 'Latest close',            color: '#E6EDF3' },
+    { label: 'BTC Price', value: payload.livePrice != null ? fmtPrice(payload.livePrice) : (current ? fmtPrice(current.close) : '—'), sub: payload.livePrice != null ? 'Live spot' : 'Latest close',            color: '#E6EDF3' },
     { label: '200D MA',         value: current?.ma200 != null ? fmtPrice(current.ma200) : '—',            sub: 'Trend baseline',           color: '#5B84FF' },
     { label: 'Deviation',       value: current?.deviation != null ? fmtPct(current.deviation) : '—',      sub: 'Price vs 200D MA',          color: zone?.color ?? '#E6EDF3' },
     { label: 'Days to Halving', value: current?.daysUntilNextHalving != null ? String(current.daysUntilNextHalving) : '—', sub: zone?.label ?? '—', color: current ? halvingColor(current.daysUntilNextHalving) : '#8B949E' },

@@ -7,6 +7,7 @@ import { PiCycleShareModal } from '@/components/share/PiCycleShareModal';
 import type { PiCycleSharePayload } from '@/components/share/PiCycleShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
+import { useLiveSpot } from '@/lib/share/liveSpot';
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
 function fmtZoomLabel(domain: ZoomDomain): string {
@@ -30,6 +31,10 @@ export function PiCycleChartSection({
   data, fetchError, statusLabel, statusColor,
   currentPrice, currentMA150, currentThreshold, ratio,
 }: Props) {
+  // Live spot for the share card headline. The chart stays on daily
+  // closes, which is what its indicators are computed from.
+  const { price: livePrice } = useLiveSpot();
+
   const [range,      setRange]      = useState<Range>('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain | null>(null);
 
@@ -61,6 +66,7 @@ export function PiCycleChartSection({
     currentMA150,
     currentThreshold,
     ratio,
+    livePrice,
     generatedAt:      new Date().toISOString(),
   };
 
