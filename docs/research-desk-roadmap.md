@@ -150,9 +150,15 @@ is not history. Check `/admin/store` coverage first.
 **5. EDGAR triage automation.** Tier 1 is rules (auto-dismiss `N-PX`, `485APOS`,
 `N-CSRS`, `497` from fund trusts, protected by an allowlist of real crypto issuers)
 and cuts maybe 30–40%. Tier 2 is a model reading the filing and proposing a draft
-classification, which is where the real win is. **Tier 2 is blocked**: SEC returns
-403 on filing bodies without a declared contact address. Set `SEC_USER_AGENT` to
-`Name contact@yourdomain.com` to unblock.
+classification, which is where the real win is. **No longer blocked.** Re-tested
+2026-08-22: filing bodies return 200 under the neutral default User-Agent, so the 403
+recorded here does not reproduce. Tier 2 can proceed whenever it reaches the top of
+the list, which moves it up, since being blocked was part of why it sat fifth.
+
+`SEC_USER_AGENT` is set regardless, to `Skyline Cycle Terminal Thecityismine.com@gmail.com`
+in `.env.local`, because declaring a contact is SEC's stated preference and makes us
+identifiable if they tighten enforcement again. **Not yet set in Vercel**, so the
+07:00 cron still sends the neutral default. Cosmetic today, since that works.
 
 **Automate triage and extraction. Never automate classification.** The index is worth
 owning because a person decided a given announcement was a pilot rather than
@@ -208,8 +214,9 @@ public is an opinion.
   `CapRealUSD` and `SplyAct1yr` return 403.
 - `CapRealUSD` is exactly `CapMrktCurUSD / CapMVRVCur`, both free. Realized cap needs
   no subscription.
-- EDGAR **search** works with a neutral User-Agent. Filing **bodies** need a contact
-  address.
+- EDGAR **search** and filing **bodies** both work with a neutral User-Agent, re-tested
+  2026-08-22 and 200 on both. The 403 on bodies recorded earlier did not reproduce.
+  Declare a contact anyway, but it is not a gate.
 - `CF Office: 09 Crypto Assets` and `SIC 6221` appear identically on Fidelity Solana
   Fund and Canary Staked TRX ETF, so no SEC metadata field separates institutional
   from crypto-native.
