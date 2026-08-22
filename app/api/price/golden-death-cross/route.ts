@@ -11,7 +11,23 @@ import {
   calculateSMA,
 } from '@/lib/indicators/goldenDeathCross';
 
-export const revalidate = 3600;
+// Always rendered fresh, because this page is shared to social media and a
+// stale render means publishing yesterday's price.
+//
+// `revalidate` alone was not enough. It is stale-while-revalidate: once the
+// entry expires, the next visitor is served the OLD response while a new one
+// regenerates behind them. On a page nobody visits hourly, that means every
+// visit shows the previous render, and staleness is unbounded rather than
+// capped at the revalidate window.
+//
+// fetchCache is required alongside it. `force-dynamic` is documented as
+// equivalent to setting every fetch to `no-store`, which would re-fetch Coin
+// Metrics' full price history on every page view and burn a rate-limited free
+// tier. `default-cache` restores the per-fetch `next: { revalidate }` in
+// lib/api/coinmetrics.ts, so the route recomputes each request while the vendor
+// call stays cached.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'default-cache';
 
 export async function GET() {
   try {
