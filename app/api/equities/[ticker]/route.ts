@@ -11,7 +11,13 @@ export async function GET(
 ) {
   const { ticker } = await params;
   const sym   = ticker.toUpperCase();
-  const stock = getStock(sym) ?? {
+  const listed = getStock(sym);
+
+  // Tickers outside the watchlist are still passed through to Yahoo, which is
+  // deliberate — a real symbol we have not curated should still resolve. But a
+  // typo reaches this far too, so an upstream miss on an unlisted symbol is
+  // reported as 404 (no such ticker) rather than 500 (our data source is down).
+  const stock = listed ?? {
     ticker: sym, name: sym, sector: 'Unknown',
     groups: ['tech'] as const, type: 'equity' as const, color: '#A9B4C0',
   };
@@ -23,6 +29,9 @@ export async function GET(
   ]);
 
   if (chartResult.status === 'rejected') {
+    if (!listed) {
+      return NextResponse.json({ error: `No ticker named "${sym}"` }, { status: 404 });
+    }
     console.error(`equities/${sym} chart:`, chartResult.reason?.message);
     return NextResponse.json(
       { error: `Price data unavailable: ${chartResult.reason?.message}` },
@@ -32,7 +41,10 @@ export async function GET(
 
   let closes = chartResult.value;
   if (!closes.length) {
-    return NextResponse.json({ error: 'No price data returned' }, { status: 404 });
+    return NextResponse.json(
+      { error: listed ? 'No price data returned' : `No ticker named "${sym}"` },
+      { status: 404 },
+    );
   }
 
   // Drop history from before a total change of business (see `historyStart` in

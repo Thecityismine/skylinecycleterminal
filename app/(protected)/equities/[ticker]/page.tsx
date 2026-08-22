@@ -167,7 +167,8 @@ export default function EquityDetailPage() {
   const [rangeIdx, setRangeIdx] = useState(4);
   const [log, setLog] = useState(true);
 
-  const { data, loading, error } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
+  const { data, loading, error, status } = useApiData<EquityResponse>(`/api/equities/${ticker}`);
+  const notFound = status === 404;
   const fundamentalsAvailable = data?.fundamentalsAvailable ?? true;
 
   const startTs = useMemo(() => {
@@ -312,10 +313,19 @@ export default function EquityDetailPage() {
             </div>
           ) : error ? (
             <div className="h-full flex items-center justify-center flex-col gap-2" style={{ color: '#FF5C5C' }}>
-              <p className="text-sm font-semibold">Price data unavailable</p>
-              <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-                Yahoo Finance may be temporarily unavailable. Try again in a moment.
+              <p className="text-sm font-semibold">
+                {notFound ? `No ticker named "${ticker.toUpperCase()}"` : 'Price data unavailable'}
               </p>
+              <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
+                {notFound
+                  ? 'Check the symbol, or pick one from the equities list.'
+                  : 'Yahoo Finance may be temporarily unavailable. Try again in a moment.'}
+              </p>
+              {notFound && (
+                <Link href="/equities" className="text-xs underline" style={{ color: 'var(--sct-muted)' }}>
+                  Back to equities
+                </Link>
+              )}
             </div>
           ) : data ? (
             <EquityChart

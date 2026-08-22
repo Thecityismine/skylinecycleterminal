@@ -119,7 +119,8 @@ export default function AltcoinDetailPage() {
   const [rangeIdx, setRangeIdx] = useState(3);
   const [log, setLog] = useState(true);
 
-  const { data, loading, error } = useApiData<AltcoinResponse>(`/api/altcoins/${id}`);
+  const { data, loading, error, status } = useApiData<AltcoinResponse>(`/api/altcoins/${id}`);
+  const notFound = status === 404;
   const snapshotAvailable = data?.snapshotAvailable ?? true;
 
   const startTs = useMemo(() => {
@@ -241,10 +242,19 @@ export default function AltcoinDetailPage() {
             </div>
           ) : error ? (
             <div className="h-full flex items-center justify-center flex-col gap-2" style={{ color: '#FF5C5C' }}>
-              <p className="text-sm font-semibold">Price data unavailable</p>
-              <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
-                CoinGecko may be temporarily unavailable. Try again in a moment.
+              <p className="text-sm font-semibold">
+                {notFound ? `No coin named "${id}"` : 'Price data unavailable'}
               </p>
+              <p className="text-xs" style={{ color: 'var(--sct-muted)' }}>
+                {notFound
+                  ? 'Check the spelling, or pick one from the altcoin list.'
+                  : 'CoinGecko may be temporarily unavailable. Try again in a moment.'}
+              </p>
+              {notFound && (
+                <Link href="/altcoins" className="text-xs underline" style={{ color: 'var(--sct-muted)' }}>
+                  Back to altcoins
+                </Link>
+              )}
             </div>
           ) : data ? (
             <EquityChart

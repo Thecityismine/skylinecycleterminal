@@ -60,7 +60,13 @@ export async function GET(
 ) {
   const { id } = await params;
   const key  = id.toLowerCase();
-  const coin: Coin = getAltcoin(key) ?? {
+  const listed = getAltcoin(key);
+
+  // Ids outside the watchlist are still passed through to CoinGecko, which is
+  // deliberate — a valid coin we have not curated should still resolve. But it
+  // also means a typo reaches this far, so an upstream miss on an unlisted id is
+  // reported as 404 (no such coin) rather than 500 (our data source is down).
+  const coin: Coin = listed ?? {
     id: key, symbol: key.toUpperCase(), name: key,
     sector: 'Unknown', group: 'majors' as const, color: '#A9B4C0',
   };
@@ -72,6 +78,9 @@ export async function GET(
   ]);
 
   if (chartResult.status === 'rejected') {
+    if (!listed) {
+      return NextResponse.json({ error: `No coin named "${key}"` }, { status: 404 });
+    }
     console.error(`altcoins/${coin.id} chart:`, chartResult.reason?.message);
     return NextResponse.json(
       { error: `Price data unavailable: ${chartResult.reason?.message}` },
@@ -81,7 +90,10 @@ export async function GET(
 
   let closes = chartResult.value;
   if (!closes.length) {
-    return NextResponse.json({ error: 'No price data returned' }, { status: 404 });
+    return NextResponse.json(
+      { error: listed ? 'No price data returned' : `No coin named "${key}"` },
+      { status: 404 },
+    );
   }
 
   closes = await withCointraderBackfill(coin, closes);
