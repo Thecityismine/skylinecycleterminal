@@ -13,6 +13,7 @@ import { HALVINGS, PHASES } from '@/lib/indicators/halvingCycles';
 import type { ZoneSegment } from '@/lib/indicators/halvingCycles';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 type PricePoint = { time: string; ts: number; price: number };
 
 export type HalvingSharePayload = {
@@ -48,9 +49,7 @@ const ALL_YEAR_TICKS = Array.from({ length: 18 }, (_, i) =>
 export function HalvingShareCard({ payload }: { payload: HalvingSharePayload }) {
   const { points, segments, logScale, rangeLabel, startTs, generatedAt, logoSrc } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const visible = points.filter((p) => p.ts >= startTs);
   const visSegs = segments

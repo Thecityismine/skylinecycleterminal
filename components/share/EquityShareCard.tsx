@@ -7,6 +7,7 @@ import {
 import type { EquityPoint, ZoneSegment, TrendMetrics, ScoreResult, EquityZone } from '@/lib/indicators/equityScore';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type EquitySharePayload = {
   ticker:     string;
   name:       string;
@@ -77,9 +78,7 @@ export function EquityShareCard({ payload }: { payload: EquitySharePayload }) {
     ? segments.filter((s) => s.x2 >= startTs).map((s) => ({ ...s, x1: Math.max(s.x1, startTs) }))
     : segments;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const isEtf = type === 'etf' || type === 'preferred';
   const change1dColor = change1d != null ? (change1d >= 0 ? '#35D07F' : '#FF5C5C') : '#94A3B8';

@@ -3,6 +3,7 @@
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine, ReferenceDot } from 'recharts';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type SevenYearCycleSharePayload = {
   price:          number;
   fourYearPhase:  string;
@@ -55,7 +56,7 @@ function MarkerDot({ cx, cy, kind }: { cx?: number; cy?: number; kind: 'low' | '
 export function SevenYearCycleShareCard({ payload }: { payload: SevenYearCycleSharePayload }) {
   const { price, fourYearPhase, sevenYearPhase, modelAgreement, points, halvings, stressWindows, cycleMarkers, scenarioBands, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     { label: 'BTC Price',       value: fmtUSD(price),  sub: 'Latest close',        color: '#F7931A' },

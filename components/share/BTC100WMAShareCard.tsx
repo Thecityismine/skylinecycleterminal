@@ -12,6 +12,7 @@ import {
 import type { WeeklyPoint, RegimeSegment } from '@/lib/indicators/weeklyMA';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type BTC100WMASharePayload = {
   data:          WeeklyPoint[];
   regimes:       RegimeSegment[];
@@ -109,9 +110,7 @@ export function BTC100WMAShareCard({ payload }: { payload: BTC100WMASharePayload
     return mo === '01' && dy <= 7;
   });
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     { label: 'BTC Price',        value: fmtFull(latestClose),  sub: 'Weekly close',             color: '#F7931A'  },

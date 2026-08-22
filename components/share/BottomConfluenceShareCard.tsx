@@ -8,6 +8,7 @@ import type { BottomConfluencePoint, ConfluencePeriod } from '@/lib/indicators/b
 import { BOTTOM_EVENTS, HALVINGS_BOTTOM } from '@/lib/indicators/bottomConfluence';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type BottomConfluenceSharePayload = {
   points:          BottomConfluencePoint[];
   periods:         ConfluencePeriod[];
@@ -59,9 +60,7 @@ export function BottomConfluenceShareCard({ payload }: { payload: BottomConfluen
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const mvrvColor  = mvrv  == null ? '#94A3B8' : mvrv  < 1.0 ? '#35D07F' : mvrv  < 1.5 ? '#E6B450' : '#FF5C5C';
   const hrColor    = hrRatio == null ? '#94A3B8' : hrRatio < 1.0 ? '#35D07F' : '#3B82F6';

@@ -11,6 +11,7 @@ import {
 import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type RealizedPriceSharePayload = {
   data:            RealizedPricePoint[];
   period:          string;
@@ -69,9 +70,7 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     { label: 'BTC Price',          value: fmtFull(currentPrice), sub: 'Latest close',            color: '#F7931A'      },

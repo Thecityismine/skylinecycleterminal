@@ -8,6 +8,7 @@ import type { HodlWavePoint } from '@/lib/indicators/exchangeReserve';
 import { HALVINGS_WITH_EXCHANGE, HODL_CYCLE_EVENTS } from '@/lib/indicators/exchangeReserve';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type HodlWaveSharePayload = {
   points:       HodlWavePoint[];
   showPrice:    boolean;
@@ -74,9 +75,7 @@ export function HodlWaveShareCard({ payload }: { payload: HodlWaveSharePayload }
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const changeColor = change30d == null ? '#94A3B8' : change30d < 0 ? '#35D07F' : '#F85149';
 

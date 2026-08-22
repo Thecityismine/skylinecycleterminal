@@ -6,6 +6,7 @@ import {
 import type { BtcM2Point } from '@/lib/indicators/btcM2';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type BtcM2SharePayload = {
   points:    BtcM2Point[];
   range:     string;
@@ -51,9 +52,7 @@ export function BtcM2ShareCard({ payload }: { payload: BtcM2SharePayload }) {
     zoneLabel, zoneColor, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   // Dynamic year ticks from data range
   const tsMin = points[0]?.ts ?? 0;

@@ -15,6 +15,7 @@ import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard
 import type { CrossEvent, CrossRegime } from '@/lib/indicators/goldenDeathCross';
 import { REGIMES } from '@/lib/indicators/goldenDeathCross';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 type ChartPoint = {
   time:   string;
   ts:     number;
@@ -140,9 +141,7 @@ export function GoldenDeathCrossShareCard({ payload }: { payload: GoldenDeathCro
   const spreadColor = (spread ?? 0) >= 0 ? GREEN : RED;
   const spreadFmt   = spread !== null ? `${spread > 0 ? '+' : ''}${spread.toFixed(1)}%` : '—';
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     { label: 'BTC Price', value: fmtP(price), sub: 'Bitcoin price',     color: PRICE },

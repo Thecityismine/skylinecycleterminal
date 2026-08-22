@@ -7,6 +7,7 @@ import {
 import type { PiBottomPoint } from '@/components/charts/PiCycleBottomChart';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type PiCycleSharePayload = {
   data:             PiBottomPoint[];
   range:            string;
@@ -51,9 +52,7 @@ export function PiCycleShareCard({ payload }: { payload: PiCycleSharePayload }) 
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const ratioColor = ratio == null
     ? '#F7F9FC'

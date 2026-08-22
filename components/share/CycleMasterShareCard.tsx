@@ -7,6 +7,7 @@ import {
 import type { CycleMasterPoint } from '@/lib/indicators/cycleMaster';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type CycleMasterSharePayload = {
   data:        CycleMasterPoint[];
   range:       string;
@@ -59,9 +60,7 @@ export function CycleMasterShareCard({ payload }: { payload: CycleMasterSharePay
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const resolvedScoreColor = scoreColor ?? '#94A3B8';
 

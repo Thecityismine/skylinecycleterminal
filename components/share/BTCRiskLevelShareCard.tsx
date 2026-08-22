@@ -5,6 +5,7 @@ import { riskColor, riskZone, ZONE_META } from '@/lib/indicators/riskScore';
 import { HALVINGS } from '@/lib/indicators/halvingCycles';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type BTCRiskLevelSharePayload = {
   points:            { ts: number; time: string; price: number; score: number | null }[];
   modelLabel:        string;
@@ -55,7 +56,7 @@ function fmtPrice(v: number): string {
 export function BTCRiskLevelShareCard({ payload }: { payload: BTCRiskLevelSharePayload }) {
   const { points, modelLabel, currentPrice, currentScore, historicalPct, confidencePct, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
   const zone = currentScore != null ? ZONE_META[riskZone(currentScore)] : null;
   const color = currentScore != null ? riskColor(currentScore) : '#8B949E';
 

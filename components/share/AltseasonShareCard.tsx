@@ -13,6 +13,7 @@ import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard
 import { REGIMES } from '@/lib/indicators/altseasonIndex';
 import type { SignalDot } from '@/lib/indicators/altseasonIndex';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 type ChartPoint = { time: string; ts: number; score: number; btcPrice: number | null };
 
 export type AltseasonSharePayload = {
@@ -74,9 +75,7 @@ export function AltseasonShareCard({ payload }: { payload: AltseasonSharePayload
     altcoinsTracked, altcoinsBeatingBtc, chartData, startTs, rangeLabel, generatedAt,
   } = payload;
 
-  const dateStr  = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
   const visible  = chartData.filter((d) => d.ts >= startTs);
   const withPrice = visible.filter((d) => d.btcPrice != null);
   const btcMin  = withPrice.length ? Math.min(...withPrice.map((d) => d.btcPrice!)) * 0.9 : 1000;

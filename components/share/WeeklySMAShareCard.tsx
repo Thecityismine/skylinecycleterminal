@@ -8,6 +8,7 @@ import type { WeeklyPoint, ZoneSegment, Zone } from '@/lib/api/weeklySMA';
 import { ZONE_FILL, ZONE_COLOR, ZONE_LABEL } from '@/lib/api/weeklySMA';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type WeeklySMASharePayload = {
   points:       WeeklyPoint[];
   segments:     ZoneSegment[];
@@ -65,9 +66,7 @@ export function WeeklySMAShareCard({ payload }: { payload: WeeklySMASharePayload
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const zoneColor = zone === 'none' ? '#6B7280' : ZONE_COLOR[zone];
 

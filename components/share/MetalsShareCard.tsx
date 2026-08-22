@@ -18,6 +18,7 @@ import {
 import type { MetalWeeklyPoint, MetalCurrent, Metal, MetalRegime } from '@/lib/indicators/metalTrend';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type MetalsSharePayload = {
   metal:       Metal;
   chartData:   MetalWeeklyPoint[];
@@ -81,9 +82,7 @@ export function MetalsShareCard({ payload }: { payload: MetalsSharePayload }) {
   const quadrantColor = MACRO_QUADRANT_COLOR[current.macroQuadrant];
   const quadrantLabel = MACRO_QUADRANT_LABEL[current.macroQuadrant];
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const priceStr = isGold
     ? `$${current.price.toFixed(0)} / oz`

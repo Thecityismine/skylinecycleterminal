@@ -12,6 +12,7 @@ import { NBER_RECESSIONS } from '@/lib/indicators/recessionRisk';
 import type { SPXPoint } from '@/lib/indicators/recessionRisk';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type SPXSharePayload = {
   chartData:    SPXPoint[];
   spxPrice:     number;
@@ -58,9 +59,7 @@ function fmtPct(v: number): string {
 export function SPXShareCard({ payload }: { payload: SPXSharePayload }) {
   const { chartData, spxPrice, pctVs200w, athDrawdown, riskScore, riskLabel, riskColor, show50w, show200w, showRecs, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const vs200wColor = pctVs200w != null && pctVs200w >= 0 ? '#35D07F' : '#FF5C5C';
   const ddColor     = athDrawdown > -5 ? '#35D07F' : athDrawdown > -15 ? '#E6B450' : '#FF5C5C';

@@ -5,6 +5,7 @@ import type { CyclePhase } from '@/lib/indicators/seasonality';
 import type { HeatmapRow } from '@/app/api/calendar/route';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type CalendarSharePayload = {
   asset:            string;
   monthName:        string;
@@ -37,7 +38,7 @@ export function CalendarShareCard({ payload }: { payload: CalendarSharePayload }
   } = payload;
 
   const phaseColor = CYCLE_PHASE_COLOR[currentPhase];
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     { label: 'Median Return',   value: fmtPct(medianReturn),         sub: monthName,                                color: medianReturn >= 0 ? '#35D07F' : '#F85149' },

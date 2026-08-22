@@ -18,6 +18,7 @@ import {
 import type { CyclePoint } from '@/lib/indicators/cycleHelpers';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type FourYearCycleSharePayload = {
   data:            CyclePoint[];
   cycleNum:        number;
@@ -69,9 +70,7 @@ export function FourYearCycleShareCard({ payload }: { payload: FourYearCycleShar
     { label: 'Next Halving',       value: `${daysToNext.toLocaleString()} days`, sub: `est. ${nextHalvingDate}`, color: '#8B949E'     },
   ];
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   return (
     <div style={{

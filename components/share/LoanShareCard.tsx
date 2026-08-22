@@ -2,6 +2,7 @@
 
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type LoanShareData = {
   loanAmount:        number;
   targetLtvPct:      number;
@@ -34,7 +35,7 @@ export function LoanShareCard({ payload }: { payload: LoanSharePayload }) {
     riskLabel, riskColor, generatedAt, hideLoanAmount, hideCollateral, percentagesOnly,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
 
   const rows: { label: string; value: string; color?: string }[] = [
     { label: 'Loan Amount',       value: percentagesOnly || hideLoanAmount ? HIDDEN : fmtUsd(loanAmount) },

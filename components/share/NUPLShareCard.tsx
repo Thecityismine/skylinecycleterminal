@@ -7,6 +7,7 @@ import {
 import type { NUPLPoint } from '@/lib/indicators/nupl';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type NUPLSharePayload = {
   points:     NUPLPoint[];
   nupl:       number | null;
@@ -69,9 +70,7 @@ function fmtUSD(v: number | null): string {
 export function NUPLShareCard({ payload }: { payload: NUPLSharePayload }) {
   const { points, nupl, price, ma730, zoneLabel, zoneColor, zone, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const ma730Color = ma730 != null && price != null
     ? (price < ma730 ? '#3B82F6' : '#35D07F')

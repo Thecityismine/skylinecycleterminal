@@ -11,6 +11,7 @@ import {
 import type { RatioPoint, RatioKey } from '@/lib/api/ratios';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type RatioSharePayload = {
   data:          RatioPoint[];
   ratioKey:      RatioKey;
@@ -84,9 +85,7 @@ export function RatioShareCard({ payload }: { payload: RatioSharePayload }) {
 
   const col = COLORS[ratioKey];
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const pctColor = (pctFromAth ?? 0) < -30 ? '#35D07F' : '#FF5C5C';
   const chgColor = (oneYearChange ?? 0) >= 0 ? '#35D07F' : '#FF5C5C';

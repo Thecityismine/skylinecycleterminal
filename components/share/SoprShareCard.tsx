@@ -7,6 +7,7 @@ import {
 import type { SoprPoint } from '@/lib/indicators/sopr';
 import { SOPR_REGIME_BANDS } from '@/lib/indicators/sopr';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
+import { formatCardDate, cardAsOfIso, shortDate } from '@/lib/share/cardDate';
 
 export type SoprSharePayload = {
   points:      SoprPoint[];
@@ -81,16 +82,9 @@ export function SoprShareCard({ payload }: { payload: SoprSharePayload }) {
   } = payload;
 
   // Stamped with the date of the data, not the moment the card was rendered.
-  // Those differ by a day for most of every day, and a card headed "Aug 22"
-  // showing Aug 21's close is the thing that makes a reader distrust the chart.
-  const asOfIso = dataAsOf ?? points[points.length - 1]?.time ?? null;
-  const dateStr = new Date((asOfIso ?? generatedAt).slice(0, 10) + 'T00:00:00Z')
-    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-
-  const closeDate = asOfIso
-    ? new Date(asOfIso.slice(0, 10) + 'T00:00:00Z')
-        .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
-    : null;
+  const asOfIso = dataAsOf ?? cardAsOfIso(payload);
+  const dateStr = formatCardDate(payload);
+  const closeDate = shortDate(asOfIso);
 
   const devColor = soprDev == null ? '#94A3B8' : soprDev >= 0 ? '#35D07F' : '#F85149';
 

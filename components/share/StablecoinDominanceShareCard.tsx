@@ -7,6 +7,7 @@ import {
 import type { StablecoinDominancePoint } from '@/lib/indicators/stablecoinDominance';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type StablecoinDominanceSharePayload = {
   points:          StablecoinDominancePoint[];
   dominance:       number | null;
@@ -66,9 +67,7 @@ export function StablecoinDominanceShareCard({ payload }: { payload: StablecoinD
     regimeLabel, regimeColor, liquidityScore, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const dom30dColor = dom30dChange != null
     ? (dom30dChange < -0.3 ? '#35D07F' : dom30dChange > 0.3 ? '#FF5C5C' : '#F2B84B')

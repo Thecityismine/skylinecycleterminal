@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 type DataPoint = {
   time:      string;
   price:     number;
@@ -70,9 +71,7 @@ export function PriceShareCard({ payload }: { payload: PriceSharePayload }) {
   const latest      = data[data.length - 1];
   const overlaySet  = new Set(overlays);
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   return (
     <div style={{

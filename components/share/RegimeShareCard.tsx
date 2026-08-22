@@ -12,6 +12,7 @@ import type { RegimePoint, RegimeZone, RegimeCurrent } from '@/lib/indicators/re
 import { REGIME_FILL, REGIME_COLOR, REGIME_LABEL } from '@/lib/indicators/regimeHelpers';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type RegimeSharePayload = {
   points:      RegimePoint[];
   zones:       RegimeZone[];
@@ -74,9 +75,7 @@ export function RegimeShareCard({ payload }: { payload: RegimeSharePayload }) {
     ? `${ma200Pct >= 0 ? '+' : ''}${ma200Pct.toFixed(1)}%`
     : '—';
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     {

@@ -7,6 +7,7 @@ import {
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import type { MedianPoint } from '@/lib/indicators/halvingCycleAlign';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type ChartRow = Record<string, number>;
 
 export type CycleMeta = {
@@ -52,9 +53,7 @@ function fmtY(v: number): string {
 export function CycleComparisonShareCard({ payload }: { payload: CycleComparisonSharePayload }) {
   const { chartData, cycles, medianPath, current, showMedian, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const vsColor = current.vsMedianIndexed === null
     ? '#8B949E'

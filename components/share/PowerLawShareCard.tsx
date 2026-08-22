@@ -7,6 +7,7 @@ import {
 import type { PowerLawPoint } from '@/lib/indicators/powerLaw';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type PowerLawSharePayload = {
   data:       PowerLawPoint[];
   range:      string;
@@ -77,9 +78,7 @@ export function PowerLawShareCard({ payload }: { payload: PowerLawSharePayload }
     zoneLabel, zoneColor, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const resolvedZoneColor = zoneColor ?? '#6B7280';
 

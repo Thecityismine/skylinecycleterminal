@@ -14,6 +14,7 @@ import {
 } from '@/lib/indicators/roadToOneMillion';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type RoadToOneMillionSharePayload = {
   historical:       ProjectionPoint[];
   scenarios:        Record<Scenario, ProjectionPoint[]>;
@@ -70,9 +71,7 @@ export function RoadToOneMillionShareCard({ payload }: { payload: RoadToOneMilli
     zoomLabel, xMinOverride, lastPrice, roadStatusLabel, roadStatusColor, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const hasData = historical.length > 0;
 

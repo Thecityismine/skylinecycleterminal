@@ -7,6 +7,7 @@ import {
 import type { DrawdownPoint } from '@/lib/indicators/drawdownFromATH';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type DrawdownSharePayload = {
   data:            DrawdownPoint[];
   timeframe:       string;
@@ -69,9 +70,7 @@ export function DrawdownShareCard({ payload }: { payload: DrawdownSharePayload }
     regimeLabel, regimeColor, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const recoveryColor = recovery > 100 ? '#FF5C5C' : recovery > 50 ? '#F97316' : '#E6B450';
   const daysColor = daysSinceATH > 500 ? '#FF5C5C' : daysSinceATH > 200 ? '#E6B450' : '#35D07F';

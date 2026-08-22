@@ -5,6 +5,7 @@ import type { BucketStat, Metric, ForwardWindow } from '@/lib/indicators/dcaOpti
 import { metricValue } from '@/lib/indicators/dcaOptimizer';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type BTCDCAOptimizerSharePayload = {
   buckets:      BucketStat[];
   metric:       Metric;
@@ -50,7 +51,7 @@ function isDiscountMetric(metric: Metric): boolean {
 export function BTCDCAOptimizerShareCard({ payload }: { payload: BTCDCAOptimizerSharePayload }) {
   const { buckets, metric, metricLabel, winWindow, groupByLabel, rangeLabel, maLabel, best, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
 
   const data = buckets.map((b) => ({ ...b, value: metricValue(b, metric, winWindow) }));
   const values = data.map((d) => d.value).filter((v): v is number => v != null);

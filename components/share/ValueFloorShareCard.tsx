@@ -8,6 +8,7 @@ import type { ValueFloorPoint } from '@/lib/indicators/valueFloors';
 import { HALVINGS_CVDD, FLOOR_EVENTS } from '@/lib/indicators/valueFloors';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type ValueFloorSharePayload = {
   points:        ValueFloorPoint[];
   visible:       Record<string, boolean>;
@@ -75,9 +76,7 @@ export function ValueFloorShareCard({ payload }: { payload: ValueFloorSharePaylo
     generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const distColor = (v: number | null) => v == null ? '#94A3B8'
     : v < 0   ? '#35D07F'

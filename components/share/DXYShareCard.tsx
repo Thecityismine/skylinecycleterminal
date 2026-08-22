@@ -13,6 +13,7 @@ import type { DxyWeeklyPoint, DxyZone, DxyCurrent } from '@/lib/indicators/dxyTr
 import { REGIME_FILL, REGIME_COLOR, REGIME_LABEL } from '@/lib/indicators/dxyTrend';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type DXYSharePayload = {
   chartData:   DxyWeeklyPoint[];
   zones:       DxyZone[];
@@ -50,9 +51,7 @@ export function DXYShareCard({ payload }: { payload: DXYSharePayload }) {
     : current.btcContext === 'tailwind' ? '#35D07F'
     : '#EAB84D';
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const change90dStr = current.change90d !== null
     ? `${current.change90d >= 0 ? '+' : ''}${current.change90d.toFixed(1)}%`

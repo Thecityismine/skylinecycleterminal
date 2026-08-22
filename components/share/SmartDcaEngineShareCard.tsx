@@ -3,6 +3,7 @@
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import { riskColor, riskZone } from '@/lib/indicators/riskScore';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type SmartDcaEngineSharePayload = {
   price:            number | null;
   score:            number | null;
@@ -41,7 +42,7 @@ function fmtUSD(v: number | null): string {
 export function SmartDcaEngineShareCard({ payload }: { payload: SmartDcaEngineSharePayload }) {
   const { price, score, zoneLabel, bestDayLabel, bestDayAvgDiscount, multiplierLabel, actionLabel, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
   const color = score != null ? riskColor(score) : '#8B949E';
   const zone  = score != null ? riskZone(score) : null;
 

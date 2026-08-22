@@ -9,6 +9,7 @@ import { halvingColor, ZONE_META } from '@/lib/indicators/valuationCycle';
 import type { ValuationPoint } from '@/lib/indicators/valuationCycle';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type ValuationDeviationSharePayload = {
   points:      ValuationPoint[];
   startTs:     number;
@@ -47,9 +48,7 @@ const LEGEND_STOPS = [0, 350, 700, 1050, 1400];
 export function ValuationDeviationShareCard({ payload }: { payload: ValuationDeviationSharePayload }) {
   const { points, startTs, rangeLabel, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const chartData = downsampleValuationPoints(points.filter((p) => p.ts >= startTs), 1500);
   const current   = points[points.length - 1] ?? null;

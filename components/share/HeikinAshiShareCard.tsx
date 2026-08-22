@@ -3,6 +3,7 @@
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import type { HACandle } from '@/components/charts/HeikinAshiChart';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type HeikinAshiSharePayload = {
   candles:    HACandle[];
   latest:     HACandle | null;
@@ -56,9 +57,7 @@ export function HeikinAshiShareCard({ payload }: { payload: HeikinAshiSharePaylo
   const isSignal   = latest?.isBearEndSignal ?? false;
   const statusColor = isGreen ? GREEN : RED;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     {

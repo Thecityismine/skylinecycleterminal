@@ -8,6 +8,7 @@ import type { BTCGliRow, GLITurningPoint, GLIPhaseZone, GLICurrentStats } from '
 import { SIGNAL_COLOR, SIGNAL_LABEL } from '@/lib/indicators/gliLag';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type BTCGLISharePayload = {
   rows:          BTCGliRow[];
   turningPoints: GLITurningPoint[];
@@ -49,7 +50,7 @@ function fmtP(v: number | null): string {
 export function BTCGLIShareCard({ payload }: { payload: BTCGLISharePayload }) {
   const { rows, turningPoints, phaseZones, current, rangeLabel, showPhases, showTurningPoints, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
   const signalColor = SIGNAL_COLOR[current.signal];
   const confidenceColor = current.confidence === 'High' ? '#35D07F' : current.confidence === 'Moderate' ? '#E6B450' : '#8B949E';
 

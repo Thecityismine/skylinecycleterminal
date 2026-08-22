@@ -3,6 +3,7 @@
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, ReferenceArea, ReferenceLine, ReferenceDot } from 'recharts';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type CycleTimerSharePayload = {
   daysSinceLow:           number;
   lowDateFmt:             string;
@@ -71,7 +72,7 @@ export function CycleTimerShareCard({ payload }: { payload: CycleTimerSharePaylo
     timingModelLabel, points, halvings, cycleMarkers, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
 
   const stats = [
     { label: 'Days Since Cycle Low', value: `${fmt(daysSinceLow)}d`,          sub: `Low: ${lowDateFmt} · $${fmt(lowPrice)}`, color: '#F7931A' },

@@ -4,6 +4,7 @@ import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid } from 'recharts
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import { fmtRotationValue } from '@/components/rotation/RotationChart';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type RotationSharePoint = {
   time:  string;
   ts:    number;
@@ -54,7 +55,7 @@ export function RotationShareCard({ payload }: { payload: RotationSharePayload }
     score, regimeLabel, regimeColor, currentValue, distanceFromATH, trend, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStr = formatCardDate(payload);
   const maKey = ma === 50 ? 'ma50' : ma === 100 ? 'ma100' : 'ma200';
 
   const stats = [

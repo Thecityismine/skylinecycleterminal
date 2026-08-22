@@ -14,6 +14,7 @@ import {
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 import type { HalvingWindowData } from '@/lib/indicators/halvingWindows';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 type PricePoint = { time: string; ts: number; price: number };
 
 export type HalvingWindowsSharePayload = {
@@ -117,9 +118,7 @@ function CardNeonDots({ windows, startTs }: { windows: HalvingWindowData[]; star
 export function HalvingWindowsShareCard({ payload }: { payload: HalvingWindowsSharePayload }) {
   const { points, windows, logScale, rangeLabel, startTs, generatedAt } = payload;
 
-  const dateStr  = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
   const visible  = points.filter((p) => p.ts >= startTs);
   const yearTicks = ALL_YEAR_TICKS.filter((t) => startTs === 0 || t >= startTs);
   const now      = Date.now();

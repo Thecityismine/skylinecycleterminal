@@ -8,6 +8,7 @@ import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard
 import type { LiquidityChartRow, LiquidityRegimeZone, LiquidityCurrentStats } from '@/lib/indicators/liquidityRegime';
 import { REGIME_COLOR, REGIME_FILL, REGIME_LABEL } from '@/lib/indicators/liquidityRegime';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type LiquidityRegimeSharePayload = {
   chartData:   LiquidityChartRow[];
   zones:       LiquidityRegimeZone[];
@@ -41,9 +42,7 @@ function fmtXTick(date: string): string {
 export function LiquidityRegimeShareCard({ payload }: { payload: LiquidityRegimeSharePayload }) {
   const { chartData, zones, current, generatedAt } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const regimeColor = REGIME_COLOR[current.regime];
 

@@ -7,6 +7,7 @@ import {
 import type { HRPoint } from '@/components/charts/HashRibbonChart';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 export type HashRibbonSharePayload = {
   data:          HRPoint[];
   range:         string;
@@ -68,9 +69,7 @@ export function HashRibbonShareCard({ payload }: { payload: HashRibbonSharePaylo
     dataSource, generatedAt,
   } = payload;
 
-  const dateStr = new Date(generatedAt).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const ratioColor = currentRatio == null
     ? '#F7F9FC'

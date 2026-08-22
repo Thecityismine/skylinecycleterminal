@@ -14,6 +14,7 @@ import type { HistoricalScorePoint } from '@/lib/indicators/historicalScore';
 import { yearTicks } from '@/lib/indicators/historicalScore';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
+import { formatCardDate } from '@/lib/share/cardDate';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ScoreSharePayload = {
@@ -83,9 +84,7 @@ export function ScoreShareCard({ payload }: { payload: ScoreSharePayload }) {
   const pMax     = prices.length ? Math.max(...prices) * 2.2 : 200_000;
   const logTicks = LOG_TICKS.filter((t) => t >= pMin && t <= pMax);
 
-  const dateStr  = new Date(generatedAt).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
+  const dateStr = formatCardDate(payload);
 
   const ZONES = [
     { color: '#3B82F6', label: '0–25 Accumulate' },
