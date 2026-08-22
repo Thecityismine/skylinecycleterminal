@@ -3,8 +3,18 @@ import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeGenerationZone } from '@/lib/indicators/generationZone';
 import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
 
-export const revalidate = 3600;
-
+// Always rendered fresh. These pages get shared, and `revalidate` is
+// stale-while-revalidate: the first visitor after expiry is served the previous
+// render while a new one builds behind them, so on a low-traffic page every
+// visit shows old data and staleness is unbounded.
+//
+// fetchCache is required alongside it. force-dynamic is documented as
+// equivalent to setting every fetch to no-store, which would re-fetch full
+// vendor history on each view. default-cache restores the per-fetch
+// `next: { revalidate }` in lib/api/*, so the route recomputes per request
+// while the vendor call stays cached.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'default-cache';
 // Weekly moving averages need a long runway: 230 weekly closes is roughly four
 // and a half years before the slower average produces its first value. Starting
 // in 2010 gives the deepest history the source has rather than clipping it.

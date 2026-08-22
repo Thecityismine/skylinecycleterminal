@@ -16,7 +16,12 @@ import {
   getRegime,
 } from '@/lib/indicators/altseasonIndex';
 
-export const revalidate = 900; // 15 minutes
+// Always rendered fresh. See app/api/price/golden-death-cross/route.ts for why
+// revalidate alone leaves a shared page showing the previous render, and why
+// fetchCache has to accompany force-dynamic. The per-fetch revalidate below
+// still bounds how often the vendor is called.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'default-cache';
 
 const CG = 'https://api.coingecko.com/api/v3';
 
