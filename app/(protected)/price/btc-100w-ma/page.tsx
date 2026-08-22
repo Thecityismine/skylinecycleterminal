@@ -12,6 +12,7 @@ import { PageHeader }           from '@/components/dashboard/PageHeader';
 import { StatCard }             from '@/components/dashboard/StatCard';
 
 import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
+import { BtcPriceBanner } from '@/components/dashboard/BtcPriceBanner';
 export const dynamic = 'force-dynamic';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -101,14 +102,7 @@ export default async function BTC100WMAPage() {
           <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>{score.description}</p>
         </div>
         {last && (
-          <div className="hidden sm:block text-right shrink-0">
-            <p className="text-2xl font-mono font-bold" style={{ color: '#F7931A' }}>
-              {fmtUSD(last.close)}
-            </p>
-            <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              Current BTC Price
-            </p>
-          </div>
+          <BtcPriceBanner close={last.close} />
         )}
       </div>
 

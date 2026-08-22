@@ -9,6 +9,7 @@ import {
 import { BTCSoprChartSection } from '@/components/charts/BTCSoprChartSection';
 import { PageHeader }    from '@/components/dashboard/PageHeader';
 import { StatCard }      from '@/components/dashboard/StatCard';
+import { BtcPriceBanner } from '@/components/dashboard/BtcPriceBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,13 +23,6 @@ function fmt3(v: number | null | undefined): string {
 function fmtDev(v: number | null | undefined): string {
   if (v == null) return '—';
   return `${v >= 0 ? '+' : ''}${v.toFixed(3)}`;
-}
-
-function fmtUSD(v: number | null | undefined): string {
-  if (v == null) return '—';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', maximumFractionDigits: 0,
-  }).format(v);
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -95,14 +89,7 @@ export default async function SoprPage() {
           <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>{regime.description}</p>
         </div>
         {last && (
-          <div className="hidden sm:block text-right shrink-0">
-            <p className="text-2xl font-mono font-bold" style={{ color: '#F7931A' }}>
-              {fmtUSD(last.btcClose)}
-            </p>
-            <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              BTC Price
-            </p>
-          </div>
+          <BtcPriceBanner close={last.btcClose} />
         )}
       </div>
 

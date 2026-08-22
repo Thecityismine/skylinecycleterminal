@@ -5,6 +5,7 @@ import { PageHeader }        from '@/components/dashboard/PageHeader';
 import { StatCard }          from '@/components/dashboard/StatCard';
 
 import { BtcPriceStat } from '@/components/dashboard/BtcPriceStat';
+import { BtcPriceBanner } from '@/components/dashboard/BtcPriceBanner';
 export const dynamic = 'force-dynamic';
 
 function fmtUSD(v: number | null | undefined): string {
@@ -67,14 +68,7 @@ export default async function NUPLPage() {
           <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>{signal.label}</p>
         </div>
         {current.price != null && (
-          <div className="hidden sm:block text-right shrink-0">
-            <p className="text-2xl font-mono font-bold" style={{ color: '#F7931A' }}>
-              {fmtUSD(current.price)}
-            </p>
-            <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--sct-muted)' }}>
-              BTC Price
-            </p>
-          </div>
+          <BtcPriceBanner close={current.price} />
         )}
       </div>
 

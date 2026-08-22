@@ -144,7 +144,10 @@ export default async function RealizedPricePage() {
       {/* Insight panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <InsightPanel title="Current Signal">
-          <InsightRow label="BTC Price"     value={fmtUSD(currentPrice)}                valueColor="var(--sct-btc)" />
+          {/* The close, not live spot: Ratio and Premium below are computed from it,
+              so the panel has to stay internally consistent. Labelled to say so, since
+              the stat card at the top of the page shows spot. */}
+          <InsightRow label="BTC Price (close)" value={fmtUSD(currentPrice)}             valueColor="var(--sct-btc)" />
           <InsightRow label="200-Week MA"   value={ma200w ? fmtUSD(ma200w) : '—'}        valueColor="#E879F9" />
           <InsightRow label="Ratio"         value={ratio ? `${ratio.toFixed(2)}×` : '—'} valueColor={zone?.color} />
           <InsightRow label="Signal"        value={zone?.label ?? '—'}                   valueColor={zone?.color} />
