@@ -292,16 +292,20 @@ export function HyperliquidPositioning() {
       <div className="rounded-xl border p-5"
         style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}>
         <p className="text-xs font-semibold tracking-wider uppercase mb-2" style={{ color: 'var(--sct-muted)' }}>
-          What this page does not show
+          Not shown yet
         </p>
         <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
-          Liquidation heatmaps, entry-price heatmaps and largest-position tables are not
-          derivable from Hyperliquid&apos;s public API. Every documented position query takes a
-          single address, there is no leaderboard endpoint, and the WebSocket carries no
-          market-wide liquidation stream. Products that show those have indexed the chain
-          themselves over months. Rather than approximate them from aggregates and present a
-          guess as a measurement, this page reports only what the venue publishes:
-          price, open interest, funding and volume.
+          Liquidation levels, entry-price distribution and a largest-positions table are not
+          on this page. Hyperliquid does publish enough to build them: every public trade
+          names both counterparties, and an account&apos;s entry price, liquidation price and
+          leverage are readable per address. Assembling that means continuously crawling
+          accounts and storing the results, which Skyline does not do today.
+        </p>
+        <p className="text-xs leading-relaxed mt-2" style={{ color: 'var(--sct-muted)' }}>
+          Actual liquidation events, and any history from before such a crawl began, exist
+          only in Hyperliquid&apos;s node-data archive. Until that work is done, this page reports
+          what a single request returns: price, open interest, funding and volume. Nothing
+          here is inferred from a model.
         </p>
       </div>
     </div>

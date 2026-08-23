@@ -2,17 +2,30 @@
 //
 // What this can and cannot see, because it decides the whole shape of the page:
 //
-// The public info endpoint exposes market-wide *aggregates* — mark price, open
-// interest, funding, premium, volume — plus per-coin candles and funding
-// history. It does not expose anything per-position. Every documented position
-// query takes a single 42-character address, there is no leaderboard, and the
-// WebSocket has no market-wide liquidation stream: liquidation data appears only
-// inside per-user fill events.
+// This module covers the market-wide *aggregates*: mark price, open interest,
+// funding, premium, volume, plus per-coin candles and funding history. One
+// request, no state, so it is what the page ships today.
 //
-// So a liquidation heatmap, an entry-price heatmap, or a largest-positions table
-// cannot be built from this API at any effort level. Products that show those
-// have indexed the L1 themselves for months. Nothing here pretends otherwise:
-// the page renders what the venue actually publishes.
+// Position-level views are a different build, not an impossible one. An earlier
+// version of this comment said a liquidation or entry heatmap could not be built
+// from this API at any effort level. That was wrong, and worth writing down so
+// nobody re-derives the wrong conclusion:
+//
+//   - The public 'trades' subscription includes a 'users' array carrying both
+//     counterparty addresses on every fill. Addresses can be harvested live,
+//     with no privileged access.
+//   - clearinghouseState for an address returns entryPx, liquidationPx,
+//     leverage, notional and account value.
+//
+// Together those give the largest-positions table and the liquidation-wall
+// cascade from a crawl, and the two heatmaps once snapshots have accumulated
+// over time. What is genuinely missing is history: actual liquidation *events*
+// and any window predating our own recording live in the hl-mainnet-node-data
+// S3 bucket, which is requester-pays.
+//
+// None of that infrastructure exists yet, so it is deliberately not in here.
+// Adding it means a crawler and a store sized for millions of rows, which is a
+// separate piece of work from this file.
 
 const API = 'https://api.hyperliquid.xyz/info';
 
