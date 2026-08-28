@@ -39,8 +39,18 @@ export function StatCard({
   const fw = freshness ? freshnessConfig[freshness] : null;
 
   return (
+    // min-w-0 is the actual fix for these cards overflowing their grid.
+    //
+    // A grid item defaults to `min-width: auto`, meaning it refuses to shrink below
+    // its content's intrinsic width -- so a long value pushes the whole track wider
+    // and out of the viewport, no matter what font size the text is. Reducing the
+    // type to text-2xl helped the common case and left the longer values still
+    // overflowing (24-37px on /cycle-timer, /onchain/reserve-risk,
+    // /macro/liquidity-regime and /cross-asset, all of which use the same
+    // grid-cols-2 as pages that were fine -- the difference was value length, not
+    // card width). This lets the track shrink so the value can wrap instead.
     <div
-      className={cn("rounded-xl p-5 border flex flex-col gap-2", className)}
+      className={cn("rounded-xl p-5 border flex flex-col gap-2 min-w-0", className)}
       style={{
         backgroundColor: "var(--sct-card)",
         borderColor: "var(--sct-border)",
@@ -79,7 +89,7 @@ export function StatCard({
         * spilled past the card edge on every page carrying one. text-2xl fits, and
         * the full size returns at the `sm` breakpoint where the grid widens. */}
       <span
-        className="text-2xl sm:text-3xl font-mono font-bold tracking-tight"
+        className="text-2xl sm:text-3xl font-mono font-bold tracking-tight min-w-0 break-words"
         style={{ color: accent ?? "var(--sct-text)" }}
       >
         {value}
