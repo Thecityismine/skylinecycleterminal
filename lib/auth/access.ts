@@ -3,6 +3,11 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { verifySession, type Session } from "@/lib/auth/session";
 import { getEntitlementRecord } from "@/lib/auth/entitlement";
+import {
+  isDevAuthBypassEnabled,
+  DEV_AUTH_BYPASS_UID,
+  DEV_AUTH_BYPASS_EMAIL,
+} from "@/lib/auth/devBypass";
 
 export type Entitlement = { active: boolean };
 
@@ -35,6 +40,13 @@ const getEntitlement = cache(async (uid: string): Promise<Entitlement> => {
 // Single choke point for the (protected) route group: redirects to /login if there's no
 // valid session, or to /billing if the session is valid but the subscription has lapsed.
 export async function requireAccess(): Promise<Session> {
+  // Local-only escape hatch for rendering this route group without a Firebase
+  // session. Triple-gated and inert in any production build — see lib/auth/devBypass.ts.
+  if (isDevAuthBypassEnabled()) {
+    console.warn("[access] DEV_AUTH_BYPASS active — protected routes are UNGATED locally");
+    return { uid: DEV_AUTH_BYPASS_UID, email: DEV_AUTH_BYPASS_EMAIL };
+  }
+
   const session = await verifySession();
   if (!session) redirect("/login");
 
