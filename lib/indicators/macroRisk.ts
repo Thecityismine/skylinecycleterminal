@@ -15,6 +15,7 @@
 // "is the rest of the world likely to help or hurt over the coming months?"
 
 import type { MacroTerminalData, Pt } from '@/lib/api/macroTerminal';
+import { computeRealizedVolatility }   from '@/lib/indicators/realizedVolatility';
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
@@ -563,6 +564,13 @@ function buildVolatility(d: MacroTerminalData): Section {
   const gvzLast = last(d.gvz);
   const gvzPct  = gvzLast ? percentile(d.gvz, gvzLast.value) : null;
 
+  // Percentile comes straight from computeRealizedVolatility rather than the local
+  // `percentile` helper, so this reads identically to /price/realized-volatility
+  // instead of being a second implementation that can drift.
+  const btcRv    = computeRealizedVolatility(d.btcHistory);
+  const btcVol   = btcRv.current.rv30;
+  const btcVolPct = btcRv.current.percentile;
+
   const metrics = [
     metric('vix', 'Equity Volatility (VIX)',
       vixPct,
@@ -598,11 +606,28 @@ function buildVolatility(d: MacroTerminalData): Section {
       [[25, 'Calm'], [50, 'Normal'], [75, 'Elevated'], [101, 'Stressed']],
       'Gold implied volatility. Rising gold vol alongside rising equity vol usually means the market is repricing monetary policy itself, not just growth.',
       'FRED GVZCLS', 'daily', gvzLast?.date ?? null),
+
+    // Until this was added, the volatility section measured equities, bonds, tech,
+    // oil and gold — everything except the asset the terminal is about.
+    //
+    // Scored on percentile like its neighbours, so high vol reads as hostile and the
+    // section stays internally coherent. Note this is the one metric here where a low
+    // reading is not unambiguously good: volatility collapsing after a deep drawdown
+    // is constructive rather than calm. That distinction needs the drawdown context
+    // this section does not carry, so it lives on /price/realized-volatility, which
+    // gates its capitulation signal on both. The number itself is the same one —
+    // both call computeRealizedVolatility over btcHistory.
+    metric('btcvol', 'Bitcoin Realized Vol',
+      btcVolPct,
+      btcVol == null ? '—' : `${btcVol.toFixed(1)}%${btcVolPct != null ? ` · ${ordinal(btcVolPct)} pct` : ''}`,
+      [[25, 'Compressed'], [50, 'Normal'], [75, 'Elevated'], [101, 'Extreme']],
+      'Bitcoin\'s own 30-day realized volatility, annualized. The other five metrics here measure stress arriving from outside; this one measures how much of it has already landed.',
+      'CoinMetrics PriceUSD', 'daily', d.btcHistory.at(-1)?.time ?? null),
   ];
 
   const { value: risk, share } = blend([
-    [metrics[0].risk, 0.35], [metrics[1].risk, 0.25], [metrics[2].risk, 0.15],
-    [metrics[3].risk, 0.15], [metrics[4].risk, 0.10],
+    [metrics[0].risk, 0.30], [metrics[1].risk, 0.22], [metrics[2].risk, 0.13],
+    [metrics[3].risk, 0.10], [metrics[4].risk, 0.08], [metrics[5].risk, 0.17],
   ]);
 
   return {
@@ -614,7 +639,7 @@ function buildVolatility(d: MacroTerminalData): Section {
       : risk < 75 ? 'Elevated · Caution'
       : 'Risk-Off',
     blurb: 'Volatility is the transmission mechanism. Whatever the shock, it reaches Bitcoin through forced position reduction, and volatility is what forces it.',
-    coverage: 'Currency volatility (EVZ) was discontinued in 2025 and is excluded.',
+    coverage: 'Currency volatility (EVZ) was discontinued in 2025 and is excluded. Bitcoin\'s own reading is realized rather than implied — no free, full-history implied-vol series for BTC exists.',
   };
 }
 

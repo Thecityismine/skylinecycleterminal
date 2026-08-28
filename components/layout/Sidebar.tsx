@@ -96,6 +96,7 @@ const nav: (NavItem | NavSection)[] = [
       { label: "Heikin-Ashi",      href: "/price/heikin-ashi",        icon: BarChart2 },
       { label: "Fear & Greed",      href: "/price/fear-greed",         icon: Activity, free: true },
       { label: "Drawdown / ATH",   href: "/price/drawdown",           icon: TrendingDown },
+      { label: "Realized Volatility", href: "/price/realized-volatility", icon: Activity },
       { label: "Yearly Lows",      href: "/price/yearly-lows",        icon: TrendingDown },
       { label: "Liquidity Heatmap", href: "/price/liquidity",          icon: Flame },
       { label: "Hyperliquid Positioning", href: "/price/hyperliquid",   icon: Flame },
