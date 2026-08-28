@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth/constants";
+import { isDevAuthBypassEnabled } from "@/lib/auth/devBypass";
 
 // Optimistic cookie-presence check only — no JWT verification, no Firestore read.
 // Proxy runs on every request including prefetches, so it stays cheap; the real
@@ -39,7 +40,12 @@ export function proxy(request: NextRequest) {
     PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   const hasSession = request.cookies.has(SESSION_COOKIE);
 
-  if (!isPublic && !hasSession) {
+  // Local-only, triple-gated — see lib/auth/devBypass.ts. Deliberately only opens
+  // the gate; it does NOT feed the signed-in redirect below, so "/" still renders
+  // the landing page locally instead of bouncing to /dashboard.
+  const devBypass = isDevAuthBypassEnabled();
+
+  if (!isPublic && !hasSession && !devBypass) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
