@@ -86,12 +86,17 @@ export function computeAlerts(
     }
   }
 
-  // 3. BTC Market Regime change (200-day MA cross)
+  // 3. BTC Market Regime change (price vs 200-day MA, plus the MA's 30d slope)
+  //
+  // The old copy read "Crossed 200-Day MA", which was wrong often enough to
+  // mislead: the regime also turns when price stays put and the MA's slope
+  // changes sign, with no cross involved at all. Both inputs are stated instead,
+  // and the wording is kept generic.
   if (changed(prev.btcRegime, s.btcRegime)) {
     const emoji = s.btcRegime === 'bull' ? '📈' : s.btcRegime === 'bear' ? '📉' : '➡️';
     alerts.push(
       `${emoji} *BTC Regime → ${s.btcRegime.toUpperCase()}* — ${usd(s.btcPrice)}\n` +
-      `_Crossed 200-Day MA · was: ${prev.btcRegime}_`
+      `_Price vs 200-Day MA + MA trend · confirmed 5 days · was: ${prev.btcRegime}_`
     );
   }
 

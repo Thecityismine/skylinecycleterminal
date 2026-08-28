@@ -1,6 +1,7 @@
 import { NextResponse }         from 'next/server';
 import { fetchDailyPrice }       from '@/lib/api/coinmetrics';
 import { getCurrentPosition }    from '@/lib/indicators/halvingCycles';
+import { computeRegime }         from '@/lib/indicators/regimeHelpers';
 
 // Cache for 1 hour — Firebase function runs once daily so this is plenty
 // Always rendered fresh. These pages get shared, and `revalidate` is
@@ -26,18 +27,6 @@ function slidingSMA(values: number[], period: number): (number | null)[] {
     out.push(i >= period - 1 ? sum / period : null);
   }
   return out;
-}
-
-function regime(prices: number[], ma200: (number | null)[]): 'bull' | 'bear' | 'neutral' {
-  const i = prices.length - 1;
-  const p = prices[i];
-  const ma = ma200[i];
-  const maPrev = ma200[Math.max(0, i - 10)];
-  if (ma == null) return 'neutral';
-  const rising = maPrev != null ? ma > maPrev : true;
-  if (p > ma && rising)   return 'bull';
-  if (p < ma && !rising)  return 'bear';
-  return 'neutral';
 }
 
 function computeHA(daily: { time: string; price: number }[]) {
@@ -98,7 +87,11 @@ export async function GET() {
     const btcAbove200dma = bMA200[bi]  != null ? bPrice > bMA200[bi]!  : null;
     const btcAbove2yma   = bMA730[bi]  != null ? bPrice > bMA730[bi]!  : null;
     const btcAbove200wma = bMA1400[bi] != null ? bPrice > bMA1400[bi]! : null;
-    const btcRegime      = regime(bv, bMA200);
+    // Shared with /api/price/regime and the market-regime chart. This route used
+    // to carry its own copy that sloped the 200DMA over 10 days instead of 30,
+    // which let the Telegram alert report BULL while the chart the reader would
+    // check still showed a transition.
+    const btcRegime      = computeRegime(btc).current.regime;
 
     const piThreshold  = bMA471[bi] != null ? bMA471[bi]! * 0.745 : null;
     const piCycleRatio = bMA150[bi] != null && piThreshold != null
