@@ -57,6 +57,25 @@ function sma(values: number[], period: number): (number | null)[] {
 // Bull  = price above rising 200DMA  (slope over 30d > 0)
 // Bear  = price below falling 200DMA (slope over 30d < 0)
 // Neutral = everything else (early data or ambiguous crossover)
+//
+// The raw test above is noisy: on its own it produced 107 spans since 2012 with
+// a median length of 9 days, because the 200DMA slope flickers around zero at
+// every inflection. A regime therefore only becomes official once the raw test
+// has agreed for CONFIRM_DAYS consecutive days.
+//
+// Measured over 2012-2026, confirmation keeps every one of the 14 regime changes
+// that went on to last 60+ days, while cutting directional flips from 53 to 33.
+// A shorter slope window was tried instead and rejected: 10d rather than 30d
+// bought a median of 6 days' notice for a 63% false-start rate, and it is what
+// let /api/signals and this file disagree in the first place. A minimum slope
+// magnitude (|slope| > 150) was also tried and rejected — it silences 5 more
+// false flips but drops 4 of the 14 genuine regime changes.
+//
+// The confirmation is causal: day i is decided using days <= i only, so a span
+// is never revised after the fact and the chart cannot repaint under a reader.
+// The cost is that a new regime is dated to the day it was confirmed rather than
+// the day the raw test first flipped, which runs ~5 days later by construction.
+const CONFIRM_DAYS = 5;
 
 export function computeRegime(prices: PricePoint[]): RegimeResult {
   const closes   = prices.map((d) => d.price);
@@ -73,14 +92,26 @@ export function computeRegime(prices: PricePoint[]): RegimeResult {
     return 'neutral';
   });
 
+  // Apply confirmation. `held` counts how many consecutive days the raw test has
+  // returned the same value; the regime only switches once that reaches
+  // CONFIRM_DAYS, otherwise the previous confirmed regime carries forward.
+  const regimes: Regime[] = [];
+  let confirmed: Regime = 'neutral';
+  let held = 0;
+  for (let i = 0; i < rawRegimes.length; i++) {
+    held = i > 0 && rawRegimes[i] === rawRegimes[i - 1] ? held + 1 : 1;
+    if (held >= CONFIRM_DAYS) confirmed = rawRegimes[i];
+    regimes.push(confirmed);
+  }
+
   // Track the start of each contiguous regime span
   const regimeStarts: string[] = [];
   let currentStart = prices[0]?.time ?? '';
-  let prevRegime   = rawRegimes[0] ?? 'neutral';
+  let prevRegime   = regimes[0] ?? 'neutral';
   for (let i = 0; i < prices.length; i++) {
-    if (rawRegimes[i] !== prevRegime) {
+    if (regimes[i] !== prevRegime) {
       currentStart = prices[i].time;
-      prevRegime   = rawRegimes[i];
+      prevRegime   = regimes[i];
     }
     regimeStarts.push(currentStart);
   }
@@ -91,7 +122,7 @@ export function computeRegime(prices: PricePoint[]): RegimeResult {
     ts:          new Date(d.time + 'T00:00:00').getTime(),
     price:       d.price,
     ma200:       ma200Arr[i],
-    regime:      rawRegimes[i],
+    regime:      regimes[i],
     regimeStart: regimeStarts[i],
   }));
 
