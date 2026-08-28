@@ -24,7 +24,11 @@ export function AgePyramidChart({ rows }: Props) {
           const rightWidth = (r.realizedCapPct / maxRealized) * 100;
           const overweight = r.realizedCapPct > r.supplyPct; // paid a premium relative to supply share
           return (
-            <div key={r.key} className="grid items-center gap-2" style={{ gridTemplateColumns: '1fr 72px 1fr' }}>
+            // minmax(0, 1fr) rather than 1fr: a grid track sized `1fr` still takes
+            // an automatic minimum from its content, so these rows refused to
+            // narrow and ran 88px past a 375px viewport. minmax(0, ...) removes
+            // that floor and lets the columns actually share the available width.
+            <div key={r.key} className="grid items-center gap-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) 72px minmax(0, 1fr)' }}>
               {/* left: supply % */}
               <div className="flex items-center justify-end gap-2">
                 <span className="text-[10px] font-mono" style={{ color: 'var(--sct-secondary)' }}>{r.supplyPct.toFixed(1)}%</span>
