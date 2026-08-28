@@ -57,16 +57,22 @@ export function StatCard({
         boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
       }}
     >
-      {/* Top row: label + freshness */}
-      <div className="flex items-center justify-between">
+      {/* Top row: label + freshness.
+        *
+        * Wraps for the same reason the value below needs min-w-0: in a three-column
+        * grid these cards get about 96px, and a longer label beside a freshness
+        * badge ("Historical Percentile" + DAILY) overran it by 30px on
+        * /tools/risk-level. The badge keeps shrink-0 so it stays intact and the
+        * label is what gives way. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
         <span
-          className="text-xs font-medium tracking-wider uppercase"
+          className="text-xs font-medium tracking-wider uppercase min-w-0 break-words"
           style={{ color: "var(--sct-muted)" }}
         >
           {label}
         </span>
         {fw && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <span
               className="w-1.5 h-1.5 rounded-full"
               style={{ backgroundColor: fw.dot }}

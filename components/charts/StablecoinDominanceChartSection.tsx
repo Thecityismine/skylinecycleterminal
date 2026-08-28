@@ -84,12 +84,14 @@ export function StablecoinDominanceChartSection({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium tracking-wide" style={{ color: 'var(--sct-muted)' }}>
+      {/* Wraps so the long heading and the range selector can stack on a phone
+        * rather than overrunning the card by 21px. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-3">
+        <h2 className="text-sm font-medium tracking-wide min-w-0 break-words" style={{ color: 'var(--sct-muted)' }}>
           STABLECOIN DOMINANCE + BTC PRICE OVERLAY
         </h2>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           <div className="flex items-center rounded-md border overflow-hidden" style={{ borderColor: '#21262D' }}>
             {RANGES.map(({ label }) => (
               <button
