@@ -22,16 +22,26 @@ export function PageHeader({ title, subtitle, regime, className }: PageHeaderPro
 
   return (
     <div className={cn("mb-8", className)}>
-      <div className="flex items-center gap-3 mb-1">
+      {/* flex-wrap and min-w-0 are load-bearing on mobile.
+        *
+        * Without them a long title cannot shrink and the badge cannot drop to a
+        * second line, so this row measures wider than a 375px viewport. Because it
+        * sits at the top of the page, the overflow widens the whole document: the
+        * title clips off the left edge and chart controls run off the right. It
+        * looks like a chart bug and is not one.
+        *
+        * `break-words` covers the remaining case of a single unbroken token longer
+        * than the viewport, which min-w-0 alone would still overflow. */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">
         <h1
-          className="text-2xl font-semibold tracking-tight"
+          className="text-xl sm:text-2xl font-semibold tracking-tight min-w-0 break-words"
           style={{ color: "var(--sct-text)" }}
         >
           {title}
         </h1>
         {badge && (
           <span
-            className="px-2.5 py-0.5 rounded text-[11px] font-medium tracking-wider border"
+            className="px-2.5 py-0.5 rounded text-[11px] font-medium tracking-wider border shrink-0"
             style={{ backgroundColor: badge.bg, borderColor: badge.border, color: badge.color }}
           >
             {badge.label}

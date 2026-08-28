@@ -148,7 +148,12 @@ export function HalvingCycleChartSection({ cycles, medianPath, current }: Props)
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-mono shrink-0 flex-wrap">
+        {/* `shrink-0` used to sit here alongside `flex-wrap`, which cancelled it out:
+          * flex-shrink:0 sizes the box to max-content, so it never narrowed and the
+          * wrap could never trigger. The legend measured 526px inside a 295px column
+          * on a phone and the last cycle's label was cut off. min-w-0 lets it shrink
+          * so the wrap actually happens. */}
+        <div className="flex items-center gap-x-4 gap-y-2 text-xs font-mono flex-wrap min-w-0">
           {/* Cycle color legend */}
           {cycles.map(c => (
             <span key={c.id} className="flex items-center gap-1.5">

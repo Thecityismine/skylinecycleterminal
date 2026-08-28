@@ -8,6 +8,7 @@ import type { HashRibbonSharePayload } from '@/components/share/HashRibbonShareC
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 import { useLiveSpot } from '@/lib/share/liveSpot';
+import { ChartControlGroup, ChartLegendItem } from '@/components/charts/ChartControls';
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
 type Props = {
@@ -75,21 +76,15 @@ export function HashRibbonChartSection({
             {dataSource === 'DiffLast' && ' · Using mining difficulty as hash rate proxy'}
           </p>
         </div>
-        <div className="flex items-center gap-5 text-xs font-mono shrink-0">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.75)' }} />
-            <span style={{ color: 'var(--sct-muted)' }}>BTC Price</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-6 h-0.5" style={{ backgroundColor: '#A78BFA' }} />
-            <span style={{ color: '#A78BFA' }}>30d / 60d Ratio</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(255,92,92,0.25)' }} />
+        <ChartControlGroup>
+          <ChartLegendItem color="rgba(247,249,252,0.75)" label="BTC Price" muted />
+          <ChartLegendItem color="#A78BFA" label="30d / 60d Ratio" />
+          <span className="flex items-center gap-1.5 text-xs font-mono">
+            <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: 'rgba(255,92,92,0.25)' }} />
             <span style={{ color: '#FF5C5C' }}>Capitulation Zone</span>
           </span>
           <HashRibbonShareModal payload={sharePayload} />
-        </div>
+        </ChartControlGroup>
       </div>
 
       {fetchError ? (

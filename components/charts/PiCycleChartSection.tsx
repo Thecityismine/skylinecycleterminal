@@ -8,6 +8,8 @@ import type { PiCycleSharePayload } from '@/components/share/PiCycleShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
 
 import { useLiveSpot } from '@/lib/share/liveSpot';
+import { ChartControlGroup, ChartLegendItem } from '@/components/charts/ChartControls';
+
 const DAYS: Record<Range, number> = { '2Y': 730, '4Y': 1460, 'All': Infinity };
 
 function fmtZoomLabel(domain: ZoomDomain): string {
@@ -84,21 +86,12 @@ export function PiCycleChartSection({
             Blue shading = bottom zone active (150d MA below 471d×0.745) · Signal fires on the cross-under
           </p>
         </div>
-        <div className="flex items-center gap-5 text-xs font-mono shrink-0">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-6 h-0.5" style={{ backgroundColor: 'rgba(247,249,252,0.75)' }} />
-            <span style={{ color: 'var(--sct-muted)' }}>BTC Price</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-6 h-0.5" style={{ backgroundColor: '#E6B450' }} />
-            <span style={{ color: '#E6B450' }}>150d MA</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-6 h-0.5" style={{ backgroundColor: '#3B82F6' }} />
-            <span style={{ color: '#3B82F6' }}>471d × 0.745</span>
-          </span>
+        <ChartControlGroup>
+          <ChartLegendItem color="rgba(247,249,252,0.75)" label="BTC Price" muted />
+          <ChartLegendItem color="#E6B450" label="150d MA" />
+          <ChartLegendItem color="#3B82F6" label="471d × 0.745" />
           <PiCycleShareModal payload={sharePayload} />
-        </div>
+        </ChartControlGroup>
       </div>
 
       {fetchError ? (

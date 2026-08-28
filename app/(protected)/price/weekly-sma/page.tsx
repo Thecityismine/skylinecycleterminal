@@ -9,6 +9,7 @@ import { ZONE_COLOR, ZONE_LABEL, ZONE_FILL } from '@/lib/api/weeklySMA';
 import { WeeklySMAShareModal } from '@/components/share/WeeklySMAShareModal';
 import type { WeeklySMASharePayload } from '@/components/share/WeeklySMAShareCard';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { ChartControlGroup, ChartLegendItem } from '@/components/charts/ChartControls';
 
 const ASSETS = [
   { key: 'btc' as const, label: 'Bitcoin',  ticker: 'BTC', color: '#F7931A' },
@@ -228,23 +229,22 @@ export default function WeeklySMAPage() {
             <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
               {assetCfg.ticker} — Weekly Close · Log Scale · Zone Shading
             </p>
-            <div className="flex items-center gap-5 mt-1.5">
+            <ChartControlGroup className="mt-1.5">
               {[
                 { color: 'rgba(247,249,252,0.85)', label: 'Price' },
                 { color: '#D4A853',                label: '50W SMA (Bull/Bear Line)' },
                 { color: '#5B7DD8',                label: '200W SMA (Cheap Line)' },
               ].map((l) => (
-                <span key={l.label} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--sct-muted)' }}>
-                  <span className="w-5 h-0.5 inline-block rounded" style={{ backgroundColor: l.color }} />
-                  {l.label}
-                </span>
+                <ChartLegendItem key={l.label} color={l.color} label={l.label} muted />
               ))}
-            </div>
+            </ChartControlGroup>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Every level here wraps. This cluster measured 500px inside a 295px
+            * column on a phone, because none of the three nested rows could narrow. */}
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
             {/* Zone legend */}
-            <div className="flex gap-3 text-xs mr-2">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs mr-2 min-w-0">
               {(['bull','bear','cheap'] as Zone[]).map((z) => (
                 <span key={z} className="flex items-center gap-1" style={{ color: ZONE_COLOR[z] }}>
                   <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: ZONE_FILL[z] === 'transparent' ? 'transparent' : ZONE_COLOR[z] + '55' }} />
@@ -254,7 +254,7 @@ export default function WeeklySMAPage() {
             </div>
 
             {/* Range */}
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1 min-w-0">
               {RANGES.map((r, i) => (
                 <button
                   key={r.label}
