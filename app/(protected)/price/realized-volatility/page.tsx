@@ -156,6 +156,17 @@ export default async function RealizedVolatilityPage() {
         data={chartPoints}
         longRunMean={current.longRunMean}
         compressedAt={compressedAt}
+        rv30={current.rv30}
+        rv90={current.rv90}
+        percentile={current.percentile}
+        vsLongRunPct={current.vsLongRunPct}
+        drawdownPct={current.drawdownPct}
+        zone={current.zone}
+        zoneLabel={zone.label}
+        zoneColor={zone.color}
+        signalActive={current.capitulationSignal}
+        price={current.price}
+        generatedAt={new Date().toISOString()}
       />
 
       <InsightPanel title="Realized Volatility Read">

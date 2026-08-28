@@ -2,7 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { RealizedVolChart } from '@/components/charts/RealizedVolChart';
-import type { RealizedVolPoint } from '@/lib/indicators/realizedVolatility';
+import type { RealizedVolPoint, VolZone } from '@/lib/indicators/realizedVolatility';
+import { RealizedVolShareModal } from '@/components/share/RealizedVolShareModal';
+import type { RealizedVolSharePayload } from '@/components/share/RealizedVolShareCard';
+import { useLiveSpot } from '@/lib/share/liveSpot';
 
 type Timeframe = 'All' | '4Y' | '2Y';
 const TIMEFRAMES: Timeframe[] = ['All', '4Y', '2Y'];
@@ -12,9 +15,24 @@ type Props = {
   data:         RealizedVolPoint[];
   longRunMean:  number | null;
   compressedAt: number | null;
+  rv30:         number | null;
+  rv90:         number | null;
+  percentile:   number | null;
+  vsLongRunPct: number | null;
+  drawdownPct:  number | null;
+  zone:         VolZone;
+  zoneLabel:    string;
+  zoneColor:    string;
+  signalActive: boolean;
+  price:        number | null;
+  generatedAt:  string;
 };
 
-export function RealizedVolChartSection({ data, longRunMean, compressedAt }: Props) {
+export function RealizedVolChartSection({
+  data, longRunMean, compressedAt,
+  rv30, rv90, percentile, vsLongRunPct, drawdownPct,
+  zone, zoneLabel, zoneColor, signalActive, price, generatedAt,
+}: Props) {
   const [timeframe, setTimeframe] = useState<Timeframe>('All');
   const [showPrice, setShowPrice] = useState(true);
   const [show90,    setShow90]    = useState(true);
@@ -31,6 +49,24 @@ export function RealizedVolChartSection({ data, longRunMean, compressedAt }: Pro
     const cutoff = anchor - days * 86_400_000;
     return data.filter(d => d.ts >= cutoff);
   }, [data, timeframe]);
+
+  const { price: livePrice } = useLiveSpot();
+
+  // Built from `displayed` rather than `data`, so the exported card shows the same
+  // window the reader is looking at instead of always the full history.
+  const sharePayload: RealizedVolSharePayload = {
+    data: displayed,
+    timeframe,
+    show90,
+    showPrice,
+    rv30, rv90, percentile, longRunMean, compressedAt,
+    vsLongRunPct, drawdownPct,
+    zone, zoneLabel, zoneColor,
+    signalActive,
+    price,
+    livePrice,
+    generatedAt,
+  };
 
   const toggleBtn = (active: boolean, label: string, color: string, onClick: () => void) => (
     <button
@@ -80,6 +116,8 @@ export function RealizedVolChartSection({ data, longRunMean, compressedAt }: Pro
           <div className="w-px mx-0.5" style={{ backgroundColor: 'var(--sct-border)' }} />
           {toggleBtn(show90,    '90d Vol',   '#A78BFA', () => setShow90(v => !v))}
           {toggleBtn(showPrice, 'BTC Price', '#F7931A', () => setShowPrice(v => !v))}
+          <div className="w-px mx-0.5" style={{ backgroundColor: 'var(--sct-border)' }} />
+          <RealizedVolShareModal payload={sharePayload} />
         </div>
       </div>
 
