@@ -334,6 +334,11 @@ export default async function BottomConfluencePage() {
             className="rounded-xl border overflow-hidden"
             style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
           >
+            {/* The outer overflow-hidden exists to clip the rounded corners, so it
+              * cannot scroll. Without this inner scroller a six-column table simply
+              * gets cut off on a phone -- measured 189px past a 375px viewport, the
+              * worst on the site. Same arrangement the drawdown page already uses. */}
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--sct-border)', color: 'var(--sct-muted)' }}>
@@ -383,6 +388,7 @@ export default async function BottomConfluencePage() {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
           <p className="text-[10px] mt-1.5" style={{ color: 'var(--sct-muted)' }}>
             Forward returns measured from the date the confluence score first reached ≥ 2.5 / 4. "In Progress" events have no return data yet. Past performance does not guarantee future results.

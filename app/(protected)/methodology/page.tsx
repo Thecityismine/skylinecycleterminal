@@ -80,7 +80,10 @@ export default function MethodologyPage() {
           Each metric is independently normalized to a 0–100 scale based on its historical range.
           The composite score is the equal-weighted average of all 8.
         </p>
-        <div className="flex gap-6">
+        {/* Four score-band swatches. Unwrapped they measured 103px past a 375px
+          * viewport, which is what remained once the table below was given a
+          * scroller. */}
+        <div className="flex flex-wrap gap-x-6 gap-y-2 min-w-0">
           {[
             { range: "0–25",   label: "Accumulate",      color: "var(--sct-blue)" },
             { range: "25–50",  label: "Build / Hold",    color: "var(--sct-green)" },
@@ -102,6 +105,10 @@ export default function MethodologyPage() {
         className="rounded-xl border overflow-hidden"
         style={{ borderColor: "var(--sct-border)" }}
       >
+        {/* The outer overflow-hidden clips the rounded corners and so cannot
+          * scroll; without this inner scroller the table is cut off on a phone,
+          * measured 120px past a 375px viewport. */}
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr style={{ backgroundColor: "var(--sct-panel)" }}>
@@ -142,6 +149,7 @@ export default function MethodologyPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Disclaimer */}
