@@ -71,9 +71,15 @@ export function StatCard({
         )}
       </div>
 
-      {/* Main value */}
+      {/* Main value.
+        *
+        * Responsive size is load-bearing on mobile. These cards sit in a 2-column
+        * grid, which leaves each one about 121px of inner width on a 375px screen.
+        * At a fixed text-3xl a six-figure price ("$103,412") measured ~150px and
+        * spilled past the card edge on every page carrying one. text-2xl fits, and
+        * the full size returns at the `sm` breakpoint where the grid widens. */}
       <span
-        className="text-3xl font-mono font-bold tracking-tight"
+        className="text-2xl sm:text-3xl font-mono font-bold tracking-tight"
         style={{ color: accent ?? "var(--sct-text)" }}
       >
         {value}

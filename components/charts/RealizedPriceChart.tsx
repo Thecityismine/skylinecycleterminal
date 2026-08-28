@@ -149,25 +149,32 @@ export function RealizedPriceChart({
       className="rounded-xl border p-6"
       style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
     >
-      {/* Header row */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-5">
+      {/* Header row.
+        *
+        * Every flex row here wraps. Unwrapped, the legend, share button and period
+        * selector sit on one line that measures wider than a 375px viewport, and
+        * because nothing clips it the overflow widens the whole document — which is
+        * what makes the page title appear cut off on the left and the period buttons
+        * run off the right on a phone. The visible symptom is at the top of the page;
+        * the cause is this row. */}
+      <div className="flex flex-wrap items-center justify-between gap-y-3 mb-5">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <div className="flex items-center gap-2">
-            <span className="w-5 h-0.5 rounded" style={{ backgroundColor: '#F7931A' }} />
+            <span className="w-5 h-0.5 rounded shrink-0" style={{ backgroundColor: '#F7931A' }} />
             <span className="text-xs font-mono" style={{ color: '#F7931A' }}>BTC Price</span>
           </div>
           {realizedAvailable && (
             <div className="flex items-center gap-2">
-              <span className="w-5 h-0.5 rounded" style={{ backgroundColor: secondaryColor }} />
+              <span className="w-5 h-0.5 rounded shrink-0" style={{ backgroundColor: secondaryColor }} />
               <span className="text-xs font-mono" style={{ color: secondaryColor }}>{secondaryLabel}</span>
             </div>
           )}
         </div>
 
         {/* Share button + period selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {shareButton}
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
           {PERIODS.map((p) => (
             <button
               key={p.label}
