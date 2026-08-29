@@ -45,6 +45,9 @@ export function RealizedPriceChartSection({
   // card would export a different window than the one on screen.
   const [period, setPeriod] = useState('All');
   const [zoomDomain, setZoomDomain] = useState<ZoomDomain<string> | null>(null);
+  // Mirrors RealizedPriceChart's own default. The card used to omit this entirely
+  // and fall back to a linear axis from zero, which flattened every short window.
+  const [logScale, setLogScale] = useState(true);
 
   const handlePeriodChange = useCallback((p: string) => {
     setPeriod(p);
@@ -70,6 +73,7 @@ export function RealizedPriceChartSection({
   const sharePayload: RealizedPriceSharePayload = {
     data:           shareData,
     period:         sharePeriod,
+    logScale,
     currentPrice,
     ma200w,
     ratio,
@@ -90,6 +94,7 @@ export function RealizedPriceChartSection({
       secondaryColor={secondaryColor}
       onPeriodChange={handlePeriodChange}
       onZoomChange={setZoomDomain}
+      onLogScaleChange={setLogScale}
       shareButton={<RealizedPriceShareModal payload={sharePayload} />}
     />
   );

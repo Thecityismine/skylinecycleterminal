@@ -9,6 +9,7 @@ import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
 import { ChartWatermark } from '@/components/charts/ChartWatermark';
 import { useChartZoom } from '@/lib/hooks/useChartZoom';
 import type { ZoomDomain } from '@/lib/hooks/useChartZoom';
+import { formatDateTick, spanDays } from '@/lib/charts/axisFormat';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,10 +33,9 @@ function fmtY(v: number): string {
   return `$${v.toFixed(2)}`;
 }
 
-function fmtX(d: string): string {
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-}
+// fmtX moved to lib/charts/axisFormat so this chart and its share card cannot
+// drift apart. It now takes the visible span, giving day precision on short
+// windows rather than repeating one month label across every tick.
 
 function fmtFull(d: string): string {
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
@@ -95,6 +95,7 @@ export function RealizedPriceChart({
   secondaryColor = '#E879F9',
   onPeriodChange,
   onZoomChange,
+  onLogScaleChange,
   shareButton,
 }: {
   data: RealizedPricePoint[];
@@ -103,6 +104,9 @@ export function RealizedPriceChart({
   secondaryColor?: string;
   onPeriodChange?: (period: string) => void;
   onZoomChange?: (d: ZoomDomain<string> | null) => void;
+  /** Lifted alongside period and zoom so the share card can mirror the axis the
+   *  reader is actually looking at, rather than defaulting to a different one. */
+  onLogScaleChange?: (logScale: boolean) => void;
   shareButton?: React.ReactNode;
 }) {
   // Defaults to the full history on a log axis: across BTC's whole range a
@@ -143,6 +147,10 @@ export function RealizedPriceChart({
     if (!domain) return sampled;
     return sampled.filter(d => d.time >= domain.start && d.time <= domain.end);
   }, [sampled, domain]);
+
+  // Measured from what is actually plotted, so zooming into an arbitrary region
+  // gets the right tick precision rather than the precision of the preset period.
+  const xSpan = useMemo(() => spanDays(chartData.map((d) => d.time)), [chartData]);
 
   return (
     <div
@@ -190,7 +198,7 @@ export function RealizedPriceChart({
             </button>
           ))}
           <button
-            onClick={() => setLogScale((v) => !v)}
+            onClick={() => setLogScale((v) => { onLogScaleChange?.(!v); return !v; })}
             title={logScale ? 'Switch to linear scale' : 'Switch to log scale'}
             className="px-3 py-1 text-xs font-mono rounded transition-all duration-150"
             style={{
@@ -231,7 +239,7 @@ export function RealizedPriceChart({
 
           <XAxis
             dataKey="time"
-            tickFormatter={fmtX}
+            tickFormatter={(d: string) => formatDateTick(d, xSpan)}
             tick={{ fill: '#4B5563', fontSize: 10 }}
             tickLine={false}
             axisLine={{ stroke: '#1E293B' }}
