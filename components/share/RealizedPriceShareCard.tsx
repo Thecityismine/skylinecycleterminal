@@ -12,9 +12,13 @@ import type { RealizedPricePoint } from '@/lib/api/coinmetrics';
 import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from '@/lib/share/exportShareCard';
 
 import { formatCardDate } from '@/lib/share/cardDate';
+import { formatDateTick, spanDays } from '@/lib/charts/axisFormat';
 export type RealizedPriceSharePayload = {
   data:            RealizedPricePoint[];
   period:          string;
+  /** Mirrors the chart's log/linear toggle. Without it the card silently rendered
+   *  linear from zero while the chart it was exported from was logarithmic. */
+  logScale:        boolean;
   currentPrice:    number;
   ma200w:          number | null;
   ratio:           number | null;
@@ -54,10 +58,8 @@ function fmtPct(n: number | null): string {
   return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 }
 
-function fmtX(d: string): string {
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-}
+// fmtX now lives in lib/charts/axisFormat and takes the visible span, so a short
+// window gets day precision instead of repeating "Jun 26" across every tick.
 
 function fmtY(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -67,7 +69,7 @@ function fmtY(v: number): string {
 
 export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceSharePayload }) {
   const {
-    data, period,
+    data, period, logScale,
     currentPrice, ma200w, ratio, premium,
     zoneLabel, zoneColor,
     secondaryLabel, secondaryColor,
@@ -87,6 +89,10 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
     const step = Math.floor(data.length / 500);
     return data.filter((_, i) => i % step === 0 || i === data.length - 1);
   })();
+
+  // Measured from the data actually plotted, so a zoomed export gets the same
+  // tick precision as the region the reader selected.
+  const span = spanDays(sampled.map((d) => d.time));
 
   return (
     <div style={{
@@ -173,14 +179,25 @@ export function RealizedPriceShareCard({ payload }: { payload: RealizedPriceShar
 
           <XAxis
             dataKey="time"
-            tickFormatter={fmtX}
+            tickFormatter={(d: string) => formatDateTick(d, span)}
             tick={{ fill: '#4B5563', fontSize: 10, fontFamily: 'monospace' }}
             tickLine={false}
             axisLine={{ stroke: '#1E293B' }}
             minTickGap={80}
             interval="preserveStartEnd"
           />
+          {/* scale and domain must match RealizedPriceChart exactly.
+            *
+            * Neither was set here, so recharts fell back to a linear axis running
+            * [0, dataMax]. Over the full history that is survivable, but on a short
+            * window it is not: a 3-month card spanning $60k-$78k was drawn on a
+            * $0-$100k axis, pushing every line into the top fifth of the plot and
+            * making a 20% move look like a flat line. The chart it was exported
+            * from was logarithmic the whole time. */}
           <YAxis
+            scale={logScale ? 'log' : 'linear'}
+            domain={logScale ? ['auto', 'auto'] : [0, 'auto']}
+            allowDataOverflow={false}
             tickFormatter={fmtY}
             tick={{ fill: '#4B5563', fontSize: 10, fontFamily: 'monospace' }}
             tickLine={false}
