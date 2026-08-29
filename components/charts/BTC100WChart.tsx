@@ -19,17 +19,21 @@ const HALVINGS = [
   { date: '2024-04-15', label: 'H4' },
 ];
 
-// Halving-to-halving cycle windows
-const CYCLES = [
-  { id: 'all', label: 'All',    start: '',           end: ''           },
-  { id: 'c1',  label: 'Cycle 1', start: '2010-07-18', end: '2012-11-25' },
-  { id: 'c2',  label: 'Cycle 2', start: '2012-11-26', end: '2016-07-03' },
-  { id: 'c3',  label: 'Cycle 3', start: '2016-07-04', end: '2020-05-10' },
-  { id: 'c4',  label: 'Cycle 4', start: '2020-05-11', end: '2024-04-14' },
-  { id: 'c5',  label: 'Cycle 5', start: '2024-04-15', end: ''           },
+// Trailing time windows, replacing the halving-to-halving cycle tabs.
+//
+// The cycle tabs jumped to fixed historical spans, so most of them showed a
+// window that ended years ago — useful for studying a past cycle, less so for
+// reading where price sits against the 100W MA now. These are all anchored to
+// the newest data point instead, matching the range selectors on every other
+// chart page.
+const RANGES = [
+  { id: 'all', label: 'All', years: Infinity },
+  { id: '8y',  label: '8Y',  years: 8 },
+  { id: '4y',  label: '4Y',  years: 4 },
+  { id: '2y',  label: '2Y',  years: 2 },
 ] as const;
 
-type CycleId = (typeof CYCLES)[number]['id'];
+type RangeId = (typeof RANGES)[number]['id'];
 
 const LOG_TICKS = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
 
@@ -101,7 +105,7 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
   const [show100,     setShow100]     = useState(true);
   const [show200,     setShow200]     = useState(true);
   const [showShading, setShowShading] = useState(true);
-  const [activeCycle, setActiveCycle] = useState<CycleId>('all');
+  const [activeRange, setActiveRange] = useState<RangeId>('all');
 
   const visible: Visible = { ma50: show50, ma100: show100, ma200: show200 };
 
@@ -113,21 +117,27 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
     onZoomChange?.(domain);
   }, [domain, onZoomChange]);
 
-  const handleCycleClick = useCallback((cycle: typeof CYCLES[number]) => {
-    setActiveCycle(cycle.id);
-    if (cycle.id === 'all') {
+  const handleRangeClick = useCallback((range: typeof RANGES[number]) => {
+    setActiveRange(range.id);
+    if (range.years === Infinity) {
       reset();
-    } else {
-      const end = cycle.end || points[points.length - 1]?.time || '';
-      jumpTo({ start: cycle.start, end });
+      return;
     }
+    // Anchored to the newest data point rather than the wall clock, so the window
+    // matches the series even if the feed is a day or two behind, and so this
+    // stays a pure function of the data.
+    const end = points[points.length - 1]?.time;
+    if (!end) return;
+    const from = new Date(end + 'T00:00:00');
+    from.setFullYear(from.getFullYear() - range.years);
+    jumpTo({ start: from.toISOString().slice(0, 10), end });
   }, [points, reset, jumpTo]);
 
-  // Clicking drag-zoom clears the cycle tab selection
+  // Clicking drag-zoom clears the range tab selection
   const wrappedHandlers = useMemo(() => ({
     ...chartHandlers,
     onMouseUp: () => {
-      setActiveCycle('all');
+      setActiveRange('all');
       chartHandlers.onMouseUp();
     },
   }), [chartHandlers]);
@@ -166,20 +176,20 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* ── Cycle tabs ────────────────────────────────────────────────────── */}
+      {/* ── Range tabs ────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-1 mb-2">
-        {CYCLES.map((c) => (
+        {RANGES.map((r) => (
           <button
-            key={c.id}
-            onClick={() => handleCycleClick(c)}
+            key={r.id}
+            onClick={() => handleRangeClick(r)}
             className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{
-              backgroundColor: activeCycle === c.id ? 'var(--sct-border)' : 'transparent',
+              backgroundColor: activeRange === r.id ? 'var(--sct-border)' : 'transparent',
               borderColor:     'var(--sct-border)',
-              color:           activeCycle === c.id ? 'var(--sct-text)' : 'var(--sct-muted)',
+              color:           activeRange === r.id ? 'var(--sct-text)' : 'var(--sct-muted)',
             }}
           >
-            {c.label}
+            {r.label}
           </button>
         ))}
       </div>
@@ -236,7 +246,7 @@ export function BTC100WChart({ points, regimes, onVisibilityChange, onZoomChange
 
         {/* Zoom controls */}
         {isZoomed && (
-          <button onClick={() => { reset(); setActiveCycle('all'); }} className="px-3 py-1 rounded text-xs font-mono border transition-all"
+          <button onClick={() => { reset(); setActiveRange('all'); }} className="px-3 py-1 rounded text-xs font-mono border transition-all"
             style={{ backgroundColor: 'rgba(247,147,26,0.12)', borderColor: '#F7931A', color: '#F7931A' }}>
             Reset Zoom
           </button>
