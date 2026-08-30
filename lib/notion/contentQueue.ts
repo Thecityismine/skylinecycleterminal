@@ -19,10 +19,10 @@ export const DB = {
   automationRuns: '31023970c45c44ba96ef936d5d27b442',
 } as const;
 
-export type Channel = 'X Daily' | 'X Road to 1M' | 'Newsletter' | 'YouTube Script';
+export type Channel = 'X Daily' | 'X Road to 1M' | 'X Subscribers' | 'Newsletter' | 'YouTube Script';
 export type Job =
   | 'Daily X Post' | 'Weekly Newsletter' | 'Road to 1M Weekly'
-  | 'Video Script Draft' | 'Daily Snapshot' | 'EDGAR Pull' | 'Alert Check';
+  | 'Subscriber Note' | 'Video Script Draft' | 'Daily Snapshot' | 'EDGAR Pull' | 'Alert Check';
 export type Outcome = 'Success' | 'Failed' | 'Skipped' | 'Partial';
 
 export type Draft = {
