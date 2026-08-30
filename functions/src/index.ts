@@ -175,3 +175,36 @@ export const dailyPostDraft = onSchedule(
     console.log('[dailyPostDraft]', body.slice(0, 500));
   }
 );
+
+// Drafts the Sunday newsletter into the Notion Content Queue, on Friday morning.
+//
+// Friday rather than Sunday on purpose. lib/marketing/weeklyEmail.ts requires
+// three fields a person writes by hand, so the draft has to exist before the
+// weekend to be finishable in it. A Sunday job would produce the draft on the
+// day it was meant to go out.
+//
+// The run logs itself Partial rather than Success, because the draft genuinely
+// is incomplete until those fields are written.
+export const weeklyNewsletterDraft = onSchedule(
+  {
+    schedule: '0 7 * * 5',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 120,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/weekly-newsletter`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`weekly newsletter draft failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[weeklyNewsletterDraft]', body.slice(0, 500));
+  }
+);
