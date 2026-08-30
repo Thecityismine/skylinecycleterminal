@@ -112,28 +112,15 @@ const ZONE_MISTAKE: Record<string, string> = {
     'The easy mistake is assuming the range extends further this time. Sometimes it has. It is not the way to bet a cycle.',
 };
 
-// Rotated by weekday so a week of posts does not read as the same paragraph with
-// a different number. Every line is a principle rather than a claim about today,
-// which is what keeps them safe to reuse.
-const PRINCIPLE: Record<Weekday, string> = {
-  Mon: 'Price moves quickly. Cycle conditions move much more slowly.',
-  Tue: 'One indicator is an opinion. Eleven of them agreeing is a signal.',
-  Wed: 'The score is a description of where we are, not a forecast of where we go.',
-  Thu: 'Cycles are measured in quarters. Charts are read in seconds. That gap is where most mistakes live.',
-  Fri: 'A number that only moves when you want it to is not a measurement.',
-  Sat: 'Position sizing survives being wrong. Conviction does not.',
-  Sun: 'The work is noticing the regime early, not calling the turn exactly.',
-};
-
-const CLOSER: Record<Weekday, string> = {
-  Mon: "The goal isn't to predict tomorrow. It's to understand today's market regime.",
-  Tue: 'Read the set, not the loudest member of it.',
-  Wed: "Knowing where you are is worth more than guessing where you're going.",
-  Thu: 'Slow data, patiently read, beats fast data reacted to.',
-  Fri: 'Same method every week. That is the whole edge.',
-  Sat: 'Nothing here is a call. It is a reading.',
-  Sun: 'Zoom out until the week stops mattering.',
-};
+// Fixed, not rotated. These two lines close every post verbatim.
+//
+// An earlier version varied them by weekday to keep a week of posts from reading
+// as the same paragraphs with a different number. That was reverted deliberately:
+// a sign-off that is identical every day becomes a signature, and the repetition
+// is the point rather than a cost. The variation that remains is the number, the
+// price, the lead, and the day's indicator.
+const PRINCIPLE = 'Price moves quickly. Cycle conditions move much more slowly.';
+const CLOSER = "The goal isn't to predict tomorrow. It's to understand today's market regime.";
 
 const usd0 = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -194,9 +181,9 @@ export function buildScorePost(
     '',
     ZONE_MISTAKE[zone] ?? '',
     '',
-    PRINCIPLE[day],
+    PRINCIPLE,
     '',
-    CLOSER[day],
+    CLOSER,
   ];
 
   if (withCta) lines.push('', 'Full cycle read → skylinecycleterminal.com');
