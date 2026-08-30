@@ -208,3 +208,34 @@ export const weeklyNewsletterDraft = onSchedule(
     console.log('[weeklyNewsletterDraft]', body.slice(0, 500));
   }
 );
+
+// Drafts one short-form video script a week, Wednesday morning.
+//
+// Midweek on purpose: it does not compete with the Friday newsletter draft for
+// writing time, and it leaves the back half of the week to record in.
+//
+// This is the only job that writes back to the Chart Rotation database, stamping
+// the chart it used so the next run picks a different one.
+export const weeklyVideoScript = onSchedule(
+  {
+    schedule: '0 7 * * 3',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 120,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/video-script`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`video script draft failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[weeklyVideoScript]', body.slice(0, 500));
+  }
+);
