@@ -5,6 +5,7 @@ import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeRegime } from '@/lib/indicators/regimeHelpers';
 import { computeRealizedVolatility } from '@/lib/indicators/realizedVolatility';
 import { calculateDrawdownFromATH, getDrawdownRegime, drawdownSeverityPct } from '@/lib/indicators/drawdownFromATH';
+import { computeNUPL, nuplSignal } from '@/lib/indicators/nupl';
 
 // Renders a chart card as a PNG, server side, with no browser.
 //
@@ -80,6 +81,71 @@ export async function GET(request: Request) {
             sub: 'mean 30d vol' },
           { label: 'Compression Below', value: compressedAt == null ? '—' : `${compressedAt.toFixed(1)}%`,
             sub: 'bottom 15% of history', color: COLORS.amber },
+        ],
+      };
+    } else if (type === 'ma200w') {
+      // Computed here rather than pulled from an indicator module: this is a
+      // plain 1400-day mean, and importing the realized-price page's machinery
+      // would drag in a vendor call that can 403 on the free tier.
+      const closes = prices.map((d) => d.price);
+      const W = 1400;
+      let sum = 0;
+      const ma: (number | null)[] = closes.map((v, i) => {
+        sum += v;
+        if (i >= W) sum -= closes[i - W];
+        return i >= W - 1 ? sum / W : null;
+      });
+      const idx = prices.map((_, i) => i).filter((i) => ma[i] != null);
+      const p = thin(idx.map((i) => ({ time: prices[i].time, price: closes[i], ma: ma[i]! })));
+      const last = p.at(-1)!;
+      const ratio = last.price / last.ma;
+      const premium = (ratio - 1) * 100;
+      card = {
+        title:    'Bitcoin Price vs 200-Week Moving Average',
+        subtitle: 'No weekly close has ever broken below it',
+        date:     today(),
+        xLabels:  xLabels(p.map((d) => d.time)),
+        logScale: true,
+        yFormat:  usd,
+        series: [
+          { label: 'BTC Price', color: COLORS.btc, points: p.map((d) => d.price) },
+          { label: '200-Week MA', color: COLORS.violet, points: p.map((d) => d.ma) },
+        ],
+        stats: [
+          { label: 'BTC Price', value: usd(last.price), sub: 'latest close', color: COLORS.btc },
+          { label: '200-Week MA', value: usd(last.ma), sub: 'long-term floor', color: COLORS.violet },
+          { label: 'Price / 200W MA', value: `${ratio.toFixed(2)}×`,
+            sub: ratio < 1.5 ? 'near the floor' : ratio < 3 ? 'mid cycle' : 'extended',
+            color: ratio < 1.5 ? COLORS.green : ratio < 3 ? COLORS.amber : COLORS.red },
+          { label: 'Premium to MA', value: `${premium > 0 ? '+' : ''}${premium.toFixed(1)}%`,
+            sub: 'above the average', color: premium < 100 ? COLORS.green : COLORS.amber },
+        ],
+      };
+    } else if (type === 'nupl') {
+      const { points, current, available } = computeNUPL(prices);
+      if (!available) throw new Error('NUPL unavailable — realized cap not in the free tier today');
+      const p = thin(points);
+      const sig = nuplSignal(current.nupl);
+      card = {
+        title:    'Bitcoin Net Unrealized Profit / Loss',
+        subtitle: 'How much of the network is sitting in profit',
+        date:     today(),
+        xLabels:  xLabels(p.map((d) => d.time)),
+        logScale: false,
+        // Direction is not self-evident here either — negative NUPL is
+        // capitulation, which reads as "bad" without a labelled axis.
+        yFormat:  (v: number) => v.toFixed(2),
+        series: [
+          { label: 'NUPL', color: COLORS.green, points: p.map((d) => d.nupl ?? NaN) },
+        ],
+        stats: [
+          { label: 'NUPL', value: current.nupl == null ? '—' : current.nupl.toFixed(3),
+            sub: sig.label, color: sig.color },
+          { label: 'Phase', value: sig.zone.toUpperCase(), sub: 'historical band', color: sig.color },
+          { label: 'BTC Price', value: current.price == null ? '—' : usd(current.price),
+            sub: 'latest close', color: COLORS.btc },
+          { label: '2Y Cost Basis', value: current.ma730 == null ? '—' : usd(current.ma730),
+            sub: '730-day average', color: COLORS.violet },
         ],
       };
     } else if (type === 'drawdown') {

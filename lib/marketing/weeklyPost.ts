@@ -20,6 +20,8 @@ export const CARD_TYPE_BY_PATH: Record<string, string> = {
   '/price/market-regime':        'regime',
   '/price/realized-volatility':  'volatility',
   '/price/drawdown':             'drawdown',
+  '/price/realized-price':       'ma200w',
+  '/onchain/nupl':               'nupl',
 };
 
 export type WeeklyPostContext = {
