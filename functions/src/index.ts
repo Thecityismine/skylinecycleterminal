@@ -268,3 +268,36 @@ export const weeklyRoadToOneMillionPost = onSchedule(
     console.log('[weeklyRoadToOneMillionPost]', body.slice(0, 500));
   }
 );
+
+// Drafts the subscriber-only X post, Saturday morning.
+//
+// Saturday because it is the only slot not already taken, and because a longer
+// analytical note suits a weekend read better than a weekday scroll.
+//
+// This is the one job that reads the observation store rather than the live
+// endpoints. It reports what MOVED week over week, which is data that exists
+// nowhere else -- not on the public site, not in the report -- and is therefore
+// the only one of these posts that could not be reconstructed by a reader.
+export const weeklySubscriberNote = onSchedule(
+  {
+    schedule: '0 8 * * 6',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/subscriber-post`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`subscriber note failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[weeklySubscriberNote]', body.slice(0, 500));
+  }
+);
