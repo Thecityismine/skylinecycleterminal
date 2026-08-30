@@ -61,6 +61,15 @@ export type ChartCard = {
   date:      string;
   /** Log scale suits price over long windows; linear suits ratios. */
   logScale?: boolean;
+  /**
+   * Formats the y-axis gridline labels.
+   *
+   * Load-bearing on any chart where the direction is not self-evident. Price
+   * going up reads correctly with no axis at all; a drawdown chart does not —
+   * without labels the reader cannot tell whether the peaks are good or bad.
+   * Omit only when the shape alone carries the meaning.
+   */
+  yFormat?: (v: number) => string;
 };
 
 /** XML-escapes text bound for SVG. */
@@ -103,14 +112,26 @@ function pathFor(values: number[], min: number, max: number, log: boolean): stri
 }
 
 export function buildChartCardSvg(c: ChartCard): string {
-  const all = c.series.flatMap((s) => s.points).filter((v) => Number.isFinite(v) && v > 0);
+  // Only a log axis needs positives. Filtering them out unconditionally forced
+  // callers to shift negative series into positive space, which then made the
+  // y-axis meaningless — a drawdown had to be drawn as "drawdown + 100".
+  const all = c.series
+    .flatMap((s) => s.points)
+    .filter((v) => Number.isFinite(v) && (!c.logScale || v > 0));
   const min = all.length ? Math.min(...all) : 0;
   const max = all.length ? Math.max(...all) : 1;
   // Headroom so the line never touches the frame.
   const lo = c.logScale ? min * 0.85 : min - (max - min) * 0.08;
   const hi = c.logScale ? max * 1.15 : max + (max - min) * 0.08;
 
-  const gridY = [0, 0.25, 0.5, 0.75, 1].map((f) => PLOT_Y + PLOT_H * f);
+  const gridFracs = [0, 0.25, 0.5, 0.75, 1];
+  const gridY = gridFracs.map((f) => PLOT_Y + PLOT_H * f);
+
+  /** Value at a gridline, top (f=0) being the maximum. */
+  const valueAt = (f: number) =>
+    c.logScale
+      ? Math.pow(10, Math.log10(Math.max(hi, 1e-9)) - f * (Math.log10(Math.max(hi, 1e-9)) - Math.log10(Math.max(lo, 1e-9))))
+      : hi - f * (hi - lo);
 
   const statW = c.stats.length ? (PLOT_W - (c.stats.length - 1) * 14) / c.stats.length : PLOT_W;
 
@@ -135,6 +156,13 @@ export function buildChartCardSvg(c: ChartCard): string {
   }).join('\n  ')}
 
   ${gridY.map((y) => `<line x1="${PLOT_X}" y1="${y.toFixed(1)}" x2="${PLOT_X + PLOT_W}" y2="${y.toFixed(1)}" stroke="${COLORS.border}" stroke-width="1" stroke-dasharray="3 5"/>`).join('\n  ')}
+
+  ${c.yFormat ? gridFracs.map((f, i) => {
+    const y = gridY[i];
+    // Nudged below the top line and above the bottom one so neither clips.
+    const dy = i === 0 ? 14 : i === gridFracs.length - 1 ? -6 : 5;
+    return `<text x="${PLOT_X + 6}" y="${(y + dy).toFixed(1)}" fill="${COLORS.faint}" font-size="14">${esc(c.yFormat!(valueAt(f)))}</text>`;
+  }).join('\n  ') : ''}
 
   ${c.series.map((s) => {
     const d = pathFor(s.points, lo, hi, !!c.logScale);

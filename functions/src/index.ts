@@ -239,3 +239,32 @@ export const weeklyVideoScript = onSchedule(
     console.log('[weeklyVideoScript]', body.slice(0, 500));
   }
 );
+
+// Drafts the weekly Road to $1M post, Monday morning.
+//
+// Monday so the week opens with it, and so it is three days clear of the
+// Wednesday video script — the two share the Chart Rotation and stamp the same
+// column, so spacing them keeps a chart from being used twice in a few days.
+export const weeklyRoadToOneMillionPost = onSchedule(
+  {
+    schedule: '0 7 * * 1',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 120,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/weekly-post`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`weekly road-to-1m post failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[weeklyRoadToOneMillionPost]', body.slice(0, 500));
+  }
+);

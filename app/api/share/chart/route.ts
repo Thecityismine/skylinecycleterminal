@@ -4,6 +4,7 @@ import { COLORS } from '@/lib/share/server/chartSvg';
 import { fetchBTCDailyPrice } from '@/lib/api/coinmetrics';
 import { computeRegime } from '@/lib/indicators/regimeHelpers';
 import { computeRealizedVolatility } from '@/lib/indicators/realizedVolatility';
+import { calculateDrawdownFromATH, getDrawdownRegime, drawdownSeverityPct } from '@/lib/indicators/drawdownFromATH';
 
 // Renders a chart card as a PNG, server side, with no browser.
 //
@@ -65,6 +66,7 @@ export async function GET(request: Request) {
         date:     today(),
         xLabels:  xLabels(p.map((d) => d.time)),
         logScale: false,
+        yFormat:  (v: number) => `${v.toFixed(0)}%`,
         series: [
           { label: '30-day', color: '#38BDF8', points: p.map((d) => d.rv30 ?? NaN) },
           { label: '90-day', color: COLORS.violet, points: p.map((d) => d.rv90 ?? NaN) },
@@ -80,6 +82,33 @@ export async function GET(request: Request) {
             sub: 'bottom 15% of history', color: COLORS.amber },
         ],
       };
+    } else if (type === 'drawdown') {
+      const all = calculateDrawdownFromATH(prices);
+      const p = thin(all);
+      const last = all.at(-1)!;
+      const regime = getDrawdownRegime(last.drawdown);
+      const severity = drawdownSeverityPct(all.map((d) => d.drawdown), last.drawdown);
+      card = {
+        title:    'Bitcoin Drawdown From All-Time High',
+        subtitle: 'How far price sits below its running peak',
+        date:     today(),
+        xLabels:  xLabels(p.map((d) => d.time)),
+        logScale: false,
+        // Drawdown is the card that most needs an axis: without one there is no
+        // way to tell whether the peaks are good or bad.
+        yFormat:  (v: number) => `${v.toFixed(0)}%`,
+        series: [
+          { label: 'Drawdown', color: COLORS.red, points: p.map((d) => d.drawdown) },
+        ],
+        stats: [
+          { label: 'Current Drawdown', value: `${last.drawdown.toFixed(1)}%`,
+            sub: regime.label, color: regime.color },
+          { label: 'All-Time High', value: usd(last.ath), sub: 'running peak' },
+          { label: 'BTC Price', value: usd(last.close), sub: 'latest close', color: COLORS.btc },
+          { label: 'Historical Severity', value: `${severity}th`,
+            sub: 'percentile of all days', color: COLORS.amber },
+        ],
+      };
     } else {
       const { points, current } = computeRegime(prices);
       const p = thin(points);
@@ -93,6 +122,7 @@ export async function GET(request: Request) {
         date:     today(),
         xLabels:  xLabels(p.map((d) => d.time)),
         logScale: true,
+        yFormat:  usd,
         series: [
           { label: 'BTC Price', color: COLORS.btc, points: p.map((d) => d.price) },
           { label: '200-Day MA', color: COLORS.violet, points: p.map((d) => d.ma200 ?? NaN) },
