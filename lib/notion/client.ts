@@ -89,3 +89,37 @@ export async function createPage(databaseId: string, properties: NotionProps): P
   });
   return json.id;
 }
+
+/**
+ * Queries a database. `filter` and `sorts` are passed through to Notion
+ * unchanged — see their docs for the shapes.
+ */
+export async function queryDatabase<T = unknown>(
+  databaseId: string,
+  body: { filter?: unknown; sorts?: unknown; page_size?: number } = {},
+): Promise<T[]> {
+  const json = await notionFetch<{ results: T[] }>(`/databases/${databaseId}/query`, body);
+  return json.results;
+}
+
+/**
+ * Updates properties on an existing page.
+ *
+ * PATCH rather than POST, so it does not go through notionFetch. Kept separate
+ * rather than generalising that helper for one caller.
+ */
+export async function updatePage(pageId: string, properties: NotionProps): Promise<void> {
+  const res = await fetch(`${NOTION_API}/pages/${pageId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token()}`,
+      'Notion-Version': NOTION_VERSION,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ properties }),
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    throw new NotionError(`Notion ${res.status}: ${(await res.text()).slice(0, 300)}`, res.status);
+  }
+}
