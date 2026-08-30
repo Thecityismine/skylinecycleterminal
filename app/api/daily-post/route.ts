@@ -91,10 +91,13 @@ export async function GET(request: Request) {
     );
   }
 
-  const market = await get<Parameters<typeof buildSentimentPost>[0]>(origin, '/api/market');
+  // /api/market carries both the sentiment fields Friday needs and the price
+  // the score post's header now shows, so one fetch serves both.
+  const market = await get<Parameters<typeof buildSentimentPost>[0] & { btcPrice: number; btcChange24h: number | null }>(origin, '/api/market');
 
   const score = Math.round(cycle.score);
-  const post1 = buildScorePost(cycle, day, ctaToday(date));
+  const post1 = buildScorePost(cycle, day, ctaToday(date),
+    market ? { btcPrice: market.btcPrice, btcChange24h: market.btcChange24h } : null);
   const post2 = await secondPostFor(day, origin, market);
 
   if (url.searchParams.get('format') === 'json') {

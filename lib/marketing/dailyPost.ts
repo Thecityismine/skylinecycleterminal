@@ -78,28 +78,127 @@ export function zoneWord(zone: string): string {
   return 'Distribution';
 }
 
-export function buildScorePost(cycle: CycleScoreResult, day: Weekday, withCta: boolean): string {
+// ─── Score-post copy blocks ───────────────────────────────────────────────────
+//
+// One dot per zone, matching ZONE_CONFIG's colours in lib/indicators/skylineScore.
+const ZONE_DOT: Record<string, string> = {
+  accumulate:   '🔵',
+  build:        '🟢',
+  caution:      '🟡',
+  distribution: '🔴',
+};
+
+/** What the score means, in the reader's terms rather than the model's. */
+const ZONE_MEANING: Record<string, string> = {
+  accumulate:
+    'That means the indicator set is reading near the low end of its historical range — the conditions that have historically carried the least long-term risk, and felt the least comfortable.',
+  build:
+    'That means conditions have improved from deep accumulation levels, while long-term cycle risk remains relatively contained.',
+  caution:
+    'That means more of the indicator set is reading extended than not, and the margin for error has started to narrow.',
+  distribution:
+    'That means the indicator set is reading near the high end of its historical range, where forward returns have historically been thinnest.',
+};
+
+/** The misread each zone invites. This is the teaching half of the post. */
+const ZONE_MISTAKE: Record<string, string> = {
+  accumulate:
+    'The easy mistake is waiting for a confirmation that never arrives while you are standing in it. Deep value and danger feel identical in the moment.',
+  build:
+    'The easy mistake is letting a short-term price rally convince you the opportunity has passed.',
+  caution:
+    'The easy mistake is reading a rising score as momentum. The same reading has historically preceded thinner returns, not richer ones.',
+  distribution:
+    'The easy mistake is assuming the range extends further this time. Sometimes it has. It is not the way to bet a cycle.',
+};
+
+// Rotated by weekday so a week of posts does not read as the same paragraph with
+// a different number. Every line is a principle rather than a claim about today,
+// which is what keeps them safe to reuse.
+const PRINCIPLE: Record<Weekday, string> = {
+  Mon: 'Price moves quickly. Cycle conditions move much more slowly.',
+  Tue: 'One indicator is an opinion. Eleven of them agreeing is a signal.',
+  Wed: 'The score is a description of where we are, not a forecast of where we go.',
+  Thu: 'Cycles are measured in quarters. Charts are read in seconds. That gap is where most mistakes live.',
+  Fri: 'A number that only moves when you want it to is not a measurement.',
+  Sat: 'Position sizing survives being wrong. Conviction does not.',
+  Sun: 'The work is noticing the regime early, not calling the turn exactly.',
+};
+
+const CLOSER: Record<Weekday, string> = {
+  Mon: "The goal isn't to predict tomorrow. It's to understand today's market regime.",
+  Tue: 'Read the set, not the loudest member of it.',
+  Wed: "Knowing where you are is worth more than guessing where you're going.",
+  Thu: 'Slow data, patiently read, beats fast data reacted to.',
+  Fri: 'Same method every week. That is the whole edge.',
+  Sat: 'Nothing here is a call. It is a reading.',
+  Sun: 'Zoom out until the week stops mattering.',
+};
+
+const usd0 = (n: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+export type ScorePostMarket = { btcPrice: number; btcChange24h: number | null };
+
+export function buildScorePost(
+  cycle: CycleScoreResult,
+  day: Weekday,
+  withCta: boolean,
+  market?: ScorePostMarket | null,
+): string {
   const score = Math.round(cycle.score);
+  const zone = cycle.zone;
+  const label = cycle.zoneLabel;
   const reporting = cycle.indicators.filter((i) => i.available).length;
 
-  let sentence: string;
-  if (day === 'Sun') {
-    sentence = `Composite of ${reporting} reporting indicators, sitting in ${ZONE_PHRASE[cycle.zone] ?? 'its historical range'}.`;
-  } else {
-    const ind = pickIndicator(cycle, day);
-    sentence = ind
-      ? `${ind.name} at ${shortValue(ind.rawLabel)}, ${positionPhrase(ind.score)}.`
-      : `Composite of ${reporting} reporting indicators.`;
-  }
+  // The lead contrasts what price just did against what the cycle says, which is
+  // the whole reason the post exists. It quotes the 24h move rather than saying
+  // "has rallied", because "rallied" over an unstated window is the kind of
+  // vague claim x-daily-templates.md rules out.
+  const move = market?.btcChange24h ?? null;
+  const priceClause =
+    move == null
+      ? 'Price is moving'
+      : move >= 1.5  ? `Bitcoin is up ${move.toFixed(1)}% on the day`
+      : move <= -1.5 ? `Bitcoin is down ${Math.abs(move).toFixed(1)}% on the day`
+      : 'Bitcoin is close to flat on the day';
+
+  const cycleClause =
+    zone === 'accumulate'   ? 'and the cycle is still reading near the low end of its range'
+    : zone === 'build'      ? "but the cycle still isn't signalling widespread overheating"
+    : zone === 'caution'    ? 'and the cycle has been reading extended for a while now'
+    : 'and the cycle is reading extended across most of the set';
+
+  const header = [
+    `Skyline Cycle Score: ${score}/100 ${ZONE_DOT[zone] ?? '⚪'}`,
+    `Status: ${label}`,
+    ...(market ? [`BTC: ${usd0(market.btcPrice)}`] : []),
+  ];
+
+  // The one line that changes with the day rather than the zone, so a week of
+  // posts is not the same paragraph five times. On Sunday it reports coverage
+  // instead, which is the day the composite itself is the subject.
+  const ind = day === 'Sun' ? null : pickIndicator(cycle, day);
+  const detail = ind
+    ? `${ind.name} is at ${shortValue(ind.rawLabel)}, ${positionPhrase(ind.score)}.`
+    : `Composite of ${reporting} reporting indicators, sitting in ${ZONE_PHRASE[zone] ?? 'its historical range'}.`;
 
   const lines = [
-    "Today's Skyline Score",
+    ...header,
     '',
-    String(score),
-    zoneWord(cycle.zone),
+    `${priceClause}, ${cycleClause}.`,
     '',
-    sentence,
+    `A score of ${score} places BTC in the ${label} zone. ${ZONE_MEANING[zone] ?? ''}`,
+    '',
+    detail,
+    '',
+    ZONE_MISTAKE[zone] ?? '',
+    '',
+    PRINCIPLE[day],
+    '',
+    CLOSER[day],
   ];
+
   if (withCta) lines.push('', 'Full cycle read → skylinecycleterminal.com');
   return lines.join('\n');
 }
