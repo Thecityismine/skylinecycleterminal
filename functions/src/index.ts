@@ -139,3 +139,39 @@ export const dailyEdgarPull = onSchedule(
     console.log('[dailyEdgarPull]', body.slice(0, 500));
   }
 );
+
+// Queues the day's X post drafts into the Notion Content Queue.
+//
+// Runs at 06:30 Eastern, ahead of the snapshot and EDGAR jobs, so the drafts are
+// waiting before the working day rather than arriving during it.
+//
+// Nothing is published by this. The route writes rows with status Draft for a
+// person to edit and post by hand, so a failure here costs a morning's
+// convenience, not a missed publication — /api/daily-post is still openable in
+// a browser and produces the identical copy.
+export const dailyPostDraft = onSchedule(
+  {
+    schedule: '30 6 * * *',
+    timeZone: 'America/New_York',
+    secrets: [CRON_SECRET],
+    region: 'us-central1',
+    timeoutSeconds: 120,
+  },
+  async () => {
+    const secret = CRON_SECRET.value().trim();
+
+    const res = await fetch(`${APP_URL}/api/cron/daily-post`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const body = await res.text();
+
+    if (!res.ok) {
+      // Thrown so the run is marked failed and Cloud Scheduler retries. The
+      // route has already written its own row to Automation Runs by this point,
+      // so the reason is legible in Notion as well as in the function log.
+      throw new Error(`daily post draft failed: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+
+    console.log('[dailyPostDraft]', body.slice(0, 500));
+  }
+);
