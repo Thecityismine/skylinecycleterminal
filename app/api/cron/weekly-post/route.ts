@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { createDraft, logRun, DB } from '@/lib/notion/contentQueue';
 import { NotionError, queryDatabase, updatePage, prop } from '@/lib/notion/client';
 import { buildWeeklyPost, CARD_TYPE_BY_PATH } from '@/lib/marketing/weeklyPost';
-import { zoneWord } from '@/lib/marketing/dailyPost';
-import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
 
 // Drafts the weekly Road to $1M post, with a rendered chart card where one
 // exists.
@@ -84,13 +82,22 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: detail }, { status: 200 });
   }
 
-  let cycle: CycleScoreResult;
+  // Price only. This post carries no Skyline score and no phase — it goes out on
+  // a personal account to a community that did not come for the terminal, and the
+  // footer bar is the one number it needs.
+  let btcPrice: number;
   try {
-    const res = await fetch(`${origin}/api/cycle`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`/api/cycle returned ${res.status}`);
-    cycle = (await res.json()) as CycleScoreResult;
+    const res = await fetch(`${origin}/api/market`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`/api/market returned ${res.status}`);
+    const m = (await res.json()) as { btcPrice?: number };
+    if (typeof m.btcPrice !== 'number' || !Number.isFinite(m.btcPrice)) {
+      throw new Error('/api/market returned no usable btcPrice');
+    }
+    btcPrice = m.btcPrice;
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
+    // The footer is the signature of every one of these posts, so a draft
+    // without a real price is not worth queueing.
     await logRun({ job: 'Road to 1M Weekly', outcome: 'Failed', ranAt, detail });
     return NextResponse.json({ ok: false, error: detail }, { status: 502 });
   }
@@ -105,10 +112,7 @@ export async function GET(request: Request) {
     chart:     chartName,
     path,
     whyNow:    text(p['Why It Is Interesting']?.rich_text) || null,
-    score:     Math.round(cycle.score),
-    phase:     zoneWord(cycle.zone),
-    reporting: cycle.indicators.filter((i) => i.available).length,
-    total:     cycle.indicators.length,
+    btcPrice,
     weekOf:    ranAt,
     cardUrl,
   });
@@ -121,7 +125,6 @@ export async function GET(request: Request) {
       body,
       scheduledFor: ranAt,
       chartUsed:    chartName,
-      scoreAtBuild: Math.round(cycle.score),
       notes: cardUrl
         ? 'Card rendered — link is in the body.'
         : `No auto-card for ${chartName} yet. Screenshot the page or use its Share Card button.`,

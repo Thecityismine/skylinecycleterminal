@@ -1,20 +1,24 @@
-// The weekly Road to $1M post.
+// The weekly Road to $1M post, for the personal account.
 //
-// Same discipline as dailyPost.ts: templated rather than written fresh, because
-// a model composing the sentence each week drifts in tone over months and can
-// quote a number that is not in the payload. Every figure below is passed in.
+// This one is NOT a Skyline post and deliberately breaks every convention the
+// others follow. No score, no Skyline mention, no "full read" link. The Skyline
+// posts are calm, descriptive and data-first because that account's whole claim
+// is that it never overstates. This one is written to a community that follows a
+// person, and it reads like one: short lines, a lot of white space, one idea per
+// line, a reframe, a question.
 //
-// Voice from marketing/x-daily-templates.md — data first, descriptive never
-// directive, no price targets, no forecasts.
+// Because the voice is the product here, the generator does not attempt it. It
+// supplies the two things it can be certain of — the live price and the chart of
+// the week — and leaves the writing to a person. A model imitating a personal
+// voice weekly would land in the uncanny valley long before it landed on tone.
 
 /**
  * Charts the server-side renderer can currently draw, keyed by the Path column
  * in the Notion Chart Rotation.
  *
- * The rotation holds eighteen charts and this covers three of them. That gap is
+ * The rotation holds eighteen charts and this covers five of them. That gap is
  * deliberate rather than unfinished: adding a card is per-chart work, and a post
  * about a chart with no card is still a good post with a screenshot attached.
- * The draft says which case it is instead of silently omitting the image.
  */
 export const CARD_TYPE_BY_PATH: Record<string, string> = {
   '/price/market-regime':        'regime',
@@ -24,52 +28,79 @@ export const CARD_TYPE_BY_PATH: Record<string, string> = {
   '/onchain/nupl':               'nupl',
 };
 
+/** Blocks in the progress bar, and what each one is worth. */
+const BAR_BLOCKS = 5;
+const PER_BLOCK = 200_000;
+
+/**
+ * The footer bar, e.g. `Road to ₿1M 🟩⬜⬜⬜⬜ $88,000`.
+ *
+ * Five blocks at $200k each. `ceil` rather than `floor` so any progress into a
+ * band lights it — which is what makes $88,000 show one filled block rather than
+ * none, matching the posts already published. Capped at five so $1M+ does not
+ * overflow the bar.
+ */
+export function progressFooter(btcPrice: number): string {
+  const filled = Math.min(BAR_BLOCKS, Math.max(0, Math.ceil(btcPrice / PER_BLOCK)));
+  const bar = '🟩'.repeat(filled) + '⬜'.repeat(BAR_BLOCKS - filled);
+  const price = new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: 'USD', maximumFractionDigits: 0,
+  }).format(btcPrice);
+  return `Road to ₿1M ${bar} ${price}`;
+}
+
 export type WeeklyPostContext = {
   chart:     string;
   path:      string;
   whyNow:    string | null;
-  score:     number;
-  phase:     string;
-  reporting: number;
-  total:     number;
   weekOf:    string;
+  btcPrice:  number;
   /** Absolute URL of the rendered card, when one exists for this chart. */
   cardUrl:   string | null;
 };
 
+const WRITE = '<< write this >>';
+
 export function buildWeeklyPost(c: WeeklyPostContext): string {
-  const lines = [
-    `This week's chart: ${c.chart}`,
-    '',
-    `Skyline Cycle Score: ${c.score} / 100 — ${c.phase}`,
-    `${c.reporting} of ${c.total} indicators reporting.`,
-  ];
-
-  if (c.whyNow) {
-    lines.push('', c.whyNow);
-  }
-
-  lines.push('', `Full read → skylinecycleterminal.com${c.path}`);
-
   return [
     `ROAD TO $1M · WEEK OF ${c.weekOf}`,
     '='.repeat(52),
     '',
-    '── POST ' + '─'.repeat(44),
+    '── THE POST ' + '─'.repeat(40),
     '',
-    lines.join('\n'),
+    'Hook. One line. Give them a reason to stop scrolling.',
+    WRITE,
     '',
-    '── IMAGE ' + '─'.repeat(43),
+    'What the chart actually shows. Plain, concrete, no hedging.',
+    WRITE,
+    '',
+    'The reframe. Take something the timeline believes and turn it over.',
+    '("Cash isn\'t bearish right now. It\'s ammo.")',
+    WRITE,
+    '',
+    'The challenge. Short. A question works.',
+    WRITE,
+    '',
+    progressFooter(c.btcPrice),
+    '',
+    '── THIS WEEK\'S CHART ' + '─'.repeat(31),
+    '',
+    `${c.chart} — skylinecycleterminal.com${c.path}`,
+    c.whyNow ? `Why it is interesting: ${c.whyNow}` : 'No note recorded for this chart.',
     '',
     c.cardUrl
-      ? `Card rendered and ready:\n${c.cardUrl}\n\nRight-click to save, or open it and screenshot.`
-      : `No auto-card exists for ${c.chart} yet.\nOpen skylinecycleterminal.com${c.path} and screenshot the chart,\nor use the Share Card button on the page.`,
+      ? `Card: ${c.cardUrl}`
+      : `No auto-card for this one. Screenshot the page, or use its Share Card button.`,
     '',
-    '── BEFORE POSTING ' + '─'.repeat(34),
+    'This section is context for you, not part of the post. The community',
+    'does not need to know where the chart came from.',
     '',
-    '- Re-check the score. These numbers are from the draft date.',
-    '- No price targets, no forecasts.',
-    '- Descriptive, not directive.',
-    '- If a number is not on the chart in the image, cut the line.',
+    '── VOICE ' + '─'.repeat(43),
+    '',
+    '- Short lines. One idea each. Let it breathe.',
+    '- This is your account, not Skyline. No score, no branding, no site link.',
+    '- Emoji as punctuation, not decoration.',
+    '- The footer is the signature. It never changes shape.',
+    '- Say the thing everyone is thinking, then turn it.',
   ].join('\n');
 }
