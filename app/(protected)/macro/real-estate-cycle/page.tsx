@@ -17,10 +17,28 @@ import {
   BENCHMARK,
   colorFor as builderColor,
 } from '@/lib/indicators/homebuilderSignal';
+import {
+  buildRealSeries,
+  detectCycleSegments,
+  computeCyclePosition,
+} from '@/lib/indicators/housingCycle';
+import { HousingCycleSection } from '@/components/charts/HousingCycleSection';
 
 export const dynamic = 'force-dynamic';
 
 const pct1 = (v: number | null) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
+
+/** 1st, 2nd, 3rd, 4th — including the 11-13 exception that catches most attempts. */
+function ordinal(n: number): string {
+  const abs = Math.abs(n);
+  const suffix =
+    abs % 100 >= 11 && abs % 100 <= 13 ? 'th'
+    : abs % 10 === 1 ? 'st'
+    : abs % 10 === 2 ? 'nd'
+    : abs % 10 === 3 ? 'rd'
+    : 'th';
+  return `${n}${suffix}`;
+}
 
 const usd0 = (v: number | null) =>
   v == null ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
@@ -68,7 +86,7 @@ function PillarCard({ p }: { p: Pillar }) {
             <div className="flex items-center gap-2">
               <div className="flex-1 min-w-0"><Bar value={m.score} color={colorFor(m.score)} /></div>
               <span className="text-[10px] font-mono shrink-0 w-16 text-right" style={{ color: 'var(--sct-muted)' }}>
-                {m.percentile == null ? 'no pct' : `${Math.round(m.percentile)}th pct`}
+                {m.percentile == null ? 'no pct' : `${ordinal(Math.round(m.percentile))} pct`}
               </span>
             </div>
             {m.depth === 'shallow' && (
@@ -121,6 +139,20 @@ export default async function RealEstateCyclePage() {
     : null;
 
   const a = re.affordability;
+
+  // The cycle backbone. Phases are derived from the deflated series and from the
+  // pillars already computed above, so the chart and the score cannot disagree —
+  // they are reading the same numbers.
+  const cyclePoints   = buildRealSeries(housing.caseShiller, housing.cpi);
+  const cycleSegments = detectCycleSegments(cyclePoints);
+  const pillarScore = (key: string) => re.pillars.find((p) => p.key === key)?.score ?? null;
+  const cyclePosition = computeCyclePosition({
+    points:    cyclePoints,
+    valuation: pillarScore('valuation'),
+    supply:    pillarScore('supply'),
+    credit:    pillarScore('credit'),
+    builders:  hb.score,
+  });
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -200,6 +232,20 @@ export default async function RealEstateCyclePage() {
         </div>
       )}
 
+      {/* The cycle backbone. Sits above the components because it is the frame
+          they are read inside — the pillars say what conditions are, this says
+          where those conditions have historically fallen in the long wave. */}
+      <div
+        className="rounded-xl border p-5"
+        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+      >
+        <HousingCycleSection
+          data={cyclePoints}
+          segments={cycleSegments}
+          position={cyclePosition}
+        />
+      </div>
+
       {/* Homebuilders — the leading leg */}
       <div
         className="rounded-xl border p-5 space-y-4"
@@ -275,6 +321,14 @@ export default async function RealEstateCyclePage() {
       </div>
 
       <InsightPanel title="How to read this">
+        <InsightRow
+          label="The 18-year cycle"
+          value="Measured rather than assumed. On this data the real peaks fall in 1989, 2006 and 2022 — 16.8 and 16.0 years apart, close to the received 18-year figure but not equal to it, and a sample of two gaps. Treat the cycle as a description of how housing has behaved, not a schedule. That is why the current phase on the chart is derived from conditions and never from a year count."
+        />
+        <InsightRow
+          label="Why prices are deflated"
+          value="Nominal house prices rise through almost the whole record, which hides every cycle except 2008. In real terms a buyer at the 2006 peak waited until 2021 to break even in purchasing power — 14.8 years — while their nominal statement looked fine throughout. The current drawdown is only 3.7% in real terms, but prices have gone nowhere for three years, so the adjustment is happening through inflation instead of through falling prices."
+        />
         <InsightRow
           label="Direction"
           value="High is opportunity. 100 means housing is cheap, loose and historically a good moment to buy; 0 means expensive and tight. Note this is the opposite polarity to the Skyline Cycle Score, where a LOW number means Bitcoin is cheap — the Bitcoin figure above is inverted so the two can sit side by side."
