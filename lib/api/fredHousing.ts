@@ -64,6 +64,12 @@ export const HOUSING_SERIES = {
   // does not belong there. Both series must be nominal or both real.
   medianIncome:   { id: 'MEHOINUSA646N', label: 'Median household income', start: '1984-01-01', depth: 'deep', source: 'Census · annual, nominal' },
   cpiRent:        { id: 'CUSR0000SEHA',  label: 'CPI rent of residence',     start: '1981-01-01', depth: 'deep',    source: 'BLS' },
+  // Headline CPI, used to deflate house prices for the cycle chart. Nominal
+  // house prices spend almost the whole record going up, which hides every
+  // cycle except 2008. In real terms the 1990 and 2006 peaks are both visible,
+  // and so is the fact that prices did not regain 2006 in real terms until
+  // 2021 — which is the point the chart exists to make.
+  cpi:            { id: 'CPIAUCSL',      label: 'CPI, all urban consumers',  start: '1960-01-01', depth: 'deep',    source: 'BLS' },
 
   // ── Activity / cycle ──────────────────────────────────────────────────────
   housingStarts:  { id: 'HOUST',         label: 'Housing starts',            start: '1959-01-01', depth: 'deep',    source: 'Census' },
