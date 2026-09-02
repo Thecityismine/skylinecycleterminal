@@ -2,6 +2,7 @@ import { PageHeader }        from '@/components/dashboard/PageHeader';
 import { StatCard }          from '@/components/dashboard/StatCard';
 import { InsightPanel, InsightRow } from '@/components/dashboard/InsightPanel';
 import { SPXPageClient }     from '@/components/charts/SPXPageClient';
+import { fetchWeeklyHistory } from '@/lib/api/yahoo';
 import {
   NBER_RECESSIONS,
   slidingMA,
@@ -83,9 +84,20 @@ function SignalCard({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function SPXRecessionPage() {
-  // Fetch all FRED series in parallel — FRED SP500 is weekly (from 2011-01-07)
+  // The price series comes from Yahoo, not FRED.
+  //
+  // FRED's SP500 series is licensed as a rolling ten-year window — measured
+  // 2016-09-02 to 2026-09-01, exactly 10.0 years. On a chart whose whole subject
+  // is NBER recessions that is close to useless: only the 2020 COVID band falls
+  // inside it, so the 2001 and 2008 recessions the chart exists to show were
+  // never on screen. It also made the range buttons look broken, because All,
+  // 20Y and 10Y all resolved to the same ten years of data.
+  //
+  // fetchWeeklyHistory uses period1=0 with crumb auth rather than range=max,
+  // which is the difference between true weekly bars for the full history and
+  // Yahoo silently downgrading to monthly — see the note in lib/api/yahoo.ts.
   const [spxRaw, t10y2yRaw, sahmRaw, unrateRaw, hyRaw, ismRaw] = await Promise.allSettled([
-    fredSince('SP500',         '2010-01-01'),
+    fetchWeeklyHistory('^GSPC'),
     fredSince('T10Y2Y',        '2000-01-01'),
     fredSince('SAHMREALTIME',  '2000-01-01'),
     fredSince('UNRATE',        '1999-01-01'),
@@ -93,7 +105,10 @@ export default async function SPXRecessionPage() {
     fredSince('NAPM',          '2000-01-01'),
   ]);
 
-  const spx     = spxRaw.status     === 'fulfilled' ? spxRaw.value     : [];
+  // Normalised to the { date, value } shape the rest of this page already uses.
+  const spx     = spxRaw.status     === 'fulfilled'
+    ? spxRaw.value.map((w) => ({ date: w.time, value: w.close }))
+    : [];
   const t10y2y  = t10y2yRaw.status  === 'fulfilled' ? t10y2yRaw.value  : [];
   const sahmSer = sahmRaw.status    === 'fulfilled' ? sahmRaw.value    : [];
   const unrate  = unrateRaw.status  === 'fulfilled' ? unrateRaw.value  : [];
@@ -101,7 +116,8 @@ export default async function SPXRecessionPage() {
   const ismSer  = ismRaw.status     === 'fulfilled' ? ismRaw.value     : [];
 
   // ── Build SPX chart data ──────────────────────────────────────────────────
-  // FRED SP500 is weekly — use 50-period and 200-period MAs (not daily 250/1000)
+  // The series is weekly bars, so 50 and 200 periods are 50W and 200W directly.
+  // Do not switch these to 250/1000 — those are the daily-bar equivalents.
   const prices  = spx.map(d => d.value);
   const ma50w   = slidingMA(prices, 50);
   const ma200w  = slidingMA(prices, 200);
