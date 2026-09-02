@@ -10,8 +10,17 @@ import {
   type Pillar,
 } from '@/lib/indicators/realEstateCycle';
 import type { CycleScoreResult } from '@/lib/indicators/skylineScore';
+import { fetchWeeklyHistory, type WeeklyClose } from '@/lib/api/yahoo';
+import {
+  computeHomebuilderSignal,
+  BUILDERS,
+  BENCHMARK,
+  colorFor as builderColor,
+} from '@/lib/indicators/homebuilderSignal';
 
 export const dynamic = 'force-dynamic';
+
+const pct1 = (v: number | null) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
 
 const usd0 = (v: number | null) =>
   v == null ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
@@ -75,6 +84,17 @@ function PillarCard({ p }: { p: Pillar }) {
 export default async function RealEstateCyclePage() {
   const housing = await fetchHousingData();
   const re = computeRealEstateScore(housing);
+
+  // Builders, fetched alongside the FRED data. Each is allowed to fail on its
+  // own — a missing ticker should cost one row of the group, not the section.
+  const builderTickers = [...BUILDERS.map((b) => b.ticker), BENCHMARK];
+  const builderSettled = await Promise.allSettled(builderTickers.map((t) => fetchWeeklyHistory(t)));
+  const builderSeries: Record<string, WeeklyClose[]> = {};
+  builderTickers.forEach((t, i) => {
+    const r = builderSettled[i];
+    builderSeries[t] = r.status === 'fulfilled' ? r.value : [];
+  });
+  const hb = computeHomebuilderSignal(builderSeries);
 
   // The Bitcoin side is the existing Skyline Cycle Score, inverted.
   //
@@ -179,6 +199,75 @@ export default async function RealEstateCyclePage() {
           </div>
         </div>
       )}
+
+      {/* Homebuilders — the leading leg */}
+      <div
+        className="rounded-xl border p-5 space-y-4"
+        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
+              Homebuilder signal
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
+              Builders trade daily; the housing data they lead is monthly and lagged
+            </p>
+          </div>
+          <div className="flex items-baseline gap-2 shrink-0">
+            <span className="text-2xl sm:text-3xl font-mono font-bold" style={{ color: hb.color }}>
+              {hb.score == null ? '—' : Math.round(hb.score)}
+            </span>
+            <span className="text-xs font-mono" style={{ color: hb.color }}>{hb.label}</span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs font-mono" style={{ minWidth: 520 }}>
+            <thead>
+              <tr style={{ color: 'var(--sct-muted)' }}>
+                <th className="text-left py-1.5 pr-3 font-medium">Builder</th>
+                <th className="text-right py-1.5 pr-3 font-medium">Price</th>
+                <th className="text-right py-1.5 pr-3 font-medium">From 52w high</th>
+                <th className="text-right py-1.5 pr-3 font-medium">vs 40w MA</th>
+                <th className="text-right py-1.5 pr-3 font-medium">vs SPY 26w</th>
+                <th className="text-right py-1.5 font-medium">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hb.builders.map((b) => (
+                <tr key={b.ticker} style={{ borderTop: '1px solid var(--sct-border)' }}>
+                  <td className="py-1.5 pr-3" style={{ color: 'var(--sct-text)' }}>
+                    {b.ticker} <span style={{ color: 'var(--sct-muted)' }}>{b.name}</span>
+                  </td>
+                  <td className="py-1.5 pr-3 text-right" style={{ color: 'var(--sct-secondary)' }}>
+                    {b.price == null ? '—' : `$${b.price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+                  </td>
+                  <td className="py-1.5 pr-3 text-right" style={{ color: (b.drawdown ?? 0) < -15 ? '#FF5C5C' : 'var(--sct-secondary)' }}>
+                    {pct1(b.drawdown)}
+                  </td>
+                  <td className="py-1.5 pr-3 text-right" style={{ color: (b.vsTrend ?? 0) < 0 ? '#F97316' : '#35D07F' }}>
+                    {pct1(b.vsTrend)}
+                  </td>
+                  <td className="py-1.5 pr-3 text-right" style={{ color: (b.relStrength ?? 0) < 0 ? '#F97316' : '#35D07F' }}>
+                    {pct1(b.relStrength)}
+                  </td>
+                  <td className="py-1.5 text-right font-semibold" style={{ color: builderColor(b.score) }}>
+                    {b.score == null ? '—' : Math.round(b.score)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          className="rounded-lg border p-4"
+          style={{ backgroundColor: 'var(--sct-panel)', borderColor: 'var(--sct-border)' }}
+        >
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-secondary)' }}>{hb.read}</p>
+        </div>
+      </div>
 
       {/* Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
