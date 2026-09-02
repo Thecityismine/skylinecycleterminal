@@ -6,9 +6,11 @@ import { SPXShareModal }     from '@/components/share/SPXShareModal';
 import type { SPXPoint }     from '@/lib/indicators/recessionRisk';
 import type { SPXSharePayload } from '@/components/share/SPXShareCard';
 
-type Timeframe = '10Y' | '20Y' | 'All';
-const TIMEFRAMES: Timeframe[] = ['All', '20Y', '10Y'];
-const TF_DAYS: Record<Timeframe, number> = { '10Y': 3650, '20Y': 7300, All: Infinity };
+type Timeframe = '1Y' | '5Y' | '10Y' | '20Y' | 'All';
+const TIMEFRAMES: Timeframe[] = ['All', '20Y', '10Y', '5Y', '1Y'];
+const TF_DAYS: Record<Timeframe, number> = {
+  '1Y': 365, '5Y': 1825, '10Y': 3650, '20Y': 7300, All: Infinity,
+};
 
 type Props = {
   data:        SPXPoint[];
@@ -26,7 +28,12 @@ export function SPXPageClient({ data, ath, sharePayload }: Props) {
   const displayed = useMemo(() => {
     const days = TF_DAYS[timeframe];
     if (days === Infinity) return data;
-    const cutoff = Date.now() - days * 86_400_000;
+    // Anchored to the last bar rather than the wall clock: Date.now() during
+    // render is impure, and "1Y" should mean a year of data rather than a year
+    // back from whenever this happened to re-render.
+    const anchor = data.at(-1)?.ts;
+    if (anchor == null) return data;
+    const cutoff = anchor - days * 86_400_000;
     return data.filter(d => d.ts >= cutoff);
   }, [data, timeframe]);
 
