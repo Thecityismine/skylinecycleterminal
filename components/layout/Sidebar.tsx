@@ -152,6 +152,7 @@ const nav: (NavItem | NavSection)[] = [
     items: [
       { label: "Macro Terminal",   href: "/macro/terminal",      icon: Gauge },
       { label: "SPX & Recession",  href: "/macro/spx-recession", icon: BarChart2 },
+      { label: "Real Estate Cycle", href: "/macro/real-estate-cycle", icon: Layers },
       { label: "DXY",              href: "/macro",               icon: DollarSign, exact: true },
       { label: "Fed Funds Rate",   href: "/macro?chart=fed",     icon: Landmark,   exact: true },
       { label: "CPI / Inflation",  href: "/macro?chart=cpi",     icon: TrendingUp, exact: true },
