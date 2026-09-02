@@ -2,10 +2,7 @@
 
 import { useState } from 'react';
 import { HousingCycleChart } from '@/components/charts/HousingCycleChart';
-import {
-  ChartControlBar, ChartControlGroup, ChartLegendItem,
-  ChartToggleButton, ChartPeriodButton,
-} from '@/components/charts/ChartControls';
+import { HousingCycleShareModal } from '@/components/share/HousingCycleShareModal';
 import {
   SEGMENT_COLOR, type CyclePoint, type CycleSegment, type CyclePosition,
 } from '@/lib/indicators/housingCycle';
@@ -22,9 +19,11 @@ type Props = {
   data:     CyclePoint[];
   segments: CycleSegment[];
   position: CyclePosition | null;
+  /** Deal Window summary, carried onto the share card. */
+  deal:     { stage: string; color: string; fired: number; total: number } | null;
 };
 
-export function HousingCycleSection({ data, segments, position }: Props) {
+export function HousingCycleSection({ data, segments, position, deal }: Props) {
   const [real, setReal]           = useState(true);
   const [showBands, setShowBands] = useState(true);
   const [years, setYears]         = useState<number | null>(null);
@@ -46,52 +45,99 @@ export function HousingCycleSection({ data, segments, position }: Props) {
 
   const contractions = segments.filter((s) => s.kind === 'contraction');
 
+  // Carried onto the share card. Three years is the interval that exposes the
+  // stall: the 12-month number looks like an ordinary soft patch, the 36-month
+  // number shows purchasing power has not moved at all.
+  const change36 =
+    data.length > 36
+      ? ((data[data.length - 1].real - data[data.length - 37].real) / data[data.length - 37].real) * 100
+      : null;
+
+  const toggleBtn = (active: boolean, label: string, color: string, onClick: () => void) => (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+      style={{
+        backgroundColor: active ? `${color}20` : 'transparent',
+        borderColor:     active ? color        : 'var(--sct-border)',
+        color:           active ? color        : 'var(--sct-muted)',
+      }}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="space-y-4">
-      <ChartControlBar>
+      {/* Controls row — same geometry and ordering as the other chart pages:
+          timeframes, divider, overlay toggles, divider, share. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
-            The long housing cycle
-          </h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--sct-muted)' }}>
-            Case-Shiller national{real ? ', deflated by CPI to today’s dollars' : ', as published'}.
-            Shaded periods are detected from the series, not supplied.
+          <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
+            The Long Housing Cycle
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
+            Case-Shiller national{real ? ' · deflated by CPI to today’s dollars' : ' · as published'} ·
+            shaded periods detected from the series, not supplied
           </p>
         </div>
 
-        <ChartControlGroup>
-          <ChartToggleButton
-            active={real}
-            label={real ? 'Real' : 'Nominal'}
-            color="#22D3EE"
-            onClick={() => setReal((v) => !v)}
-          />
-          <ChartToggleButton
-            active={showBands}
-            label="Phases"
-            color="#FF5C5C"
-            onClick={() => setShowBands((v) => !v)}
-          />
+        <div className="flex flex-wrap gap-1.5 items-center">
           {([['All', null], ['20Y', 20], ['10Y', 10], ['5Y', 5]] as const).map(([label, y]) => (
-            <ChartPeriodButton
+            <button
               key={label}
-              active={years === y}
-              label={label}
               onClick={() => setYears(y)}
-            />
+              className="px-3 py-1 rounded text-xs font-mono border transition-all duration-150"
+              style={{
+                backgroundColor: years === y ? 'var(--sct-border)' : 'transparent',
+                borderColor:     'var(--sct-border)',
+                color:           years === y ? 'var(--sct-text)' : 'var(--sct-muted)',
+              }}
+            >
+              {label}
+            </button>
           ))}
-        </ChartControlGroup>
-      </ChartControlBar>
+          <div className="w-px mx-0.5 self-stretch" style={{ backgroundColor: 'var(--sct-border)' }} />
+          {toggleBtn(real,      real ? 'REAL' : 'NOMINAL', '#22D3EE', () => setReal((v) => !v))}
+          {toggleBtn(showBands, 'PHASES',                  '#FF5C5C', () => setShowBands((v) => !v))}
+          <div className="w-px mx-0.5 self-stretch" style={{ backgroundColor: 'var(--sct-border)' }} />
+          <HousingCycleShareModal payload={{
+            chartData:    data,
+            segments,
+            real,
+            drawdown:     data[data.length - 1].drawdown,
+            realChange36: change36,
+            phaseName:    position?.name  ?? 'Unavailable',
+            phaseColor:   position?.color ?? '#6F7A86',
+            dealStage:    deal?.stage ?? '—',
+            dealColor:    deal?.color ?? '#6F7A86',
+            dealFired:    deal?.fired ?? 0,
+            dealTotal:    deal?.total ?? 0,
+            generatedAt:  new Date().toISOString(),
+          }} />
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-x-5 gap-y-1">
+        {[
+          { color: SEGMENT_COLOR.contraction, label: 'Contraction',           fill: true },
+          { color: SEGMENT_COLOR.recovery,    label: 'Below prior real peak', fill: true },
+          ...(real ? [{ color: '#F97316', label: 'Real all-time peak', fill: false }] : []),
+        ].map(({ color, label, fill }) => (
+          <span key={label} className="flex items-center gap-1.5 text-xs font-mono" style={{ color: 'var(--sct-muted)' }}>
+            {fill
+              ? <span style={{ display: 'inline-block', width: 14, height: 10, backgroundColor: `${color}30`, border: `1px solid ${color}66` }} />
+              : <span style={{ display: 'inline-block', width: 24, height: 1.5, backgroundColor: color }} />}
+            {label}
+          </span>
+        ))}
+      </div>
 
       <div className="h-[340px] sm:h-[420px]">
         <HousingCycleChart data={view} segments={segsInView} real={real} showBands={showBands} />
       </div>
-
-      <ChartControlGroup>
-        <ChartLegendItem color={SEGMENT_COLOR.contraction} label="Contraction" />
-        <ChartLegendItem color={SEGMENT_COLOR.recovery}    label="Below prior real peak" />
-        {real && <ChartLegendItem color="#F97316" label="Real all-time peak" />}
-      </ChartControlGroup>
 
       {/* What the bands measure, stated as numbers. The recovery column is the
           one that changes minds — it is the wait to break even in purchasing

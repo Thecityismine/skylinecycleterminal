@@ -53,6 +53,20 @@ export const HOUSING_SERIES = {
 
   // ── Affordability inputs ──────────────────────────────────────────────────
   mortgage30:     { id: 'MORTGAGE30US',  label: '30-year fixed rate',        start: '1971-01-01', depth: 'deep',    source: 'Freddie Mac' },
+  // The 10-year, carried only to compute the mortgage SPREAD against it.
+  //
+  // The spread is the part of financing cost that is not the Fed's doing. A
+  // mortgage rate falling because the 10-year fell tells you about the bond
+  // market; the spread narrowing tells you lenders are competing for the loan
+  // again, which is a housing signal and turns earlier than price.
+  //
+  // Started at 2000 rather than 1962 ON PURPOSE. DGS10 is DAILY, so the full
+  // record is 16,000-plus observations and reliably blew the 20s timeout below,
+  // which silently cost the spread checkpoint its data. Nothing needs that
+  // depth: the spread is only read against its own three-year average. The
+  // pre-2000 spread is also a poor comparison, since the MBS market that prices
+  // it was structurally different.
+  treasury10:     { id: 'DGS10',         label: '10-year Treasury',          start: '2000-01-01', depth: 'deep',    source: 'Fed · for mortgage spread' },
   // NOMINAL income (…646N), not real (…672N). This matters more than it looks.
   //
   // Median sales price is nominal, so pairing it with CPI-adjusted income mixes

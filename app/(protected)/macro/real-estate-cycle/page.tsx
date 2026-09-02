@@ -23,22 +23,12 @@ import {
   computeCyclePosition,
 } from '@/lib/indicators/housingCycle';
 import { HousingCycleSection } from '@/components/charts/HousingCycleSection';
+import { computeDealWindow } from '@/lib/indicators/dealWindow';
+import { ordinal } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
 const pct1 = (v: number | null) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
-
-/** 1st, 2nd, 3rd, 4th — including the 11-13 exception that catches most attempts. */
-function ordinal(n: number): string {
-  const abs = Math.abs(n);
-  const suffix =
-    abs % 100 >= 11 && abs % 100 <= 13 ? 'th'
-    : abs % 10 === 1 ? 'st'
-    : abs % 10 === 2 ? 'nd'
-    : abs % 10 === 3 ? 'rd'
-    : 'th';
-  return `${n}${suffix}`;
-}
 
 const usd0 = (v: number | null) =>
   v == null ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
@@ -154,6 +144,27 @@ export default async function RealEstateCyclePage() {
     builders:  hb.score,
   });
 
+  // The Deal Window. Reads the same series as the pillars but asks a different
+  // question — not "what are conditions" but "how far through the sequence that
+  // precedes a buying window are we", which is what decides whether to prepare
+  // or to deploy.
+  const realChange12 =
+    cyclePoints.length > 12
+      ? ((cyclePoints[cyclePoints.length - 1].real - cyclePoints[cyclePoints.length - 13].real) /
+         cyclePoints[cyclePoints.length - 13].real) * 100
+      : null;
+
+  // ITB is the group proxy, so its relative strength stands in for the sector's
+  // rather than any single builder's idiosyncratic quarter.
+  const itbRel = hb.builders.find((b) => b.ticker === 'ITB')?.relStrength ?? null;
+
+  const deal = computeDealWindow({
+    data:         housing,
+    realChange12,
+    builders:     hb.score,
+    buildersRel:  itbRel,
+  });
+
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <PageHeader
@@ -243,7 +254,80 @@ export default async function RealEstateCyclePage() {
           data={cyclePoints}
           segments={cycleSegments}
           position={cyclePosition}
+          deal={{ stage: deal.stage, color: deal.color, fired: deal.fired, total: deal.total }}
         />
+      </div>
+
+      {/* Deal Window — the preparation timer.
+          Sits directly under the cycle chart because it is the actionable half
+          of the same question: the chart says where we are, this says what to
+          be doing about it, and specifically how much runway is left. */}
+      <div
+        className="rounded-xl border p-5 space-y-4"
+        style={{ backgroundColor: 'var(--sct-card)', borderColor: 'var(--sct-border)' }}
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold" style={{ color: 'var(--sct-text)' }}>
+              Deal Window
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--sct-muted)' }}>
+              The conditions that precede a buying window, in the order they historically occur
+            </p>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold" style={{ color: deal.color }}>
+              {deal.fired}
+            </span>
+            <span className="text-sm" style={{ color: 'var(--sct-muted)' }}>
+              / {deal.total}
+            </span>
+            <span className="text-sm font-semibold ml-1" style={{ color: deal.color }}>
+              {deal.stage}
+            </span>
+          </div>
+        </div>
+
+        <ol className="space-y-0">
+          {deal.checkpoints.map((c) => (
+            <li
+              key={c.key}
+              className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-2"
+              style={{ borderTop: '1px solid var(--sct-border)' }}
+            >
+              <span
+                className="font-mono text-xs w-5 shrink-0"
+                style={{ color: c.fired ? deal.color : 'var(--sct-muted)' }}
+              >
+                {c.fired == null ? '—' : c.fired ? '✓' : '○'}
+              </span>
+              <span
+                className="text-xs font-semibold min-w-0"
+                style={{ color: c.fired ? 'var(--sct-text)' : 'var(--sct-muted)' }}
+              >
+                {c.order}. {c.title}
+              </span>
+              <span className="text-xs font-mono ml-auto" style={{ color: c.fired ? deal.color : 'var(--sct-muted)' }}>
+                {c.reading}
+              </span>
+              <span className="text-xs basis-full pl-8" style={{ color: 'var(--sct-muted)' }}>
+                {c.because}
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        <div
+          className="rounded-lg border p-4 space-y-2"
+          style={{ borderColor: 'var(--sct-border)', backgroundColor: 'var(--sct-panel)' }}
+        >
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-text)' }}>
+            {deal.action}
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--sct-muted)' }}>
+            {deal.waitingOn}
+          </p>
+        </div>
       </div>
 
       {/* Homebuilders — the leading leg */}
