@@ -30,6 +30,12 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'MSTX',  name: 'Defiance 2X MSTR',  sector: '2× Leveraged Long',     groups: ['saylor'],  type: 'etf',       color: '#22D3EE' },
   { ticker: 'MSTZ',  name: 'T-Rex 2X Inverse',   sector: '2× Leveraged Short',    groups: ['saylor'],  type: 'etf',       color: '#FF5C5C' },
   { ticker: 'SMST',  name: 'ProShares UltraShort', sector: '2× Leveraged Short',  groups: ['saylor'],  type: 'etf',       color: '#F87171' },
+  // Strive is the one member of this group that is not a Strategy instrument.
+  // Everything above is either MSTR itself, a Strategy preferred, or an ETF
+  // written on MSTR. Strive is a separate company running the same treasury
+  // playbook, so it carries both groups: it belongs in btc_treasury on the
+  // facts, and here on the theme.
+  { ticker: 'ASST',  name: 'Strive',             sector: 'BTC Treasury',          groups: ['saylor', 'btc_treasury'], type: 'btc_proxy', color: '#14B8A6' },
 
   // ── Bitcoin Treasury Companies ────────────────────────────────────────────
   // Companies holding BTC as a primary reserve asset. Most also live in another
@@ -119,6 +125,15 @@ export const WATCHLIST: WatchlistItem[] = [
   { ticker: 'TLT',   name: '20Y Treasury ETF',   sector: 'Bonds',                  groups: ['macro'],   type: 'etf',       color: '#35D07F' },
   { ticker: 'SPCX',  name: 'SPAC & New Issue ETF', sector: 'SPACs / IPOs',        groups: ['macro'],   type: 'etf',       color: '#8B5CF6' },
   { ticker: 'ARKK',  name: 'ARK Innovation ETF', sector: 'Disruptive Innovation',  groups: ['macro'],   type: 'etf',       color: '#F2C230' },
+  // The broad-market and cash sleeves. SPY and QQQ above are large-cap US only;
+  // these give total-market, ex-US, aggregate bond and T-bill reference lines to
+  // compare BTC against, which is the comparison the macro group exists for.
+  { ticker: 'VTI',   name: 'Vanguard Total Stock Market', sector: 'Total US Market', groups: ['macro'], type: 'etf',      color: '#C1272D' },
+  { ticker: 'VT',    name: 'Vanguard Total World Stock',  sector: 'Total World Market', groups: ['macro'], type: 'etf',   color: '#E07B39' },
+  { ticker: 'BND',   name: 'Vanguard Total Bond Market',  sector: 'Bonds · Aggregate', groups: ['macro'], type: 'etf',    color: '#6B9BD1' },
+  // The risk-free line. Everything else in this file is measured against the
+  // return you could have had for doing nothing.
+  { ticker: 'SGOV',  name: 'iShares 0-3 Month T-Bill',    sector: 'Cash · T-Bills', groups: ['macro'],  type: 'etf',      color: '#94A3B8' },
 ];
 
 export const GROUP_LABELS: Record<StockGroup, string> = {
